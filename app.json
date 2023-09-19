@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "basemobile-app",
+    "slug": "basemobile-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/bitmap.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/bitmap.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/bitmap.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "demo"
+  }
+}
