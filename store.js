@@ -3,11 +3,11 @@ import {
     onAuthStateChanged,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
     signOut,
     updateProfile,
 } from 'firebase/auth';
 import { FIREBASE_AUTH } from './firebaseConfig';
-import { Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 
@@ -68,6 +68,15 @@ export const appSignUp = async (email, password, displayName) => {
         return {user: FIREBASE_AUTH.currentUser};
     } catch (e) {
         return {error: e};
+    }
+};
+
+export const appResetPassword = async (email) => {
+    try {
+        await sendPasswordResetEmail(FIREBASE_AUTH, email);
+        return { success: true };
+    } catch (e) {
+        return { error: e };
     }
 };
 

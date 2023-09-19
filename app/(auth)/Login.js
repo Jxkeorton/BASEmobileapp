@@ -1,6 +1,6 @@
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
 import React, {useState} from 'react';
-import { ActivityIndicator, TextInput, Button, Divider } from 'react-native-paper';
+import { ActivityIndicator, Button } from 'react-native-paper';
 import { appSignIn } from '../../store';
 import { useRouter } from 'expo-router';
 
@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
     },
-    input: {
+    textInput: {
         marginVertical: 4,
         height: 50,
         borderWidth: 1,

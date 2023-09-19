@@ -1,7 +1,7 @@
-import { Button, TextInput } from 'react-native-paper'
+import { Button } from 'react-native-paper'
 import { useState } from 'react';
 import { useRouter } from 'expo-router'
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
 import { appSignUp } from '../../store';
 
 const Register = () => {
@@ -14,11 +14,11 @@ const Register = () => {
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             <View style={styles.container}>
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} >
+                <KeyboardAvoidingView behavior="padding" >
                     <TextInput value={displayName} style={styles.textInput} placeholder='Name' autoCapitalize='none' onChangeText={(text) => setDisplayName(text)}></TextInput>
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
                     <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
-
+            
                     <Button title="Register" 
                         onPress={async () => {
                             const resp = await appSignUp(email, password, displayName);
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
     },
-    input: {
+    textInput: {
         marginVertical: 4,
         height: 50,
         borderWidth: 1,
