@@ -1,6 +1,6 @@
-import { View, StyleSheet, Button, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 import React, {useState} from 'react';
-import { ActivityIndicator, TextInput } from 'react-native-paper';
+import { ActivityIndicator, TextInput, Button, Divider } from 'react-native-paper';
 import { appSignIn } from '../../store';
 import { useRouter } from 'expo-router';
 
@@ -39,9 +39,9 @@ const Login = () => {
                                         Alert.alert('Login Error', 'Invalid email or password. Please try again.');
                                     }
                             }
-                        }} />   
-                    <Button title="Register" onPress={() => router.replace("Register")} />
-                    <Button title="Forgot Password" onPress={() => router.replace("Reset")} />
+                        }} >Login</Button>   
+                    <Button title="Register" onPress={() => router.replace("Register")} >Sign Up here!</Button>
+                    <Button title="Forgot Password" onPress={() => router.replace("Reset")} >Forgot Password</Button>
                 </>
                 }
             </KeyboardAvoidingView>
