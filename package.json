@@ -28,6 +28,7 @@
     "react-native-paper": "^5.10.4",
     "react-native-safe-area-context": "4.6.3",
     "react-native-screens": "~3.22.0",
+    "react-native-share": "^9.4.1",
     "react-native-web": "~0.19.6",
     "react-spinners": "^0.13.8"
   },

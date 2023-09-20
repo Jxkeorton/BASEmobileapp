@@ -15,26 +15,34 @@ const SavedLocationsCard = ({ data, onDelete }) => {
 
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Saved Locations</Text>
-            <FlatList
-                data={data}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                <Card key={item.id} style={styles.card}>
-                    <Card.Content>
-                    <Title>{item.name}</Title>
-                    <Paragraph>Rock Drop: {item.details.rockdrop ? item.details.rockdrop : "?"}</Paragraph>
-                    </Card.Content>
-                    <Card.Actions>
-                    <Button style={styles.buttonOutlined} textColor='black' onPress={() => onDetailsPress(item.id)}>Details</Button>
-                    <Button style={styles.button} onPress={() => onDelete(item.id)}>Unsave</Button>
-                    </Card.Actions>
-                </Card>
-                )}
-            />
-        </View> 
-    )
+      <View style={styles.container}>
+        <Text style={styles.title}>Saved Locations</Text>
+        {data.map((item) => (
+          <View key={item.id} style={styles.card}>
+            <Card>
+              <Card.Content>
+                <Title>{item.name}</Title>
+                <Paragraph>
+                  Rock Drop: {item.details.rockdrop ? item.details.rockdrop : "?"}
+                </Paragraph>
+              </Card.Content>
+              <Card.Actions>
+                <Button
+                  style={styles.buttonOutlined}
+                  textColor="black"
+                  onPress={() => onDetailsPress(item.id)}
+                >
+                  Details
+                </Button>
+                <Button style={styles.button} onPress={() => onDelete(item.id)}>
+                  Unsave
+                </Button>
+              </Card.Actions>
+            </Card>
+          </View>
+        ))}
+      </View>
+    );
 };
 
 export default SavedLocationsCard;

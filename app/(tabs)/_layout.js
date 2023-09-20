@@ -23,11 +23,12 @@ export default () => {
                 }} 
             />
             <Tabs.Screen 
-                name="Profile" 
+                name="profile" 
                 options={{ tabBarIcon: ({color}) => (
                     <FontAwesome name="user" size={24} color={color} />
                     ),
                     title: 'Profile',
+                    headerShown: false,
                 }} 
             />
         </Tabs>
