@@ -1,4 +1,4 @@
-import { View, StyleSheet, ScrollView, Platform, Linking } from 'react-native'
+import { View, StyleSheet, ScrollView, Platform, Linking, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams, Stack} from 'expo-router';
 import React ,{ useEffect, useState } from 'react';
 import MapView, {Marker} from 'react-native-maps';
@@ -147,9 +147,8 @@ function Location() {
         </ScrollView>
         </React.Fragment>
       ) : (
-        <Text style={styles.loadingText}>Loading...</Text>
+        <ActivityIndicator style={styles.loadingIndicator} size="large" color="#00ABF0" />
       )}
-    
     </View>
   )
 }
@@ -213,7 +212,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
   },
-  
+  loadingIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default Location

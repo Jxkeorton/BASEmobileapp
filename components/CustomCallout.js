@@ -78,7 +78,7 @@ export default function CustomCallout({info}) {
 
   // function to direct to the locations details page
   const onDetailsPress = () => {
-    router.push(`/home/map/${info.id}`)
+    router.push(`/(tabs)/map/${info.id}`)
   }
 
   // for directing to maps app button 

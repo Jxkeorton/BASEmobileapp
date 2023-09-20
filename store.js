@@ -7,7 +7,12 @@ import {
     signOut,
     updateProfile,
 } from 'firebase/auth';
-import { FIREBASE_AUTH } from './firebaseConfig';
+import { 
+    doc, 
+    setDoc, 
+    serverTimestamp, 
+} from 'firebase/firestore';
+import { FIREBASE_AUTH, FIREBASE_DB } from './firebaseConfig';
 import { useRouter } from 'expo-router';
 
 
@@ -65,6 +70,14 @@ export const appSignUp = async (email, password, displayName) => {
             store.user = FIREBASE_AUTH.currentUser;
             store.isLoggedIn = true;
         });
+
+        const name = displayName
+
+        const formData = { email, name };
+        formData.timestamp = serverTimestamp();
+
+        await setDoc(doc(FIREBASE_DB, 'users', resp.user.uid), formData);
+
         return {user: FIREBASE_AUTH.currentUser};
     } catch (e) {
         return {error: e};
