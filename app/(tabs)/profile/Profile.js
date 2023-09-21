@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 // firebase imports for fetching user data
 import { FIREBASE_AUTH, FIREBASE_DB} from '../../../firebaseConfig';
-import { appSignOut } from '../../../store';
 import { 
   doc, 
   getDoc,
@@ -23,6 +22,8 @@ import {
 import { View, StyleSheet, Alert, SafeAreaView, Share, ScrollView } from 'react-native';
 import SavedLocationsCard from '../../../components/SavedLocationsCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+
+const router = useRouter();
 
 const Profile = () => {
   const [ filteredLocations, setFilteredLocations ] = useState([]);
@@ -141,12 +142,12 @@ const Profile = () => {
             <Caption>Total Base Jumps</Caption>
           </View>
           <View style={styles.infoBox}>
-            <Button>Logbook</Button>
+            <Button onPress={() => router.replace('/(tabs)/Logbook')}>Logbook</Button>
           </View>
       </View>
 
       <View style={styles.menuWrapper}>
-        <TouchableRipple onPress={() => {}}>
+        <TouchableRipple onPress={() => router.replace('/(tabs)/profile/EditProfile')}>
           <View style={styles.menuItem}>
             <Icon name="account-check-outline" color="#777777" size={25}/>
             <Text style={styles.menuItemText}>Edit Profile</Text>

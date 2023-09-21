@@ -23,6 +23,7 @@
     "react-dom": "18.2.0",
     "react-native": "0.72.3",
     "react-native-gesture-handler": "~2.12.0",
+    "react-native-image-crop-picker": "^0.40.0",
     "react-native-map-clustering": "^3.4.2",
     "react-native-maps": "^1.7.1",
     "react-native-paper": "^5.10.4",
@@ -30,7 +31,8 @@
     "react-native-screens": "~3.22.0",
     "react-native-share": "^9.4.1",
     "react-native-web": "~0.19.6",
-    "react-spinners": "^0.13.8"
+    "react-spinners": "^0.13.8",
+    "expo-image-picker": "~14.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
