@@ -6,23 +6,30 @@ import {
   ImageBackground,
   TextInput,
   StyleSheet,
+  Alert
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Modal, Portal, PaperProvider } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+import { uploadImageToProfile } from '../../../store';
 
 
 const EditProfile = () => {
   const [visible, setVisible] = useState(false);
   const [image, setImage] = useState('https://api.adorable.io/avatars/80/abott@adorable.png');
+  const [permission, requestPermission] = ImagePicker.useCameraPermissions();
+
 
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
   const containerStyle = {backgroundColor: 'white', padding: 20};
 
+
+  // if choosing new image from camera roll this function opens album 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
+
+    try {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -30,51 +37,85 @@ const EditProfile = () => {
       quality: 1,
     });
 
-    console.log(result);
-    hideModal();
-
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const { uri } = result.assets[0];
+      const fileName = uri.split('/').pop();
+      const uploadResp = await uploadImageToProfile(
+        uri,
+        fileName
+      );
+      console.log(uploadResp);
       hideModal();
+    }
+  } catch (e) {
+    Alert.alert("Error Uploading Image " + e.message);
+  }
+  };
+
+  // if taking image this function opens the camera 
+  const takePhoto = async () => {
+    try {
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      quality: 1
+    });
+
+    if(!result.canceled) {
+      const { uri } = result.assets[0];
+      const fileName = uri.split('/').pop();
+      const uploadResp = await uploadImageToProfile(
+        uri,
+        fileName
+      );
+      console.log(uploadResp);
+      hideModal();
+    }
+    } catch (e) {
+      Alert.alert("Error Uploading Image " + e.message);
     }
   };
 
-  renderInner = () => (
+  // when edit image button clicked in editprofile screen
+  // checks/asks for permission before opening the modal to change the image
+  const editProfileImage = async () => {
+    if (permission?.status !== ImagePicker.PermissionStatus.GRANTED) {
+      requestPermission();
+      showModal();
+    } else {
+      showModal();
+    }
+  };
+
+  const RenderInner = () => (
     <View style={styles.panel}>
       <View style={{alignItems: 'center'}}>
         <Text style={styles.panelTitle}>Upload Photo</Text>
         <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
       </View>
-      <TouchableOpacity style={styles.panelButton} onPress={() => {}}>
+      <TouchableOpacity style={styles.panelButton} onPress={takePhoto}>
         <Text style={styles.panelButtonTitle}>Take Photo</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
         <Text style={styles.panelButtonTitle}>Choose From Library</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.panelButton} onPress={hideModal}>
+        <Text style={styles.panelButtonTitle}>Cancel</Text>
+      </TouchableOpacity>
     </View>
   );
-
-  renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.panelHeader}>
-        <View style={styles.panelHandle} />
-      </View>
-    </View>
-  );
-
 
     return (
       <PaperProvider>
         <View style={styles.container}>
           <Portal>
             <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
-              <renderHeader />
-              <renderInner />
+              <RenderInner />
             </Modal>
           </Portal>
             <View style={{ margin: 20}}>
                 <View style={{ alignItems: 'center' }}>
-                    <TouchableOpacity onPress={showModal} >
+                    <TouchableOpacity onPress={editProfileImage} >
                         <View style={{ 
                             height: 100,
                             width: 100,
@@ -165,7 +206,7 @@ const styles = StyleSheet.create({
     commandButton: {
       padding: 15,
       borderRadius: 10,
-      backgroundColor: '#FF6347',
+      backgroundColor: '#00ABF0',
       alignItems: 'center',
       marginTop: 10,
     },
@@ -173,12 +214,6 @@ const styles = StyleSheet.create({
       padding: 20,
       backgroundColor: '#FFFFFF',
       paddingTop: 20,
-      // borderTopLeftRadius: 20,
-      // borderTopRightRadius: 20,
-      // shadowColor: '#000000',
-      // shadowOffset: {width: 0, height: 0},
-      // shadowRadius: 5,
-      // shadowOpacity: 0.4,
     },
     header: {
       backgroundColor: '#FFFFFF',
@@ -186,7 +221,6 @@ const styles = StyleSheet.create({
       shadowOffset: {width: -1, height: -3},
       shadowRadius: 2,
       shadowOpacity: 0.4,
-      // elevation: 5,
       paddingTop: 20,
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
@@ -214,7 +248,7 @@ const styles = StyleSheet.create({
     panelButton: {
       padding: 13,
       borderRadius: 10,
-      backgroundColor: '#FF6347',
+      backgroundColor: '#00ABF0',
       alignItems: 'center',
       marginVertical: 7,
     },

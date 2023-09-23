@@ -48,7 +48,6 @@ const Profile = () => {
             console.log('Location IDs:', locationIds);
   
             // get filtered locations using apiUrl 
-  
              // Fetch data from the API
             fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/locations.json')
             .then((response) => response.json())
@@ -142,7 +141,7 @@ const Profile = () => {
             <Caption>Total Base Jumps</Caption>
           </View>
           <View style={styles.infoBox}>
-            <Button onPress={() => router.replace('/(tabs)/Logbook')}>Logbook</Button>
+            <Button onPress={() => router.replace('/LogBook')}>Logbook</Button>
           </View>
       </View>
 
