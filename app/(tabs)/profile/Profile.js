@@ -177,7 +177,7 @@ const Profile = () => {
             <Text style={styles.menuItemText}>Tell Your Friends</Text>
           </View>
         </TouchableRipple>
-        <TouchableRipple onPress={() => {}}>
+        <TouchableRipple onPress={() => router.replace('/(tabs)/profile/SubmitLocation')}>
           <View style={styles.menuItem}>
             <Icon name="map-marker-radius" color="#777777" size={25}/>
             <Text style={styles.menuItemText}>Submit A Location</Text>

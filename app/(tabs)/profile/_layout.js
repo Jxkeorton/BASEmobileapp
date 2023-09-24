@@ -31,6 +31,21 @@ export default () => {
                 ),
             }}
         />
+        <Stack.Screen
+            name="SubmitLocation"
+            options={{
+                title: "Submit A New Exit",
+                headerLeft: () => (
+                    <Button
+                      mode="contained-tonal"
+                      buttonColor="white"
+                      onPress={() => router.replace('/profile/Profile')}
+                    >
+                      Cancel
+                    </Button>
+                ),
+            }}
+        />
     </Stack>
     )
 };
