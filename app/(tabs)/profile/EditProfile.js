@@ -12,14 +12,16 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Modal, Portal, PaperProvider } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadImageToProfile } from '../../../store';
+import { uploadImageToProfile, updateProfileDetails } from '../../../store';
 
 
 const EditProfile = () => {
   const [visible, setVisible] = useState(false);
-  const [image, setImage] = useState('https://api.adorable.io/avatars/80/abott@adorable.png');
+  const [image, setImage] = useState(require('../../../assets/empty-profile-picture.png'));
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
-
+  const [name, setName] = useState(false);
+  const [email, setEmail] = useState(false);
+  const [jumpNumber, setJumpNumber] = useState(false);
 
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
@@ -114,65 +116,55 @@ const EditProfile = () => {
             </Modal>
           </Portal>
             <View style={{ margin: 20}}>
-                <View style={{ alignItems: 'center' }}>
-                    <TouchableOpacity onPress={editProfileImage} >
-                        <View style={{ 
-                            height: 100,
-                            width: 100,
-                            borderRadius: 15,
+            <View style={{ alignItems: 'center' }}>
+                  <TouchableOpacity onPress={editProfileImage}>
+                    <View
+                      style={{
+                        height: 100,
+                        width: 100,
+                        borderRadius: 15,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <ImageBackground
+                        source={image}
+                        style={{ width: '100%', height: '100%', alignItems: 'center' }}
+                        imageStyle={{ borderRadius: 15 }}>
+                        <View
+                          style={{
+                            flex: 1,
                             justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                            <ImageBackground
-                                source={{
-                                    uri: image,
-                                }}
-                                style={ {height: 100, width: 100}}
-                                imageStyle={{borderRadius: 15}}
-                            >
-                              <View style={{
-                                flex: 1,
-                                justifyContent: 'center',
-                                alignContent: 'center',
-                              }} >
-                                <Icon name='camera' size={35} color='#fff' style={{
-                                        opacity: 0.7,
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        borderWidth: 1,
-                                        borderColor: '#fff',
-                                        borderRadius: 10,
-                                    }}
-                                />
-                            </View>  
-                            </ImageBackground>
+                            alignContent: 'center',
+                          }}>
+                          <Icon
+                            name='camera'
+                            size={35}
+                            color='#fff'
+                            style={{
+                              opacity: 0.7,
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          />
                         </View>
-                    </TouchableOpacity>
-                    <Text style={{marginTop: 10, fontSize: 18, fontWeight: 'bold'}}>
-                        John Doe
-                    </Text>
+                      </ImageBackground>
+                    </View>
+                  </TouchableOpacity>
+                  <Text style={{ marginTop: 10, fontSize: 18, fontWeight: 'bold' }}>
+                    John Doe
+                  </Text>
                 </View>
 
                 <View style={styles.action}>
                     <FontAwesome name="user-o" size={20} />
                     <TextInput
-                        placeholder="First Name"
+                        placeholder="Name"
                         placeholderTextColor="#666666"
                         autoCorrect={false}
                         style={[
                         styles.textInput
                         ]}
-                    />
-                    </View>
-                    <View style={styles.action}>
-                    <FontAwesome name="user-o" size={20} />
-                    <TextInput
-                        placeholder="Last Name"
-                        placeholderTextColor="#666666"
-                        autoCorrect={false}
-                        style={[
-                        styles.textInput
-                        ]}
+                        onChangeText={(text) => setName(text)}
                     />
                 </View>
                 <View style={styles.action}>
@@ -185,9 +177,23 @@ const EditProfile = () => {
                     style={[
                       styles.textInput,
                     ]}
+                    onChangeText={(text) => setEmail(text)}
                   />
                 </View>
-                <TouchableOpacity style={styles.commandButton} onPress={() => {}}>
+                <View style={styles.action}>
+                    <FontAwesome name="user-o" size={20} />
+                    <TextInput
+                        placeholder="Total BASE jumps"
+                        placeholderTextColor="#666666"
+                        autoCorrect={false}
+                        style={[
+                        styles.textInput
+                        ]}
+                        keyboardType="numeric"
+                        onChangeText={(text) => setJumpNumber(text)}
+                    />
+                </View>
+                <TouchableOpacity style={styles.commandButton} onPress={() => {updateProfileDetails(name, email, jumpNumber)}}>
                   <Text style={styles.panelButtonTitle}>Submit</Text>
                 </TouchableOpacity>
             </View>

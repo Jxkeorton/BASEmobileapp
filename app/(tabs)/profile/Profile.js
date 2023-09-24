@@ -116,10 +116,9 @@ const Profile = () => {
       <View style={styles.userInfoSection}>
         <View style={{flexDirection: 'row', marginTop: 15,}}>
           <Avatar.Image 
-          source={{
-            uri: 'https://api.adorable.io/avatars/80/abott@adorable.png',
-          }}
+          source={require('../../../assets/empty-profile-picture.png')}
           size = {80}
+          backgroundColor = {'white'}
           />
           <View style={{marginLeft: 20}}>
             <Title style={[styles.title, {

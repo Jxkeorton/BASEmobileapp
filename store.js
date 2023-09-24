@@ -64,8 +64,30 @@ export const appSignOut = async () => {
     }
 };
 
-export const appSignUp = async (email, password, displayName) => {
+// Function to check if a username already exists
+const isUsernameTaken = async (username) => {
     try {
+        // Query the 'users' collection to check if a document with the given username exists
+        const docRef = doc(FIREBASE_DB, 'users', username);
+        const docSnapshot = await getDoc(docRef);
+
+        // If the document exists, the username is taken
+        return docSnapshot.exists();
+    } catch (error) {
+        console.error('Error checking username:', error);
+        throw error;
+    }
+};
+
+export const appSignUp = async (email, password, displayName, username) => {
+    try {
+         // Check if the username is already taken
+         const usernameTaken = await isUsernameTaken(username);
+
+         if (usernameTaken) {
+             return { error: 'auth/username-taken' };
+         }
+
         const resp = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
         await updateProfile(resp.user, {displayName});
 
@@ -76,7 +98,7 @@ export const appSignUp = async (email, password, displayName) => {
 
         const name = displayName
 
-        const formData = { email, name };
+        const formData = { email, name, username };
         formData.timestamp = serverTimestamp();
 
         await setDoc(doc(FIREBASE_DB, 'users', resp.user.uid), formData);
@@ -145,6 +167,35 @@ export const uploadImageToProfile = async (uri, name, onProgress) => {
     }
     );
     });
+};
+
+export const updateProfileDetails = async ( name, email, jumpNumber) => {
+    const user = FIREBASE_AUTH.currentUser;
+    const userDocRef = doc(FIREBASE_DB, 'users', user.uid);
+    
+    // Prepare the updated data
+    const updatedData = {};
+
+    if (name.trim() !== '') {
+        updatedData.name = name;
+    }
+
+    if (email.trim() !== '') {
+        updatedData.email = email;
+    }
+
+    if (jumpNumber) {
+        updatedData.jumpNumber = jumpNumber;
+    }
+
+    // Update the user document with the new data
+    try {
+        await setDoc(userDocRef, updatedData, { merge: true });
+        return true; // Successful update
+    } catch (error) {
+        console.error('Error updating profile details:', error);
+        throw error;
+    }
 };
 
 registerInDevtools({ AuthStore });

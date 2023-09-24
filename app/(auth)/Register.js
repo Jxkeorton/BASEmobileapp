@@ -8,6 +8,7 @@ const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
+    const [username, setUsername] = useState('');
 
     const router = useRouter()
 
@@ -16,14 +17,15 @@ const Register = () => {
             <View style={styles.container}>
                 <KeyboardAvoidingView behavior="padding" >
                     <TextInput value={displayName} style={styles.textInput} placeholder='Name' autoCapitalize='none' onChangeText={(text) => setDisplayName(text)}></TextInput>
+                    <TextInput value={username} style={styles.textInput} placeholder='Username' autoCapitalize='none' onChangeText={(text) => setUsername(text)}></TextInput>
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
                     <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
             
                     <Button title="Register" 
                         onPress={async () => {
-                            const resp = await appSignUp(email, password, displayName);
+                            const resp = await appSignUp(email, password, displayName, username);
                             if (resp?.user) {
-                                router.replace("/(tabs)/Profile");
+                                router.replace("/(tabs)/profile/Profile");
                             } else {
                                 console.log(resp.error);
                                 const errorCode = resp.error?.code;
@@ -35,7 +37,10 @@ const Register = () => {
                                         Alert.alert('Invalid Email', 'Please enter a valid email');
                                     } else if (errorCode === 'auth/invalid-password'){
                                         Alert.alert('Invalid Password', 'Must be atleast 6 characters');
-                                    } else {
+                                    } else if (errorCode === 'auth/username-taken') {
+                                        Alert.alert('Username Taken', 'The username you entered is already in use. Please choose a different username.');
+                                    }
+                                    else {
                                         Alert.alert('Registration Error', 'Please try again.');
                                     }
                             }
