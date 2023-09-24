@@ -13,8 +13,21 @@ const SavedLocationsCard = ({ data, onDelete }) => {
     router.push(`/(tabs)/map/${itemId}`)
   };
 
+    // Check if data is empty
+    if (data.length === 0) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.title}>No Saved Locations</Text>
+          <View style={{ justifyContent: 'center'}}>
+            <Text>Visit the Map to save locations</Text>
+          </View>
+        </View>
+      );
+    }
+
 
     return (
+      
       <View style={styles.container}>
         <Text style={styles.title}>Saved Locations</Text>
         {data.map((item) => (
@@ -41,6 +54,7 @@ const SavedLocationsCard = ({ data, onDelete }) => {
             </Card>
           </View>
         ))}
+        
       </View>
     );
 };

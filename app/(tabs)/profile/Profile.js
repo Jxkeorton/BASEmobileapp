@@ -27,6 +27,10 @@ const router = useRouter();
 
 const Profile = () => {
   const [ filteredLocations, setFilteredLocations ] = useState([]);
+  const [ name, setName ] = useState('');
+  const [ profileImage, setProfileImage ] = useState('');
+  const [ username, setUsername ] = useState('');
+  const [ jumpNumber, setJumpNumber ] = useState('');
 
   // this hook ensures new saved locations are fetched on screen focus
   useFocusEffect(
@@ -45,7 +49,20 @@ const Profile = () => {
             const userDocSnap = await getDoc(userDocRef);
             const userDocData = userDocSnap.data();
             const locationIds = userDocData?.locationIds || [];
-            console.log('Location IDs:', locationIds);
+
+            if (userDocData) {
+              const { name, username, jumpNumber, profileImage } = userDocData;
+              if (profileImage) {
+                setProfileImage(profileImage);
+              }
+              if (jumpNumber) {
+                setJumpNumber(jumpNumber);
+              }
+              setName(name);
+              setUsername(username);
+            } else {
+              return
+            }
   
             // get filtered locations using apiUrl 
              // Fetch data from the API
@@ -116,7 +133,10 @@ const Profile = () => {
       <View style={styles.userInfoSection}>
         <View style={{flexDirection: 'row', marginTop: 15,}}>
           <Avatar.Image 
-          source={require('../../../assets/empty-profile-picture.png')}
+          source={profileImage 
+            ? {uri: profileImage }
+            : require('../../../assets/empty-profile-picture.png')
+          }
           size = {80}
           backgroundColor = {'white'}
           />
@@ -124,8 +144,8 @@ const Profile = () => {
             <Title style={[styles.title, {
               marginTop: 15,
               marginBottom: 5,
-            }]}>John Doe</Title>
-            <Caption style={styles.caption}>@j_doe</Caption>
+            }]}>{name}</Title>
+            <Caption style={styles.caption}>@{username}</Caption>
           </View>
         </View>
 
@@ -136,7 +156,7 @@ const Profile = () => {
             borderRightColor: '#dddddd',
             borderRightWidth: 1
           }]}>
-            <Title>76</Title>
+            <Title>{jumpNumber ? jumpNumber : '0'}</Title>
             <Caption>Total Base Jumps</Caption>
           </View>
           <View style={styles.infoBox}>

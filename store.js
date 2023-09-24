@@ -18,6 +18,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
 import { useRouter } from 'expo-router';
 
+const router = useRouter()
+
 
 export const AuthStore = new Store({
     isLoggedIn: false,
@@ -48,7 +50,6 @@ export const appSignIn = async (email, password) => {
 };
 
 export const appSignOut = async () => {
-    const router = useRouter()
     
     try {
         await signOut(FIREBASE_AUTH);
@@ -176,13 +177,13 @@ export const updateProfileDetails = async ( name, email, jumpNumber) => {
     // Prepare the updated data
     const updatedData = {};
 
-    if (name.trim() !== '') {
+    if (typeof name === 'string' && name.trim() !== '') {
         updatedData.name = name;
     }
 
-    if (email.trim() !== '') {
+    if (typeof email === 'string' && email.trim() !== '') {
         updatedData.email = email;
-    }
+      }
 
     if (jumpNumber) {
         updatedData.jumpNumber = jumpNumber;
@@ -195,6 +196,8 @@ export const updateProfileDetails = async ( name, email, jumpNumber) => {
     } catch (error) {
         console.error('Error updating profile details:', error);
         throw error;
+    } finally {
+        router.replace('/(tabs)/profile/Profile')
     }
 };
 

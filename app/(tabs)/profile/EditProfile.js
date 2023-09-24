@@ -8,16 +8,19 @@ import {
   StyleSheet,
   Alert
 } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Modal, Portal, PaperProvider } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToProfile, updateProfileDetails } from '../../../store';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
 
 
 const EditProfile = () => {
   const [visible, setVisible] = useState(false);
-  const [image, setImage] = useState(require('../../../assets/empty-profile-picture.png'));
+  const [image, setImage] = useState('');
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
   const [name, setName] = useState(false);
   const [email, setEmail] = useState(false);
@@ -27,10 +30,44 @@ const EditProfile = () => {
   const hideModal = () => setVisible(false);
   const containerStyle = {backgroundColor: 'white', padding: 20};
 
+  // getting user information 
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const getUserInformation = async () => {
+          try {
+            // fetching users saved location ID's
+            const currentUser = FIREBASE_AUTH.currentUser;
+            if (!currentUser) {
+            Alert.alert('No authenticated user found');
+            return;
+            }
+            const userId = currentUser.uid;
+
+            const userDocRef = doc(FIREBASE_DB, 'users', userId);
+            const userDocSnap = await getDoc(userDocRef);
+            const userDocData = userDocSnap.data();
+
+            if (userDocData) {
+              const { profileImage, name} = userDocData;
+              if (profileImage) {
+                setImage(profileImage);
+              }
+              setName(name);
+            } else {
+              return
+            }
+          } catch (e) {
+            console.error(e);  
+          }
+        }
+        getUserInformation();
+    }, [])
+  );
+
 
   // if choosing new image from camera roll this function opens album 
   const pickImage = async () => {
-
     try {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -47,6 +84,7 @@ const EditProfile = () => {
         fileName
       );
       console.log(uploadResp);
+      setImage(uri)
       hideModal();
     }
   } catch (e) {
@@ -70,7 +108,7 @@ const EditProfile = () => {
         uri,
         fileName
       );
-      console.log(uploadResp);
+      setImage(uri)
       hideModal();
     }
     } catch (e) {
@@ -127,7 +165,10 @@ const EditProfile = () => {
                         alignItems: 'center',
                       }}>
                       <ImageBackground
-                        source={image}
+                        source={image
+                          ? {uri: image }
+                          : require('../../../assets/empty-profile-picture.png')
+                        }
                         style={{ width: '100%', height: '100%', alignItems: 'center' }}
                         imageStyle={{ borderRadius: 15 }}>
                         <View
@@ -151,7 +192,7 @@ const EditProfile = () => {
                     </View>
                   </TouchableOpacity>
                   <Text style={{ marginTop: 10, fontSize: 18, fontWeight: 'bold' }}>
-                    John Doe
+                    {name}
                   </Text>
                 </View>
 
