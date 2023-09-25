@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { View, TextInput,Text, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView } from "react-native";
+import { View, TextInput,Text, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
 import { Button, Portal, Modal, PaperProvider } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
+
+import { submitLocationsHandler } from "../../../store";
 
 const SubmitLocation = () => {
     const [exitName, setExitName] = useState('');
@@ -15,7 +17,7 @@ const SubmitLocation = () => {
     const [videoLink, setVideoLink] = useState('');
     const [openedBy, setOpenedBy] = useState('');
     const [openedDate, setOpenedDate] = useState('');
-    const [image, setImage] = useState('');
+    const [images, setImage] = useState([]);
 
     const [visible, setVisible] = useState(false);
     const [permission, requestPermission] = ImagePicker.useCameraPermissions();
@@ -24,14 +26,30 @@ const SubmitLocation = () => {
     const hideModal = () => setVisible(false);
     const containerStyle = {backgroundColor: 'white', padding: 20};
 
-    const handleSubmit = () => {
-        if (!exitName || !rockDrop || !coordinates ) {
-          // Display an error message to the user or prevent form submission
-          Alert.alert('Please fill out all required fields');
-          return;
-        }
-      
-        // Handle form submission here
+    const formData = {
+      exitName, 
+      rockDrop,
+      total,
+      anchor,
+      access,
+      notes,
+      coordinates,
+      cliffAspect,
+      videoLink,
+      openedBy,
+      openedDate,
+      images
+    };
+
+    // when form submitted
+    const handleSubmit = async () => {
+      try {
+        await submitLocationsHandler({ formData });
+        // Optionally, you can navigate to another screen or display a success message here.
+      } catch (error) {
+        Alert.alert('Error', 'An error occurred while submitting the location.');
+        console.error(error);
+      }
     };
 
     // when edit image button clicked in editprofile screen
@@ -49,15 +67,15 @@ const SubmitLocation = () => {
   const pickImage = async () => {
     try {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
+      selectionLimit: 4,
     });
 
     if (!result.canceled) {
-      const { uri } = result.assets[0];
-      setImage(uri)
+      const newImages = result.assets.map((asset) => asset.uri);
+      setImage((prevImages) => [...prevImages, ...newImages]);
       hideModal();
     }
   } catch (e) {
@@ -70,13 +88,14 @@ const SubmitLocation = () => {
     try {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      quality: 1
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsMultipleSelection: false,
     });
 
     if(!result.canceled) {
       const { uri } = result.assets[0];
-      setImage(uri)
+      setImage((prevImages) => [...prevImages, uri]); 
       hideModal();
     }
     } catch (e) {
@@ -164,4 +183,21 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 10,
     },
+    panelTitle: {
+      fontSize: 27,
+      height: 35,
+    },
+    panelSubtitle: {
+      fontSize: 14,
+      color: 'gray',
+      height: 30,
+      marginBottom: 10,
+    },
+    panelButton: {
+      padding: 13,
+      borderRadius: 10,
+      backgroundColor: '#00ABF0',
+      alignItems: 'center',
+      marginVertical: 7,
+    }
 })

@@ -17,6 +17,7 @@ import {
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
 import { useRouter } from 'expo-router';
+import { Alert } from 'react-native';
 
 const router = useRouter()
 
@@ -80,6 +81,7 @@ const isUsernameTaken = async (username) => {
     }
 };
 
+// for the register page 
 export const appSignUp = async (email, password, displayName, username) => {
     try {
          // Check if the username is already taken
@@ -110,6 +112,7 @@ export const appSignUp = async (email, password, displayName, username) => {
     }
 };
 
+// when user resets password on the forgot password page
 export const appResetPassword = async (email) => {
     try {
         await sendPasswordResetEmail(FIREBASE_AUTH, email);
@@ -119,6 +122,7 @@ export const appResetPassword = async (email) => {
     }
 };
 
+// for edit profile page when user changes profile image 
 export const uploadImageToProfile = async (uri, name, onProgress) => {
 
     const fetchResponse = await fetch(uri);
@@ -170,6 +174,7 @@ export const uploadImageToProfile = async (uri, name, onProgress) => {
     });
 };
 
+// for edit profile page when user updates details 
 export const updateProfileDetails = async ( name, email, jumpNumber) => {
     const user = FIREBASE_AUTH.currentUser;
     const userDocRef = doc(FIREBASE_DB, 'users', user.uid);
@@ -199,6 +204,42 @@ export const updateProfileDetails = async ( name, email, jumpNumber) => {
     } finally {
         router.replace('/(tabs)/profile/Profile')
     }
+};
+
+// when the user wants to submit a new location for review on the submit locations page
+export const submitLocationsHandler = async ({formData}) => {
+    if (!formData.exitName || !formData.rockDrop || !formData.coordinates ) {
+        // Display an error message to the user or prevent form submission
+        Alert.alert('Please fill out all required fields');
+        return;
+      }
+    
+      // Handle form submission here
+      try {
+        // Upload the image files to Firebase Storage
+        const imageURLs = [];
+        for (const uri of formData.images) {
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            const storageRef = ref(FIREBASE_STORAGE, `submissions/${Date.now()}.jpg`);
+            await uploadBytes(storageRef, blob);
+            const imageURL = await getDownloadURL(storageRef);
+            imageURLs.push(imageURL);
+          }
+
+        const submissionData = {
+          ...formData,
+          imageURLs, 
+        };
+
+        const docRef = await addDoc(collection(FIREBASE_DB, 'submits'), submissionData);
+        console.log('Document written with ID: ', docRef.id);
+
+
+      } catch (e) {
+        Alert.alert(e.message);
+        console.log(e);
+      }
 };
 
 registerInDevtools({ AuthStore });
