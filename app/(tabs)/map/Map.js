@@ -1,4 +1,5 @@
 import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Pressable, Text} from 'react-native'
+import { Switch } from 'react-native-paper'
 import React, { useState, useEffect } from 'react'
 import MapView from 'react-native-map-clustering';
 import {Marker} from 'react-native-maps';
@@ -26,7 +27,7 @@ export default function Map() {
   const [eventData, setEventData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [satelliteActive, setSatelliteActive] = useState(false)
-  const [cluster, setCluster] = useState(true)
+  const [cluster, setCluster] = useState(false)
 
   useEffect(() => {
     async function fetchDataAndSetState() {
@@ -60,6 +61,7 @@ export default function Map() {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={styles.container} >
+
       <MapView style={styles.map}
           initialRegion={{
               latitude: 56.25284254305279,
@@ -88,21 +90,38 @@ export default function Map() {
         
       </MapView>
       <View style={styles.searchBox} >
-        <TextInput 
-          placeholder='Search here'
-          placeholderTextColor='#000'
-          autoCapitalize='none'
-          style={{flex:1, padding:0}}
-          onChangeText={text => setSearchTerm(text)}
-          value={searchTerm}
-        />
-        <Ionicons name='ios-search' size={20} color='#000' />
-        <Pressable style={styles.button} onPress={onPress}>
-          <Text style={styles.text}>Cluster</Text>
-        </Pressable>
-        <Pressable style={styles.buttonSatellite} onPress={onPressSatellite}>
-          <Text style={styles.text}>Satellite</Text>
-        </Pressable>
+        <View style={styles.textInputContainer} >
+          <TextInput 
+            placeholder='Search here'
+            placeholderTextColor='#000'
+            autoCapitalize='none'
+            style={{flex:1, padding:0}}
+            onChangeText={text => setSearchTerm(text)}
+            value={searchTerm}
+          />
+          <Ionicons name='ios-search' size={20} color='#000' />
+        </View>
+        
+        <View style={styles.switchContainer}>
+
+          <View style={styles.switchHalf}>
+              <Text>Cluster</Text>
+              <Switch
+                value={cluster}
+                onValueChange={() => setCluster(!cluster)}
+                color="#00ABF0" // Change the color as desired
+              />
+          </View>
+          <View style={styles.switchHalf}>
+              <Text>Satellite</Text>
+              <Switch
+                value={satelliteActive}
+                onValueChange={() => setSatelliteActive(!satelliteActive)}
+                color="#00ABF0" // Change the color as desired
+              />
+          </View>
+
+        </View>
       </View>
     </View>
     </TouchableWithoutFeedback>
@@ -149,12 +168,10 @@ const styles = StyleSheet.create({
     marginTop: -32,
   },
   searchBox: {
-    position:'absolute', 
-    marginTop: Platform.OS === 'ios' ? 40 : 20, 
-    flexDirection:"row",
+    position: 'absolute',
     backgroundColor: '#fff',
     width: '90%',
-    alignSelf:'center',
+    alignSelf: 'center',
     borderRadius: 5,
     padding: 10,
     shadowColor: '#ccc',
@@ -162,6 +179,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 10,
+    marginTop: 50,
   },
   button: {
     paddingHorizontal: 10,
@@ -176,6 +194,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     backgroundColor: 'black',
-  }
+  },
+  switchContainer: {
+    flex: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 10,
+    marginTop: 10, 
+  },
+  textInputContainer: {
+    flexDirection: 'row',
+    marginRight: 10,
+    marginBottom: 10, 
+  },
+   // Divide the switchHalf into two equal halves
+   switchHalf: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
 })
 
