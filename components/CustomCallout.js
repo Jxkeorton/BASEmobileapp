@@ -99,7 +99,7 @@ export default function CustomCallout({info}) {
         <View style={styles.calloutContainer}>
           <Text style={styles.calloutTitle}>{info.name.toUpperCase()}</Text>
           <Text style={styles.calloutCoordinates}>
-            {info.coordinates[0]}, {info.coordinates[1]}
+            Rock Drop: {info.details.rockdrop ? `${info.details.rockdrop} ft` : '?' }
           </Text>
           {isLoggedIn && (
             <TouchableOpacity
@@ -124,7 +124,7 @@ export default function CustomCallout({info}) {
             onPress={openMaps}
             style={styles.calloutButton}
           >
-            <Text style={styles.calloutButtonText}>Google pin</Text>
+            <Text style={styles.calloutButtonText}>Maps pin</Text>
           </TouchableOpacity>
         </View>
       </Callout>
