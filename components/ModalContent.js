@@ -1,10 +1,11 @@
 // ModalContent.js
 import React, { useState } from 'react';
-import { Modal, Text, View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, Text, View, TextInput, TouchableOpacity, StyleSheet, ScrollView, TouchableWithoutFeedback, Keyboard, Switch } from 'react-native';
 
-const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop, setMinRockDrop, setMaxRockDrop }) => {
+const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop }) => {
   const [tempMinRockDrop, setTempMinRockDrop] = useState(minRockDrop);
   const [tempMaxRockDrop, setTempMaxRockDrop] = useState(maxRockDrop);
+  const [tempUnknownRockdrop, setTempUnknownRockDrop] = useState(false);
 
   const clearFilter = () => {
     setTempMinRockDrop('');
@@ -13,12 +14,16 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
 
   const applyFilter = () => {
     onClose();
-    onApplyFilter(tempMinRockDrop, tempMaxRockDrop);
+    onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
   };
 
   return (
-    <Modal visible={visible} onRequestClose={onClose}>
-      <View style={styles.container}>
+    <Modal visible={visible} onRequestClose={onClose} transparent={true}>
+        <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.modalContainer}>
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <View style={styles.container}>
+            <ScrollView>
         <Text style={styles.panelTitle}>Filter Pins</Text>
         <Text style={styles.panelSubtitle}>Min Rock Drop: </Text>
         <TextInput
@@ -40,6 +45,13 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
           autoCapitalize="none"
         />
 
+        <Text style={styles.panelSubtitle}>Remove Unknown Rockdrops </Text>
+        <Switch
+            value={tempUnknownRockdrop}
+            onValueChange={() => setTempUnknownRockDrop(!tempUnknownRockdrop)}
+            color="#00ABF0" // Change the color as desired
+        />
+
         <View style={styles.modalFooter}>
           <TouchableOpacity onPress={clearFilter} style={styles.panelButton}>
             <Text style={styles.panelButtonTitle}>Clear Filter</Text>
@@ -47,17 +59,28 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
           <TouchableOpacity onPress={applyFilter} style={styles.panelButton}>
             <Text style={styles.panelButtonTitle}>Apply Filter</Text>
           </TouchableOpacity>
+          </View>
+          </ScrollView>
         </View>
+      </TouchableWithoutFeedback>
       </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    width: '80%',
     backgroundColor: '#FFFFFF',
     padding: 20,
     alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   // modal styles 
   panelTitle: {

@@ -7,7 +7,7 @@ import CustomCallout from '../../../components/CustomCallout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import { FontAwesome } from '@expo/vector-icons'; 
-import _ from 'lodash';
+import ModalContent from '../../../components/ModalContent';
 
 // fetching locations & location data 
 const fetchData = async () => {
@@ -35,16 +35,12 @@ export default function Map() {
   // filter modal dropdown state 
   const [minRockDrop, setMinRockDrop] = useState('');
   const [maxRockDrop, setMaxRockDrop] = useState('');
-  const [unknownRockdrop, setUnknownRockDrop] = useState(true);
-
-  const [tempMinRockDrop, setTempMinRockDrop] = useState('');
-  const [tempMaxRockDrop, setTempMaxRockDrop] = useState('');
+  const [unknownRockdrop, setUnknownRockDrop] = useState(false);
 
   const [visible, setVisible] = useState(false);
 
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
-  const containerStyle = {backgroundColor: '#F5F5F5', padding: 20, alignItems: 'center'};
 
   useEffect(() => {
     async function fetchDataAndSetState() {
@@ -59,16 +55,16 @@ export default function Map() {
     console.log(Region)
   }
 
-  const clearFilter = () => {
-    hideModal()
-    setMinRockDrop('');
-    setMaxRockDrop('');
-  }; 
-
   // when filter by rockdrop is used 
   const filterEventsByRockDrop = (event) => {
     // Extract the numeric part from event.details.rockdrop
     const rockdropString = event.details.rockdrop;
+
+    // Check if the rockdrop value contains a question mark and if unknownRockdrop is false
+    if (unknownRockdrop && (rockdropString === '' || rockdropString.includes('?'))) {
+      return false;
+    }
+
     const numericRockdrop = parseFloat(rockdropString.match(/\d+/)); // Extract the first numeric value
   
     // Check if either minRockDrop or maxRockDrop is not an empty string
@@ -85,61 +81,28 @@ export default function Map() {
         return false;
       }
     }
-  
+
     // If both minRockDrop and maxRockDrop are null or pass the checks, return true (no filtering)
     return true;
   };
-
-  const applyFilter = () => {
-    hideModal();
-    setMinRockDrop(tempMinRockDrop);
-    setMaxRockDrop(tempMaxRockDrop);
-  };  
 
   return (
     <PaperProvider>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <View style={styles.container} >
       <Portal>
-            <Modal visible={visible} onDismiss={applyFilter} contentContainerStyle={containerStyle}>
-                <Text style={styles.panelTitle}>Filter Pins</Text>
-                <Text style={styles.panelSubtitle}>Min Rock Drop: </Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={tempMinRockDrop}
-                  onChangeText={setTempMinRockDrop}
-                  autoCorrect={false} 
-                  autoCapitalize="none"
-                />
-
-                <Text style={styles.panelSubtitle}>Max Rock Drop: </Text>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={tempMaxRockDrop}
-                  onChangeText={setTempMaxRockDrop}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                />
-
-                <Text style={styles.panelSubtitle}>Unknown Rockdrops</Text>
-                <Switch
-                value={unknownRockdrop}
-                onValueChange={() => setUnknownRockDrop(!unknownRockdrop)}
-                color="#00ABF0" 
-                />
-
-                <View style={styles.modalFooter}>
-                  <TouchableOpacity onPress={clearFilter} style={styles.panelButton}>
-                    <Text style={styles.panelButtonTitle}>Clear Filter</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={applyFilter} style={styles.panelButton}>
-                    <Text style={styles.panelButtonTitle}>Apply Filter</Text>
-                  </TouchableOpacity>
-                </View>
-            </Modal>
-          </Portal>
+        <ModalContent
+          visible={visible}
+          onClose={hideModal}
+          onApplyFilter={(min, max, unknown) => {
+            setMinRockDrop(min);
+            setMaxRockDrop(max);
+            setUnknownRockDrop(unknown);
+          }}
+          minRockDrop={minRockDrop}
+          maxRockDrop={maxRockDrop}
+        />
+      </Portal>
       <MapView style={styles.map}
           initialRegion={{
               latitude: 56.25284254305279,
