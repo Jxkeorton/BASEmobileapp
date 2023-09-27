@@ -13,8 +13,13 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
   };
 
   const applyFilter = () => {
-    onClose();
-    onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
+    if (tempMinRockDrop !== '' && tempMaxRockDrop !== '' && parseFloat(tempMinRockDrop) > parseFloat(tempMaxRockDrop)) {
+      // Display an error message or handle the validation error as you prefer
+      alert('Min Rock Drop cannot be greater than Max Rock Drop');
+    } else {
+      onClose();
+      onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
+    }
   };
 
   return (
