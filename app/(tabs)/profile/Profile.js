@@ -162,7 +162,7 @@ const Profile = () => {
           <View style={styles.infoBox}>
             <Button onPress={() => router.replace('/LogBook')}>Logbook</Button>
           </View>
-      </View>
+        </View>
 
       <View style={styles.menuWrapper}>
         <TouchableRipple onPress={() => router.replace('/(tabs)/profile/EditProfile')}>

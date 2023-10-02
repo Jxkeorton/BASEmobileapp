@@ -1,5 +1,5 @@
-import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Text, TouchableOpacity, TouchableHighlight} from 'react-native'
-import { Switch, Modal, Portal, PaperProvider } from 'react-native-paper'
+import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Text, TouchableHighlight} from 'react-native'
+import { Switch, Portal, PaperProvider } from 'react-native-paper'
 import React, { useState, useEffect } from 'react'
 import MapView from 'react-native-map-clustering';
 import {Marker} from 'react-native-maps';

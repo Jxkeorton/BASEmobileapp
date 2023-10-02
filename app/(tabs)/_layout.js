@@ -15,11 +15,12 @@ export default () => {
             }} 
             />
             <Tabs.Screen 
-                name="LogBook" 
+                name="logbook" 
                 options={{ tabBarIcon: ({color}) => (
                     <FontAwesome name="list" size={24} color={color} />
                     ),
                     title: 'Logbook',
+                    headerShown: false,
                 }} 
             />
             <Tabs.Screen 

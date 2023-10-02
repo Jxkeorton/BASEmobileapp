@@ -12,9 +12,9 @@ import {
     setDoc, 
     serverTimestamp, 
     updateDoc,
-    getDoc
+    getDoc,
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
@@ -190,9 +190,9 @@ export const updateProfileDetails = async ( name, email, jumpNumber) => {
         updatedData.email = email;
       }
 
-    if (jumpNumber) {
-        updatedData.jumpNumber = jumpNumber;
-    }
+    if (jumpNumber !== undefined && !isNaN(Number(jumpNumber))) {
+        updatedData.jumpNumber = Number(jumpNumber); // Ensure jumpNumber is a number
+      }
 
     // Update the user document with the new data
     try {
@@ -226,11 +226,21 @@ export const submitLocationsHandler = async ({formData}) => {
             const imageURL = await getDownloadURL(storageRef);
             imageURLs.push(imageURL);
           }
-
+          // without the old images in formdata, upload
         const submissionData = {
-          ...formData,
-          imageURLs, 
-        };
+            exitName: formData.exitName,
+            rockDrop: formData.rockDrop,
+            total: formData.total,
+            anchor: formData.anchor,
+            access: formData.access,
+            notes: formData.notes,
+            coordinates: formData.coordinates,
+            cliffAspect: formData.cliffAspect,
+            videoLink: formData.videoLink,
+            openedBy: formData.openedBy,
+            openedDate: formData.openedDate,
+            imageURLs
+          };
 
         const docRef = await addDoc(collection(FIREBASE_DB, 'submits'), submissionData);
         console.log('Document written with ID: ', docRef.id);
@@ -241,5 +251,117 @@ export const submitLocationsHandler = async ({formData}) => {
         console.log(e);
       }
 };
+
+// add jump to users jumpnumber 
+export const addJumpNumber = async () => {
+    try {
+      const user = FIREBASE_AUTH.currentUser;
+      const userDocRef = doc(FIREBASE_DB, 'users', user.uid);
+  
+      const userDocSnapshot = await getDoc(userDocRef);
+      if (userDocSnapshot.exists()) {
+        const userData = userDocSnapshot.data();
+        const currentJumpNumber = userData.jumpNumber || 0; // Default to 0 if jumpNumber doesn't exist
+  
+        // Add 1 to the current jump number
+        const newJumpNumber = currentJumpNumber + 1;
+  
+        // Update the user's jump number in Firestore
+        await updateDoc(userDocRef, { jumpNumber: newJumpNumber });
+  
+        console.log(`Jump number increased to ${newJumpNumber}`);
+      }
+    } catch (error) {
+      console.error('Error adding jump number:', error);
+    }
+  };
+
+//takeaway jump to users jumpnumber
+export const takeawayJumpNumber = async () => {
+    try {
+        const user = FIREBASE_AUTH.currentUser;
+        const userDocRef = doc(FIREBASE_DB, 'users', user.uid);
+    
+        const userDocSnapshot = await getDoc(userDocRef);
+        if (userDocSnapshot.exists()) {
+          const userData = userDocSnapshot.data();
+          const currentJumpNumber = userData.jumpNumber || 0; // Default to 0 if jumpNumber doesn't exist
+    
+          if (currentJumpNumber > 0) {
+            // Subtract 1 from the current jump number if it's greater than 0
+            const newJumpNumber = currentJumpNumber - 1;
+    
+            // Update the user's jump number in Firestore
+            await updateDoc(userDocRef, { jumpNumber: newJumpNumber });
+    
+            console.log(`Jump number decreased to ${newJumpNumber}`);
+          } else {
+            console.log("Jump number is already at 0.");
+          }
+        }
+    } catch (error) {
+        console.error('Error taking away jump number:', error);
+    }
+};
+
+
+    // When logbook jump is added to firebase 
+    export const submitJumpHandler = async ({formData}) => {
+        //get user from firebase
+        const user = FIREBASE_AUTH.currentUser;
+        
+        //upload images to storage and get download URL
+        try {
+            // Upload the image files to Firebase Storage
+            const imageURLs = [];
+            for (const uri of formData.images) {
+                const response = await fetch(uri);
+                const blob = await response.blob();
+                const storageRef = ref(FIREBASE_STORAGE, `logbooks/${Date.now()}.jpg`);
+                await uploadBytes(storageRef, blob);
+                const imageURL = await getDownloadURL(storageRef);
+                imageURLs.push(imageURL);
+              }
+    
+            // Create submission data without images
+            const submissionData = {
+                location: formData.location,
+                exitType: formData.exitType,
+                delay: formData.delay,
+                details: formData.details,
+                date: formData.date,
+                imageURLs
+            };
+
+            //add formdata and image urls to users logbook document within firebase
+                const userId = user.uid;
+            
+                // Get the user's logbook document reference
+                const logbookRef = doc(FIREBASE_DB, 'logbook', userId);
+                
+                // Check if the logbook document exists
+                const logbookSnapshot = await getDoc(logbookRef);
+
+                if (!logbookSnapshot.exists()) {
+                // If the logbook document doesn't exist, create it with the user's ID
+                await setDoc(logbookRef, { jumps: [] });
+                }
+
+                const existingLogbookData = logbookSnapshot.data() || { jumps: [] };
+            
+                // Add the new jump to the existing jumps array
+                existingLogbookData.jumps.push(submissionData);
+            
+                // Update the logbook document with the new jumps array
+                await setDoc(logbookRef, existingLogbookData);
+                await addJumpNumber()
+            
+                console.log('Jump submitted successfully.');
+
+        } catch (e) {
+            Alert.alert(e.message);
+            console.log(e);
+        }; 
+    };
 
 registerInDevtools({ AuthStore });
