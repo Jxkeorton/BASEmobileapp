@@ -1,4 +1,4 @@
-import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableHighlight } from 'react-native'
+import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, {useState} from 'react'
 import { useFocusEffect } from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
@@ -19,6 +19,7 @@ import LogbookModal from '../../../components/LogbookModal';
 const LogBook = () => {
   const [ name, setName ] = useState('');
   const [ jumpNumber, setJumpNumber ] = useState('');
+  const [isLoading, setLoading] = useState(true);
 
   //Search 
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,11 +53,14 @@ const LogBook = () => {
                 setJumpNumber(jumpNumber);
               }
               setName(name);
+              setLoading(false);
             } else {
+              setLoading(false);
               return
             }
           } catch (error) {
             console.error('Error checking if location saved:', error);
+            setLoading(false);
           }
         };
     
@@ -66,6 +70,7 @@ const LogBook = () => {
 
   return (
     <PaperProvider>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <SafeAreaView style={styles.container}>
       <Portal>
         <LogbookModal
@@ -108,9 +113,14 @@ const LogBook = () => {
 
       <View style={styles.userInfoSection} />
 
-      <LogbookJumpCard />
-
+      {isLoading ? (
+        <Text>Loading...</Text>
+      ) : (
+        <LogbookJumpCard jumpNumber={jumpNumber} />
+      )}
+    
     </SafeAreaView>
+    </TouchableWithoutFeedback>
     </PaperProvider>
   )
 }

@@ -364,4 +364,28 @@ export const takeawayJumpNumber = async () => {
         }; 
     };
 
+    export const getLoggedJumps = async () => {
+        try {
+          const user = FIREBASE_AUTH.currentUser;
+          const userId = user.uid;
+      
+          const logbookRef = doc(FIREBASE_DB, 'logbook', userId);
+          const logbookSnapshot = await getDoc(logbookRef);
+      
+          if (logbookSnapshot.exists()) {
+            const logbookData = logbookSnapshot.data();
+            const jumps = logbookData.jumps || [];
+      
+            // Return the array of submitted jumps
+            return jumps;
+          } else {
+            // If the logbook document doesn't exist, return an empty array
+            return [];
+          }
+        } catch (error) {
+          console.error('Error retrieving logged jumps:', error);
+          throw error;
+        }
+      };
+
 registerInDevtools({ AuthStore });
