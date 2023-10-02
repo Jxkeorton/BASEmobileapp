@@ -388,4 +388,26 @@ export const takeawayJumpNumber = async () => {
         }
       };
 
+      export const getJumpnumber = async () => {
+            const currentUser = FIREBASE_AUTH.currentUser;
+            if (!currentUser) {
+            Alert.alert('No authenticated user found');
+            return;
+            }
+            const userId = currentUser.uid;
+  
+            const userDocRef = doc(FIREBASE_DB, 'users', userId);
+            const userDocSnap = await getDoc(userDocRef);
+            const userDocData = userDocSnap.data();
+
+            if (userDocData) {
+              const { jumpNumber } = userDocData;
+              if (jumpNumber) {
+                return jumpNumber
+              }
+            } else {
+              return 
+            }
+      };
+
 registerInDevtools({ AuthStore });

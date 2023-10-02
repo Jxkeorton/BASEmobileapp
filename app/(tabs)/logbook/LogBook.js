@@ -1,23 +1,17 @@
-import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { View, TextInput, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, {useState} from 'react'
 import { useFocusEffect } from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
-// firebase imports for fetching user data
-import { FIREBASE_AUTH, FIREBASE_DB} from '../../../firebaseConfig';
-import { 
-  doc, 
-  getDoc,
-} from 'firebase/firestore';
+import { ActivityIndicator } from 'react-native-paper';
 
 //Modal imports 
 import { Portal, PaperProvider, Title, Caption } from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
+import { getJumpnumber } from '../../../store';
 
 const LogBook = () => {
-  const [ name, setName ] = useState('');
   const [ jumpNumber, setJumpNumber ] = useState('');
   const [isLoading, setLoading] = useState(true);
 
@@ -36,28 +30,9 @@ const LogBook = () => {
       const getUserDetails = async () => {
         try {
             // fetching users saved location ID's
-            const currentUser = FIREBASE_AUTH.currentUser;
-            if (!currentUser) {
-            Alert.alert('No authenticated user found');
-            return;
-            }
-            const userId = currentUser.uid;
-  
-            const userDocRef = doc(FIREBASE_DB, 'users', userId);
-            const userDocSnap = await getDoc(userDocRef);
-            const userDocData = userDocSnap.data();
-
-            if (userDocData) {
-              const { name, jumpNumber } = userDocData;
-              if (jumpNumber) {
-                setJumpNumber(jumpNumber);
-              }
-              setName(name);
+              const jumps = await getJumpnumber()
+              setJumpNumber(jumps);
               setLoading(false);
-            } else {
-              setLoading(false);
-              return
-            }
           } catch (error) {
             console.error('Error checking if location saved:', error);
             setLoading(false);
@@ -70,12 +45,14 @@ const LogBook = () => {
 
   return (
     <PaperProvider>
+    <ScrollView style={styles.container}>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-    <SafeAreaView style={styles.container}>
+      <View>
       <Portal>
         <LogbookModal
           visible={visible}
           onClose={hideModal}
+          isLoading={isLoading}
         />
       </Portal>
       <View style={styles.searchBox} >
@@ -114,13 +91,13 @@ const LogBook = () => {
       <View style={styles.userInfoSection} />
 
       {isLoading ? (
-        <Text>Loading...</Text>
+        <ActivityIndicator size='large' style={{alignItems:'center', justifyContent:'center'}} />
       ) : (
-        <LogbookJumpCard jumpNumber={jumpNumber} />
+        <LogbookJumpCard jumpNumber={jumpNumber}/>
       )}
-    
-    </SafeAreaView>
+    </View>
     </TouchableWithoutFeedback>
+    </ScrollView>
     </PaperProvider>
   )
 }

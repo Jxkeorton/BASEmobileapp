@@ -13,8 +13,9 @@ import {
 import React, {useState} from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { submitJumpHandler } from '../store';
+import { ActivityIndicator } from 'react-native-paper';
 
-const LogbookModal = ({ visible, onClose }) => {
+const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [location, setLocation] = useState('');
     const [exitType, setExitType] = useState('');
     const [delay, setDelay] = useState('');
@@ -141,9 +142,13 @@ const LogbookModal = ({ visible, onClose }) => {
 
                 <Text style={styles.imageCountText}>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
 
-                <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
+                {isLoading ? (
+                  <ActivityIndicator animating={true} color="#00ABF0" />
+                ) : (
+                  <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
                     <Text style={styles.panelButtonTitle}>Submit</Text>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                )}
             
             </ScrollView>
             </View>

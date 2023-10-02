@@ -2,29 +2,60 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, ImageBackground} from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { getLoggedJumps } from '../store';
+import { getJumpnumber } from '../store';
+import { ActivityIndicator } from 'react-native-paper';
 
 
 
-const LogbookJumpCard = ({jumpNumber}) => {
-    const [jumps, setLoggedJumps ] = useState([])
+const LogbookJumpCard = () => {
+    const [jumps, setLoggedJumps ] = useState([]);
+    const [jumpNumber, setJumpNumber] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
     
 
     useFocusEffect(
         React.useCallback(() => {
-          const getUserLoggedJumps = async () => {
-            const jumps = await getLoggedJumps()
-            // Reverse the jumps array to map from the end first
-            const reversedJumps = [...jumps].reverse();
-            const jumpsWithNumbers = reversedJumps.map((jump, index) => ({
-                ...jump,
-                jumpNumber: jumpNumber - index 
-              }));
-            setLoggedJumps(jumpsWithNumbers);
-          }
-        
-          getUserLoggedJumps();
+            const loadData = async () => {
+                try {
+                  // Fetch the jump number
+                  const jumpno = await getJumpnumber();
+          
+                  // Fetch the user's logged jumps
+                  const jumps = await getLoggedJumps();
+
+                   // Reverse the jumps array
+                  const reversedJumps = jumps.reverse();
+          
+                   // Create an array of promises to fetch jump numbers for each jump
+                    const jumpNumberPromises = reversedJumps.map(async (jump, index) => {
+                        const jumpNumber = jumpno - index;
+                        return jumpNumber;
+                    });
+            
+                    // Use Promise.all to resolve all jumpNumberPromises
+                    const resolvedJumpNumbers = await Promise.all(jumpNumberPromises);
+            
+                    // Assign jump numbers to jumps
+                    const jumpsWithNumbers = jumps.map((jump, index) => ({
+                        ...jump,
+                        jumpNumber: resolvedJumpNumbers[index],
+                    }));
+            
+                    setLoggedJumps(jumpsWithNumbers);
+                  
+                } catch (error) {
+                  console.error('Error fetching data:', error);
+                } finally {
+                    setIsLoading(false); // Set loading to false once data is fetched
+                }
+            }
+          loadData();
         },[])
     );
+
+    if (isLoading) {
+        return <ActivityIndicator size='large' style={{ flex: 1 }} />;
+      }
 
 return (
     <ScrollView contentContainerStyle={styles.container}>
