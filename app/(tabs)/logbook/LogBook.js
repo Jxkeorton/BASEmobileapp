@@ -3,7 +3,6 @@ import React, {useState} from 'react'
 import { useFocusEffect } from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ActivityIndicator } from 'react-native-paper';
 
 //Modal imports 
@@ -14,9 +13,6 @@ import { getJumpnumber } from '../../../store';
 const LogBook = () => {
   const [ jumpNumber, setJumpNumber ] = useState('');
   const [isLoading, setLoading] = useState(true);
-
-  //Search 
-  const [searchTerm, setSearchTerm] = useState('');
 
   //Modal
   const [visible, setVisible] = useState(false);
@@ -55,19 +51,7 @@ const LogBook = () => {
           isLoading={isLoading}
         />
       </Portal>
-      <View style={styles.searchBox} >
-        <View style={styles.textInputContainer} >
-          <TextInput 
-            placeholder='Search Jumps'
-            placeholderTextColor='#000'
-            autoCapitalize='none'
-            style={{flex:1, padding:0}}
-            onChangeText={text => setSearchTerm(text)}
-            value={searchTerm}
-          />
-          <Ionicons name='ios-search' size={20} color='#000' />
-        </View>
-      </View>
+      
 
       <View style={styles.infoBoxWrapper}>
           <View style={[styles.infoBox, {
@@ -87,8 +71,6 @@ const LogBook = () => {
             </TouchableHighlight>
           </View>
       </View>
-
-      <View style={styles.userInfoSection} />
 
       {isLoading ? (
         <ActivityIndicator size='large' style={{alignItems:'center', justifyContent:'center'}} />
@@ -116,35 +98,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     flexDirection: 'row',
     height: 100,
+    marginTop: 20,
   },
   infoBox: {
     width: '50%',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textInputContainer: {
-    flexDirection: 'row',
-    marginRight: 10,
-    marginBottom: 10, 
-  },
   userInfoSection: {
     paddingHorizontal: 30,
     marginBottom: 25,
   },
-  searchBox: {
-    position: 'fixed',
-    backgroundColor: '#fff',
-    width: '90%',
-    alignSelf: 'center',
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: '#ccc',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 10,
-    marginTop: 20,
-    marginBottom: 20,
-  }
 });
 

@@ -23,24 +23,25 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [date, setDate] = useState('');
     const [images, setImage] = useState([]);
 
-    // get image urls and add to state 
-    const pickImage = async () => {
-        try {
-        let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: false,
-        quality: 1,
-        selectionLimit: 4,
-        allowsMultipleSelection: true,
-        });
+    const [Loading, setLoading] = useState(false);
 
+    const pickImage = async () => {
+      try {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: false,
+          quality: 0.2,
+          selectionLimit: 4,
+          allowsMultipleSelection: true,
+        });
+    
         if (!result.canceled) {
-        const newImages = result.assets.map((asset) => asset.uri);
-        setImage((prevImages) => [...prevImages, ...newImages]);
+          const newImages = result.assets.map((asset) => asset.uri);
+          setImage((prevImages) => [...prevImages, ...newImages]);
         }
-    } catch (e) {
-        Alert.alert("Error Uploading Image " + e.message);
-    }
+      } catch (e) {
+        Alert.alert('Error Uploading Image ' + e.message);
+      }
     };
 
     // add state to users logbook document on firebase
@@ -55,6 +56,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
     };
 
     const handleSubmit = async () => {
+        setLoading(true);
         try {
             // create function within firebase functions file
             // update jumpnumber +1 for user 
@@ -67,10 +69,13 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
             setExitType('');
             setDelay('');
             setDetails('');
+            setDate('');
             setImage([]);
         } catch (error) {
           Alert.alert('Error', 'An error occurred while submitting the location.');
           console.error(error);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -142,7 +147,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
 
                 <Text style={styles.imageCountText}>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
 
-                {isLoading ? (
+                {isLoading || Loading ? (
                   <ActivityIndicator animating={true} color="#00ABF0" />
                 ) : (
                   <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>

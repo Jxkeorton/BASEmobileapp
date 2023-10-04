@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, TextInput} from 'react-native';
 import { useFocusEffect, router } from 'expo-router';
 import { getLoggedJumps } from '../store';
 import { getJumpnumber } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const LogbookJumpCard = () => {
     const [jumps, setLoggedJumps ] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    //Search 
+    const [searchTerm, setSearchTerm] = useState('');
 
     useFocusEffect(
         React.useCallback(() => {
@@ -54,13 +57,31 @@ const LogbookJumpCard = () => {
       router.push(`/(tabs)/logbook/${index}`)
     }
 
+    const filteredJumps = jumps.filter((jump) =>
+      jump.jumpNumber.toString().includes(searchTerm) ||
+      jump.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     if (isLoading) {
         return <ActivityIndicator size='large' style={{ flex: 1 }} />;
       }
 
 return (
     <ScrollView contentContainerStyle={styles.container}>
-      {jumps.map((jump, index) => (
+      <View style={styles.searchBox} >
+        <View style={styles.textInputContainer} >
+          <TextInput 
+            placeholder='Search Jumps'
+            placeholderTextColor='#000'
+            autoCapitalize='none'
+            style={{flex:1, padding:0}}
+            onChangeText={text => setSearchTerm(text)}
+            value={searchTerm}
+          />
+          <Ionicons name='ios-search' size={20} color='#000' />
+        </View>
+      </View>
+      {filteredJumps.map((jump, index) => (
         <TouchableOpacity key={index} style={styles.jumpCard} onPress={() => onCardPress(index)}>
           {jump.imageURLs && jump.imageURLs.length > 0 ? (
             <ImageBackground source={{ uri: jump.imageURLs[0] }} style={styles.backgroundImage}>
@@ -126,5 +147,25 @@ const styles = StyleSheet.create({
     },
     blackBackground: {
         backgroundColor: 'black',
+    },
+      searchBox: {
+        position: 'fixed',
+        backgroundColor: '#fff',
+        width: '90%',
+        alignSelf: 'center',
+        borderRadius: 5,
+        padding: 10,
+        shadowColor: '#ccc',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.5,
+        shadowRadius: 5,
+        elevation: 10,
+        marginTop: 10,
+        marginBottom: 20,
       },
+    textInputContainer: {
+        flexDirection: 'row',
+        marginRight: 10,
+        marginBottom: 10, 
+    },
   });
