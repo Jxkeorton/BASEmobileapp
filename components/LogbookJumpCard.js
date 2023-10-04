@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground} from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity} from 'react-native';
+import { useFocusEffect, router } from 'expo-router';
 import { getLoggedJumps } from '../store';
 import { getJumpnumber } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
 
-
-
 const LogbookJumpCard = () => {
     const [jumps, setLoggedJumps ] = useState([]);
-    const [jumpNumber, setJumpNumber] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
-    
 
     useFocusEffect(
         React.useCallback(() => {
@@ -53,6 +49,11 @@ const LogbookJumpCard = () => {
         },[])
     );
 
+    // function to direct to the locations details page
+    const onCardPress = (index) => {
+      router.push(`/(tabs)/logbook/${index}`)
+    }
+
     if (isLoading) {
         return <ActivityIndicator size='large' style={{ flex: 1 }} />;
       }
@@ -60,7 +61,7 @@ const LogbookJumpCard = () => {
 return (
     <ScrollView contentContainerStyle={styles.container}>
       {jumps.map((jump, index) => (
-        <View key={index} style={styles.jumpCard}>
+        <TouchableOpacity key={index} style={styles.jumpCard} onPress={() => onCardPress(index)}>
           {jump.imageURLs && jump.imageURLs.length > 0 ? (
             <ImageBackground source={{ uri: jump.imageURLs[0] }} style={styles.backgroundImage}>
               <View style={styles.darkOverlay}></View>
@@ -72,10 +73,11 @@ return (
             <View style={[styles.backgroundImage, styles.blackBackground]}>
               <View style={styles.jumpCardContent}>
                 <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                <Text>{jump.location}</Text>
               </View>
             </View>
           )}
-        </View>
+        </TouchableOpacity>
       ))}
     </ScrollView>
 )

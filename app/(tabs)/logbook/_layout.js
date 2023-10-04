@@ -10,7 +10,7 @@ export default () => {
             }}
         />
         <Stack.Screen
-            name="JumpDetails"
+            name="[jumpindex]"
             options={{
                 title: "Jump details",
             }}
