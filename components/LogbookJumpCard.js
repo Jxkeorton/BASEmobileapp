@@ -53,8 +53,8 @@ const LogbookJumpCard = () => {
     );
 
     // function to direct to the locations details page
-    const onCardPress = (index) => {
-      router.push(`/(tabs)/logbook/${index}`)
+    const onCardPress = (index, jump) => {
+      router.push({pathname: `/(tabs)/logbook/${index}`, params: {jumpNumber: jump.jumpNumber}})
     }
 
     const filteredJumps = jumps.filter((jump) =>
@@ -82,7 +82,7 @@ return (
         </View>
       </View>
       {filteredJumps.map((jump, index) => (
-        <TouchableOpacity key={index} style={styles.jumpCard} onPress={() => onCardPress(index)}>
+        <TouchableOpacity key={index} style={styles.jumpCard} onPress={() => onCardPress(index, jump)}>
           {jump.imageURLs && jump.imageURLs.length > 0 ? (
             <ImageBackground source={{ uri: jump.imageURLs[0] }} style={styles.backgroundImage}>
               <View style={styles.darkOverlay}></View>

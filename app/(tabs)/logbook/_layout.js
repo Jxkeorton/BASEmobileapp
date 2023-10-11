@@ -1,6 +1,8 @@
-import { Stack} from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 
 export default () => {
+    const params = useLocalSearchParams();
+
     return (
     <Stack >
         <Stack.Screen
@@ -12,7 +14,7 @@ export default () => {
         <Stack.Screen
             name="[jumpindex]"
             options={{
-                title: "Jump details",
+                title: "Jump Details",
             }}
         />
     </Stack>

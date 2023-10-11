@@ -1,12 +1,24 @@
 import React, { useState } from "react";
-import { View, Text } from 'react-native';
-import { useLocalSearchParams, useFocusEffect} from 'expo-router';
+import { useLocalSearchParams, useFocusEffect, Stack} from 'expo-router';
 import { getLoggedJumps } from "../../../store";
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { ActivityIndicator } from "react-native-paper";
+import { Image } from 'expo-image';
+import { Card, Title, Paragraph } from 'react-native-paper';
 
 const jumpDetails = () => {
     const [jump , setJump] = useState(null)
-    const { jumpindex } = useLocalSearchParams();
+    const params = useLocalSearchParams();
+    const [ images, setImages ] = useState([]);
+
+    const { jumpindex, jumpNumber} = params;
+
+    const [loadingProgress, setLoadingProgress] = useState(0);
+
+    const handleImageLoad = (progressEvent) => {
+      const progress = progressEvent.loaded / progressEvent.total;
+      setLoadingProgress(progress);
+    };
 
     useFocusEffect(
         React.useCallback(() => {
@@ -22,6 +34,7 @@ const jumpDetails = () => {
                   if (jumpindex >= 0 && jumpindex < reversedJumps.length) {
                     // Set the jump with the specified index to the jump state
                     setJump(reversedJumps[jumpindex]);
+                    setImages(reversedJumps[jumpindex].imageURLs)
                   }
                 } catch (error) {
                     console.error('Error fetching data:', error);
@@ -31,16 +44,113 @@ const jumpDetails = () => {
         }, [jumpindex])
     )
 
+    if (!jump) {
+      return <ActivityIndicator />;
+    }
+
     return (
-        <View>
-            {jump ? (
-              <Text>{jump.location}</Text>
-            ) : (
-              <ActivityIndicator />
-            )}
+      <ScrollView contentContainerStyle={styles.container}>
+        <Stack.Screen
+          options={{
+            title: jumpNumber,
+          }}
+        />
+
+        <Card style={{alignItems: 'center'}}>
+          <Card.Content>
+            {jump.location && 
+            <View>
+                <Title style={styles.title}>{jump.location}</Title>
+            </View>
+            }
+
+            <View style={styles.mainContainer}>
+              <View>
+                <Text style={styles.subtitleText}>Exit Type: </Text>
+                <Text style={styles.subtitleText}>Delay: </Text>
+                <Text style={styles.subtitleText}>Date of Jump: </Text>
+                <Text style={styles.subtitleText}>Details: </Text>
+              </View>
+              <View>
+                {jump.exitType && <Text style={styles.text}>{jump.exitType}</Text>}
+                {jump.delay && <Text style={styles.text}>{jump.delay} sec</Text>}
+                {jump.date && <Text style={styles.text}>{jump.date}</Text>}
+
+                {jump.details && <Paragraph style={styles.text}>{jump.details}</Paragraph>}
+              </View>
+            </View>
+
+            
+          </Card.Content>
+        </Card>
+
+        {loadingProgress > 0 && loadingProgress < 1 && (
+            <View style={styles.progressBar}>
+              <View style={{ width: `${loadingProgress * 100}%`, height: 5, backgroundColor: 'blue', marginBottom: 20 }} />
+            </View>
+        )}
+        
+        <View style={styles.imageContainer}>
+          {images && images.length > 0 ? (
+            images.map((image, index) => (
+              <Image key={index} source={{ uri: image }} style={{width: 150, height: 150, margin: 8}} onError={() => console.log('Image failed to load')} onProgress={handleImageLoad}/>
+            ))
+          ) : (
+            <Text>No images available</Text>
+          )}
         </View>
+          
+      </ScrollView>
     )
-
-};
-
-export default jumpDetails;
+  };
+  
+  const styles = StyleSheet.create({
+    container: {
+      flexGrow: 1,
+      padding: 16,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 16,
+    },
+    subtitle: {
+      fontSize: 18,
+      marginBottom: 8,
+    },
+    imageContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'flex-start', // You can adjust this as needed
+      alignItems: 'flex-start'
+    },
+    image: {
+      width: '48%', // You can set this to any desired width
+      aspectRatio: 1, // Maintain aspect ratio (1:1)
+      marginBottom: 8,
+    },
+    progressBar: {
+      backgroundColor: '#ccc',
+      height: 5,
+      marginBottom: 8,
+    },
+    text: {
+      marginBottom: 10,
+      fontSize: 16,
+      paddingLeft: 10,
+    },
+    subtitleText: {
+      marginBottom: 10,
+      paddingLeft: 10,
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    mainContainer: {
+      flexWrap: 'wrap',
+      flexDirection: 'row',
+      marginTop: 10,
+      marginBottom: 5,
+    },
+  });
+  
+  export default jumpDetails;

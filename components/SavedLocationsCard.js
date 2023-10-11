@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Card, Title, Paragraph } from 'react-native-paper';
-import { View, StyleSheet, FlatList, Text } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
 const router = useRouter()

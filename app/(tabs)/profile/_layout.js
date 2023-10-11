@@ -1,6 +1,7 @@
 import { Stack, useRouter } from "expo-router";
 import { Button } from "react-native-paper";
-import { appSignOut } from "../../../store";
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 const router = useRouter()
 
@@ -11,7 +12,13 @@ export default () => {
             name="Profile"
             options={{
                 headerRight: () => (
-                    <Button mode='contained-tonal' buttonColor="white" onPress={() => appSignOut()} title="LogOut" >Logout</Button>
+                    <Button 
+                        mode='contained-tonal' 
+                        buttonColor="white" 
+                        onPress={() => router.replace('/profile/settings/Settings')} 
+                        title="Settings" >
+                            <Icon name="cog" size={20} color="#000" />
+                    </Button>
                 ),
                 headerTitle: "",
             }}
@@ -24,7 +31,7 @@ export default () => {
                     <Button
                       mode="contained-tonal"
                       buttonColor="white"
-                      onPress={() => router.replace('/profile/Profile')}
+                      onPress={() => router.push('/profile/Profile')}
                     >
                       Cancel
                     </Button>
@@ -39,13 +46,24 @@ export default () => {
                     <Button
                       mode="contained-tonal"
                       buttonColor="white"
-                      onPress={() => router.replace('/profile/Profile')}
+                      onPress={() => router.push('/profile/Profile')}
                     >
                       Cancel
                     </Button>
                 ),
             }}
         />
+        <Stack.Screen
+            name="settings"
+            options={{
+                title: "Settings",
+                headerShown: false,
+            }}
+            
+            
+        >
+            
+        </Stack.Screen>
     </Stack>
     )
 };
