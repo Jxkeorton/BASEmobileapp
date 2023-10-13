@@ -1,13 +1,66 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Linking} from "react-native";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 const Contact = () => {
 
-    return (
-        <View>
+    const handleInstagramPress = () => {
+        // Use the Instagram URL scheme to open the Instagram app.
+        Linking.openURL("instagram://user?username=jakeorton_").catch(() => {
+          // If the Instagram app is not installed, handle the error.
+          Linking.openURL("https://www.instagram.com/jakeorton_");
+        });
+    };
 
+
+    return (
+        <View style={styles.mainContainer}>
+            <View style={styles.container}>
+            <Text style={styles.paragraph}> We value your feedback and ask for you to offer any suggestions on improving the app for your needs </Text>
+                <Text style={styles.text}>worldbasemap@gmail.com</Text>
+                <Text style={styles.text}>(+44) 7986273803</Text>
+                <TouchableOpacity onPress={handleInstagramPress}>
+                    <Icon name="instagram" size={30} color="white" style={styles.icon}/>
+                </TouchableOpacity>
+            </View>
         </View>
-    )
+    );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: 'black',
+        marginHorizontal: 30,
+        padding: 20,
+        borderRadius: 30,
+    },
+    text: {
+        fontSize: 19,
+        alignContent: 'center',
+        textAlign: 'center',
+        marginTop: 10,
+        color: 'white',
+    },
+    icon: {
+        marginTop: 10,
+    },
+    mainContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    paragraph: {
+        fontSize: 19,
+        alignContent: 'center',
+        textAlign: 'center',
+        marginTop: 10,
+        marginBottom: 50,
+        marginHorizontal: 30,
+        color: 'white',
+    },
+});
+
 
 export default Contact;

@@ -6,6 +6,7 @@ import {
     sendPasswordResetEmail,
     signOut,
     updateProfile,
+    deleteAccount,
 } from 'firebase/auth';
 import { 
     doc, 
@@ -13,6 +14,7 @@ import {
     serverTimestamp, 
     updateDoc,
     getDoc,
+    deleteDoc,
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
@@ -408,6 +410,30 @@ export const takeawayJumpNumber = async () => {
             } else {
               return 
             }
+      };
+
+      export const deleteUserAccount = async () => {
+        try {
+          // Get the current user
+          const user = FIREBASE_AUTH.currentUser;
+      
+          if (user) {
+            const userId = user.uid;
+      
+            // Delete the user's document from the database
+            const userDocRef = doc(FIREBASE_DB, 'users', userId);
+            await deleteDoc(userDocRef);
+      
+            // Delete the user's account from Firebase Authentication
+            await deleteAccount(user);
+      
+            return { success: true };
+          } else {
+            return { error: 'No authenticated user found' };
+          }
+        } catch (error) {
+          return { error: error.message };
+        }
       };
 
 registerInDevtools({ AuthStore });
