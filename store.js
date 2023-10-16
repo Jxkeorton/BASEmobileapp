@@ -436,4 +436,32 @@ export const takeawayJumpNumber = async () => {
         }
       };
 
+      // Function to add a username to the users collection
+      export const addUsername = async (username) => {
+        const user = FIREBASE_AUTH.currentUser;
+
+        if (!user) {
+          // Handle the case where there is no authenticated user
+          return { error: 'No authenticated user found' };
+        }
+
+        // Check if the username is already taken
+        const isTaken = await isUsernameTaken(username);
+        if (isTaken) {
+          return { error: 'auth/username-taken' };
+        }
+
+        // Update the user's document with the new username
+        const userDocRef = doc(FIREBASE_DB, 'users', user.uid);
+
+        try {
+          await setDoc(userDocRef, { username }, { merge: true });
+          return { success: true };
+        } catch (error) {
+          return { error: error.message };
+        }
+      };
+
+      
+
 registerInDevtools({ AuthStore });

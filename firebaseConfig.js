@@ -25,3 +25,7 @@ const FIREBASE_AUTH = initializeAuth(FIREBASE_APP, {
 });
 
 export { FIREBASE_APP, FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH };
+
+// for google auth at a later date
+// ios : 899524901759-hm1ombkd3uf9osvq5dosb5jfad9gl8ai.apps.googleusercontent.com
+// android : 899524901759-g7hmsmsk749u9fkp3l40il18cg7139uq.apps.googleusercontent.com

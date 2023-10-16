@@ -1,7 +1,7 @@
-import { Button } from 'react-native-paper'
+import { Button, Divider } from 'react-native-paper'
 import { useState } from 'react';
 import { useRouter } from 'expo-router'
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Text } from 'react-native';
 import { appSignUp } from '../../store';
 
 const Register = () => {
@@ -21,7 +21,10 @@ const Register = () => {
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
                     <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
             
-                    <Button title="Register" 
+                    <Button 
+                        title="Register" 
+                        mode="contained"
+                        buttonColor='black'
                         onPress={async () => {
                             const resp = await appSignUp(email, password, displayName, username);
                             if (resp?.user) {
@@ -46,7 +49,7 @@ const Register = () => {
                             }
                         }}>Register</Button>
                     
-                    <Button onPress={() => router.replace("/Login")}>Already have an account ?</Button>
+                    <Button textColor='black' onPress={() => router.replace("/Login")}>Already have an account ?</Button>
                 </KeyboardAvoidingView>
             </View>
         </TouchableWithoutFeedback>
@@ -69,5 +72,10 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         padding: 10,
         backgroundColor: '#fff',
+    },
+    text: {
+        textAlign: 'center',
+        marginTop: 10,
+        color: '#888'
     }
 })

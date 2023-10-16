@@ -15,13 +15,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.jakeorton.basemap"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/bitmap.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "dev.jakeorton.basemap"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -30,6 +32,15 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "demo"
+    "scheme": "demo",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "28d69f8e-6084-4159-a419-2e40940ea865"
+      }
+    },
+    "owner": "jxkeorton"
   }
 }

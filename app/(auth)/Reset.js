@@ -15,7 +15,10 @@ const Reset = () => {
                 <KeyboardAvoidingView behavior='padding'>
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
 
-                    <Button title="Send reset link" 
+                    <Button 
+                        title="Send reset link" 
+                        mode="contained"
+                        buttonColor='black'
                         onPress={async () => {
                             const resp = await appResetPassword(email);
                             if (resp?.user) {
@@ -32,7 +35,7 @@ const Reset = () => {
                                     }
                             }
                         }} >Send Reset Email</Button> 
-                    <Button onPress={() => router.replace("/Login")}>Login/Register</Button>
+                    <Button textColor='black' onPress={() => router.replace("/Login")}>Login/Register</Button>
                 </KeyboardAvoidingView>
             </View>
         </TouchableWithoutFeedback>
@@ -54,5 +57,6 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         padding: 10,
         backgroundColor: '#fff',
+        marginBottom: 20,
     }
 })

@@ -1,8 +1,9 @@
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Text, Alert, TextInput } from 'react-native';
 import React, {useState} from 'react';
-import { ActivityIndicator, Button } from 'react-native-paper';
+import { ActivityIndicator, Button, Divider } from 'react-native-paper';
 import { appSignIn } from '../../store';
 import { useRouter } from 'expo-router';
+
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -22,6 +23,8 @@ const Login = () => {
                 : 
                 <>
                     <Button title="Login" 
+                        mode="contained"
+                        buttonColor='black'
                         onPress={async () => {
                             const resp = await appSignIn(email, password);
                             if (resp?.user) {
@@ -40,8 +43,8 @@ const Login = () => {
                                     }
                             }
                         }} >Login</Button>   
-                    <Button title="Register" onPress={() => router.replace("Register")} >Sign Up here!</Button>
-                    <Button title="Forgot Password" onPress={() => router.replace("Reset")} >Forgot Password</Button>
+                    <Button textColor='black' title="Register" onPress={() => router.replace("Register")} >Sign Up here!</Button>
+                    <Button textColor='black' title="Forgot Password" onPress={() => router.replace("Reset")} >Forgot Password</Button>
                 </>
                 }
             </KeyboardAvoidingView>
@@ -65,5 +68,10 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         padding: 10,
         backgroundColor: '#fff',
+    },
+    text: {
+        textAlign: 'center',
+        marginTop: 10,
+        color: '#888'
     }
 })
