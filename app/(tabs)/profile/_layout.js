@@ -7,7 +7,13 @@ const router = useRouter()
 
 export default () => {
     return (
-    <Stack >
+    <Stack screenOptions={{
+        headerStyle: {
+          backgroundColor: 'black',
+        },
+        headerTintColor: '#fff',
+        headerBackTitle: 'Back',
+      }} >
         <Stack.Screen
             name="Profile"
             options={{

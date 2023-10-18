@@ -15,6 +15,8 @@ import {
     updateDoc,
     getDoc,
     deleteDoc,
+    arrayUnion,
+    arrayRemove 
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, uploadBytes } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
@@ -462,6 +464,50 @@ export const takeawayJumpNumber = async () => {
         }
       };
 
+      // toggling location saved 
+      // toggle save when save button pressed 
+      export const onSaveToggle = async (id, isLoggedIn) => {
+        if (!isLoggedIn) {
+          console.error('No authenticated user found');
+          return;
+        }
+
+        try {
+          const currentUser = FIREBASE_AUTH.currentUser;
+          if (!currentUser) {
+            console.error('No authenticated user found');
+            return;
+          }
+          const userId = currentUser.uid;
+
+          const userDocRef = doc(FIREBASE_DB, 'users', userId);
+          const userDocSnap = await getDoc(userDocRef);
+
+          const userDocData = userDocSnap.data();
+          const { locationIds = [] } = userDocData || {};
+
+          const numericId = typeof id === 'string' ? parseInt(id) : id;
+
+          // checking if ID already exists
+          if (locationIds.includes(numericId)) {
+            // Remove the location ID from the array
+            await updateDoc(userDocRef, { locationIds: arrayRemove(numericId) });
+            console.log('Location ID removed from user document');
+            
+            return(false)
+          } else {
+            // Add the location ID to the array
+            await setDoc(userDocRef, { locationIds: arrayUnion(numericId) }, {merge:true});
+            console.log('Location ID added to user document');
+            
+            return(true)
+          }
+        } catch (error) {
+            console.log(error);
+        } 
+      };
+
+    
       
 
 registerInDevtools({ AuthStore });

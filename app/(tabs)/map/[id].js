@@ -1,16 +1,49 @@
 import { View, StyleSheet, ScrollView, Platform, Linking, ActivityIndicator } from 'react-native'
-import { useLocalSearchParams, Stack} from 'expo-router';
-import React ,{ useEffect, useState } from 'react';
+import { useLocalSearchParams, Stack, useFocusEffect} from 'expo-router';
+import React ,{ useState } from 'react';
 import MapView, {Marker} from 'react-native-maps';
 import { Button, Text, Divider } from 'react-native-paper';
 
+//firebase
+import { onSaveToggle } from '../../../store';
+import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
+import { doc, getDoc } from 'firebase/firestore';
+
+
 function Location() {
   const [location , setLocation] = useState(null)
+  const [isSaved , setSaved] = useState(false)
+  const [isLoggedIn , setIsLoggedIn] = useState(false)
   const { id } = useLocalSearchParams();
 
-  useEffect(() => {
+
+  useFocusEffect(
+    React.useCallback(() => {
     // Define the API URL
     const apiUrl = 'https://raw.githubusercontent.com/Jxkeorton/APIs/main/locations.json';
+
+    const checkLocationSaved = async () => {
+      try {
+        const currentUser = FIREBASE_AUTH.currentUser;
+        if (!currentUser) {
+          console.error('No authenticated user found');
+          return;
+        }
+        const userId = currentUser.uid;
+
+        const userDocRef = doc(FIREBASE_DB, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        const userDocData = userDocSnap.data();
+        const { locationIds = [] } = userDocData || {};
+
+        setSaved(locationIds.includes(parseInt(id)));
+        setIsLoggedIn(currentUser !== null);
+      } catch (error) {
+        console.error('Error checking if location saved:', error);
+      }
+    };
+
+    checkLocationSaved();
 
     const fetchData = async () => {
       // Fetch data from the API
@@ -32,7 +65,15 @@ function Location() {
     }
     
     fetchData();
-  }, [id]);
+
+  }, [id])
+  );
+
+  // toggle save when save button pressed 
+  const onSave = async () => {
+    const updatedSaved = await onSaveToggle(id, isLoggedIn);
+    setSaved(updatedSaved);
+  };
 
   // for directing to maps app button 
   const openMaps = () => {
@@ -47,7 +88,6 @@ function Location() {
     Linking.openURL(url);
   }
 
-
   return (
     <View style={styles.container}>
       {location ? (
@@ -61,7 +101,16 @@ function Location() {
         <View style={styles.centeredContainer}>
           <View style={styles.buttonContainer}>
             <Button style={styles.button} mode="contained" onPress={openMaps}>Open in maps</Button>
-            <Button style={styles.button} mode="contained">Save</Button>
+            <Button 
+              style={[
+                styles.button,
+                isSaved ? styles.savedButton : null
+              ]}
+              mode="contained" 
+              onPress={onSave}
+             >
+              {isSaved ? 'Unsave' : 'Save'}
+            </Button>
           </View>
         </View>
           
@@ -216,6 +265,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  savedButton: {
+    backgroundColor: 'red', 
   },
 });
 

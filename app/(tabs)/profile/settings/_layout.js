@@ -3,7 +3,13 @@ import { Button } from "react-native-paper";
 
 export default () => {
     return (
-    <Stack >
+    <Stack screenOptions={{
+        headerStyle: {
+          backgroundColor: 'black',
+        },
+        headerTintColor: '#fff',
+        headerBackTitle: 'Back',
+      }} >
         <Stack.Screen
             name="Settings"
             options={{

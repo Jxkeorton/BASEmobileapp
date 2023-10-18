@@ -160,7 +160,7 @@ const Profile = () => {
             <Caption>Total Base Jumps</Caption>
           </View>
           <View style={styles.infoBox}>
-            <Button onPress={() => router.replace('/LogBook')}>Logbook</Button>
+            <Button mode='contained' buttonColor='black' onPress={() => router.replace('/(tabs)/logbook/LogBook')}>Logbook</Button>
           </View>
         </View>
 
