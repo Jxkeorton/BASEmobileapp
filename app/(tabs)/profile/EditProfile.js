@@ -11,7 +11,7 @@ import {
 import { useFocusEffect } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { Modal, Portal, PaperProvider } from 'react-native-paper';
+import { Modal, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToProfile, updateProfileDetails } from '../../../store';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
@@ -25,6 +25,8 @@ const EditProfile = () => {
   const [name, setName] = useState(false);
   const [email, setEmail] = useState(false);
   const [jumpNumber, setJumpNumber] = useState(false);
+
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
@@ -234,9 +236,20 @@ const EditProfile = () => {
                         onChangeText={(text) => setJumpNumber(text)}
                     />
                 </View>
-                <TouchableOpacity style={styles.commandButton} onPress={() => {updateProfileDetails(name, email, jumpNumber)}}>
-                  <Text style={styles.panelButtonTitle}>Submit</Text>
-                </TouchableOpacity>
+                {submitLoading ? ( <ActivityIndicator /> 
+                ) : (
+                  <TouchableOpacity 
+                    style={styles.commandButton} 
+                    onPress={() => {
+                      setSubmitLoading(true);
+                      updateProfileDetails(name, email, jumpNumber);
+                      setSubmitLoading(false);
+                      }}
+                    >
+                    <Text style={styles.panelButtonTitle}>Submit</Text>
+                  </TouchableOpacity>
+                )}
+               
             </View>
 
         </View>

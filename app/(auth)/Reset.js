@@ -1,11 +1,12 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
 import React, {useState} from 'react';
-import { Button, TextInput } from 'react-native-paper';
+import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
 import { appResetPassword } from '../../store';
 import { useRouter } from 'expo-router';
 
 const Reset = () => {
     const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const router = useRouter();
 
@@ -15,11 +16,15 @@ const Reset = () => {
                 <KeyboardAvoidingView behavior='padding'>
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
 
+                    {loading ? <ActivityIndicator size="small" color="#0000ff" /> 
+                    :
+                    <>
                     <Button 
                         title="Send reset link" 
                         mode="contained"
                         buttonColor='black'
                         onPress={async () => {
+                            setLoading(true);
                             const resp = await appResetPassword(email);
                             if (resp?.user) {
                                 router.replace("/(auth)/Login");
@@ -34,8 +39,11 @@ const Reset = () => {
                                         Alert.alert('Reset Password Error', 'Please try again.');
                                     }
                             }
+                            setLoading(false);
                         }} >Send Reset Email</Button> 
                     <Button textColor='black' onPress={() => router.replace("/Login")}>Login/Register</Button>
+                    </>
+                    }
                 </KeyboardAvoidingView>
             </View>
         </TouchableWithoutFeedback>

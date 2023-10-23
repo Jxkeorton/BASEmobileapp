@@ -66,7 +66,7 @@ const Profile = () => {
   
             // get filtered locations using apiUrl 
              // Fetch data from the API
-            fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/locations.json')
+            fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json')
             .then((response) => response.json())
             .then((data) => {
               // Filter locations based on matching IDs

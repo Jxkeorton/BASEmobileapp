@@ -1,5 +1,5 @@
 import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Text, TouchableHighlight} from 'react-native'
-import { Switch, Portal, PaperProvider } from 'react-native-paper'
+import { Switch, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper'
 import React, { useState, useEffect } from 'react'
 import MapView from 'react-native-map-clustering';
 import {Marker} from 'react-native-maps';
@@ -9,15 +9,20 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons'; 
 import ModalContent from '../../../components/ModalContent';
 
+//async storage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
 // fetching locations & location data 
 const fetchData = async () => {
   try {
-    const response = await fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/locations.json');
+    const response = await fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json');
     if (!response.ok) {
       throw new Error('Failed to fetch data');
     }
     const data = await response.json();
     const locations = data.locations;
+  
     return locations;
   } catch (error) {
     console.error('Error:', error);
@@ -25,12 +30,39 @@ const fetchData = async () => {
   }
 };
 
+const saveEventToStorage = async (event) => {
+  try {
+    // Create a new event object with an integer ID
+    const eventWithIntegerId = {
+      ...event,
+      id: parseInt(event.id, 10) // Parse the ID as an integer
+    };
+
+    // Convert the modified event object to a JSON string
+    const eventJSON = JSON.stringify(eventWithIntegerId);
+    
+    // Save the event data to AsyncStorage
+    await AsyncStorage.setItem('selectedEvent', eventJSON);
+    
+    // Optionally, you can display a message or perform any other action after saving.
+    console.log('Event saved to AsyncStorage:', eventWithIntegerId);
+  } catch (error) {
+    console.error('Error saving event to AsyncStorage:', error);
+  }
+};
+
+
 
 export default function Map() {
   const [eventData, setEventData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [satelliteActive, setSatelliteActive] = useState(false)
-  const [cluster, setCluster] = useState(false)
+
+  // loading states
+  const [satelliteViewLoading, setSatelliteLoading] = useState(false);
+  const [filterIconLoading, setFilterIconLoading] = useState(false);
+  const [loadingMap, setLoadingMap] = useState(true);
+
 
   // filter modal dropdown state 
   const [minRockDrop, setMinRockDrop] = useState('');
@@ -46,6 +78,7 @@ export default function Map() {
     async function fetchDataAndSetState() {
       const locations = await fetchData();
       setEventData(locations);
+      setLoadingMap(false); 
     }
 
     fetchDataAndSetState();
@@ -103,6 +136,11 @@ export default function Map() {
           maxRockDrop={maxRockDrop}
         />
       </Portal>
+      {loadingMap ? ( // Conditional rendering for loading state
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#00ABF0" />
+            </View>
+          ) : (
       <MapView style={styles.map}
           initialRegion={{
               latitude: 56.25284254305279,
@@ -113,7 +151,7 @@ export default function Map() {
           mapType={satelliteActive ? 'hybrid' : 'standard'}
           clusterColor='#00ABF0'
           clusterTextColor='black'
-          clusteringEnabled={cluster}
+          clusteringEnabled={true}
         >
         {eventData
           .filter(event => event.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -122,15 +160,17 @@ export default function Map() {
               <Marker
               key={index}
               coordinate={{ latitude: event.coordinates[0], longitude: event.coordinates[1] }}
-              title={event.name}
-              description={event.openedBy.name}
+              title={event.name || 'Unknown Name'}
+              description={event.openedBy && event.openedBy.name ? event.openedBy.name : ''}
               pinColor='black'
+              onPress={() => saveEventToStorage(event)}
           >
             <CustomCallout info={event} />
           </Marker>
         ))}
         
       </MapView>
+          )}
       <View style={styles.searchBox} >
         <View style={styles.textInputContainer} >
           <TextInput 
@@ -143,33 +183,45 @@ export default function Map() {
           />
           <Ionicons name='ios-search' size={20} color='#000' />
           <TouchableHighlight
-            onPress={showModal}
-            underlayColor="#DDDDDD" 
+            onPress={async () => {
+              setFilterIconLoading(true);
+
+              // Perform your filter icon action here, such as showing a modal.
+              showModal();
+
+              setFilterIconLoading(false);
+            }}
+            underlayColor="#DDDDDD"
             style={styles.filterButton}
           >
             <View style={styles.dropdownIcon}>
-              <FontAwesome name="filter" size={20} color="#000" />
+              {filterIconLoading ? (
+                <ActivityIndicator size="small" color="#0000ff" />
+              ) : (
+                <FontAwesome name="filter" size={20} color="#000" />
+              )}
             </View>
           </TouchableHighlight>
         </View>
         
         <View style={styles.switchContainer}>
-          <View style={styles.switchHalf}>
-              <Text>Cluster</Text>
-              <Switch
-                value={cluster}
-                onValueChange={() => setCluster(!cluster)}
-                color="#00ABF0" // Change the color as desired
-              />
-          </View>
-          <View style={styles.switchHalf}>
-              <Text>Satellite</Text>
-              <Switch
-                value={satelliteActive}
-                onValueChange={() => setSatelliteActive(!satelliteActive)}
-                color="#00ABF0" // Change the color as desired
-              />
-          </View>
+          <Text style={styles.switchLabel}>Satellite</Text>
+          {satelliteViewLoading ? (
+            <ActivityIndicator size="small" color="#0000ff" />
+          ) : (
+            <Switch
+              value={satelliteActive}
+              onValueChange={() => {
+                setSatelliteLoading(true);
+                setTimeout(() => {
+                  setSatelliteActive(!satelliteActive);
+                  setSatelliteLoading(false);
+                }, 100);
+              }}
+              color="#00ABF0" // Change the color as desired
+            />
+          )}
+
         </View>
       </View>
       </View>
@@ -246,22 +298,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
   },
   switchContainer: {
-    flex: 2,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginLeft: 10,
-    marginTop: 10, 
+    marginTop: 10,
+  },
+  switchLabel: {
+    marginRight: 10,
+    color: 'black',
   },
   textInputContainer: {
     flexDirection: 'row',
     marginRight: 10,
     marginBottom: 10, 
-  },
-   // Divide the switchHalf into two equal halves
-   switchHalf: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   // modal styles 
   dropdownIcon: {
@@ -316,6 +366,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
 

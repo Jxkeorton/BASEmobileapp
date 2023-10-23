@@ -1,7 +1,7 @@
-import { Button, Divider } from 'react-native-paper'
+import { Button, ActivityIndicator } from 'react-native-paper'
 import { useState } from 'react';
 import { useRouter } from 'expo-router'
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Text } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
 import { appSignUp } from '../../store';
 
 const Register = () => {
@@ -9,6 +9,7 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [username, setUsername] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const router = useRouter()
 
@@ -21,11 +22,15 @@ const Register = () => {
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
                     <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
             
+                    {loading ? (<ActivityIndicator size="small" color="#0000ff" /> 
+                    ) : (
+                    <>
                     <Button 
                         title="Register" 
                         mode="contained"
                         buttonColor='black'
                         onPress={async () => {
+                            setLoading(true);
                             const resp = await appSignUp(email, password, displayName, username);
                             if (resp?.user) {
                                 router.replace("/(tabs)/profile/Profile");
@@ -47,10 +52,26 @@ const Register = () => {
                                         Alert.alert('Registration Error', 'Please try again.');
                                     }
                             }
+                            setLoading(false);
                         }}>Register</Button>
                     
                     <Button textColor='black' onPress={() => router.replace("/Login")}>Already have an account ?</Button>
+                    </>
+                    )}
+
+                    {/* Privacy Policy Link */}
+                    <Button 
+                        textColor='black' 
+                        style={styles.privacyPolicyLink}
+                        onPress={() => {
+                        router.push('/components/PrivacyPolicy.js');
+                        }}
+                    >
+                        Privacy Policy
+                    </Button>
+
                 </KeyboardAvoidingView>
+                    
             </View>
         </TouchableWithoutFeedback>
         
@@ -77,5 +98,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
         color: '#888'
+    },
+    privacyPolicyLink: {
+        textAlign: 'center',
+        color: '#00ABF0',
+        textDecorationLine: 'underline', 
+        marginTop: 20, 
     }
 })

@@ -24,8 +24,10 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [images, setImage] = useState([]);
 
     const [Loading, setLoading] = useState(false);
+    const [imageLoading, setImageLoading] = useState(false);
 
     const pickImage = async () => {
+      setImageLoading(true);
       try {
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -41,6 +43,8 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         }
       } catch (e) {
         Alert.alert('Error Uploading Image ' + e.message);
+      } finally {
+        setImageLoading(false);
       }
     };
 
@@ -83,8 +87,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
 
    
     return (
-      <Modal visible={visible} onRequestClose={onClose} transparent={true}>
-        <TouchableWithoutFeedback onPress={onClose}>
+      <Modal visible={visible} transparent={true}>
           <View style={styles.modalContainer}>
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.container}>
@@ -145,21 +148,30 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                     <Text style={styles.panelButtonTitle}>Add Images</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.imageCountText}>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
+                {imageLoading ? (
+                  <Text style={styles.imageCountText}>Loading images <ActivityIndicator size="small" color="#0000ff" /></Text>
+                ) : (
+                  <Text style={styles.imageCountText}> {images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
+                )}
+                
 
                 {isLoading || Loading ? (
                   <ActivityIndicator animating={true} color="#00ABF0" />
                 ) : (
-                  <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
-                    <Text style={styles.panelButtonTitle}>Submit</Text>
-                  </TouchableOpacity>
+                  <>
+                    <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
+                      <Text style={styles.panelButtonTitle}>Submit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.panelButton} onPress={onClose}>
+                    <Text style={styles.panelButtonTitle}>Cancel</Text>
+                    </TouchableOpacity>
+                  </>
                 )}
             
             </ScrollView>
             </View>
            </TouchableWithoutFeedback>
            </View>
-        </TouchableWithoutFeedback>
       </Modal>
     );
   };

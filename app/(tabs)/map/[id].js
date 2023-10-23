@@ -9,6 +9,9 @@ import { onSaveToggle } from '../../../store';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 
+// async storage 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 function Location() {
   const [location , setLocation] = useState(null)
@@ -16,11 +19,33 @@ function Location() {
   const [isLoggedIn , setIsLoggedIn] = useState(false)
   const { id } = useLocalSearchParams();
 
+  const getEventFromStorage = async (eventId) => {
+    try {
+      // Retrieve the event data from AsyncStorage
+      const eventJSON = await AsyncStorage.getItem('selectedEvent');
+      
+      if (eventJSON) {
+        // Parse the JSON data to get the event object
+        const event = JSON.parse(eventJSON);
+        
+        if (event.id === eventId) {
+          return event;
+        }
+      }
+      
+      return null; // Return null if no matching event is found
+    } catch (error) {
+      console.error('Error retrieving event from AsyncStorage:', error);
+      return null;
+    }
+  };
+  
+
 
   useFocusEffect(
     React.useCallback(() => {
     // Define the API URL
-    const apiUrl = 'https://raw.githubusercontent.com/Jxkeorton/APIs/main/locations.json';
+    const apiUrl = 'https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json';
 
     const checkLocationSaved = async () => {
       try {
@@ -45,26 +70,17 @@ function Location() {
 
     checkLocationSaved();
 
-    const fetchData = async () => {
-      // Fetch data from the API
-      fetch(apiUrl)
-      .then((response) => response.json())
-      .then((data) => {
-        // Parse the location ID to an integer
-        const parsedLocationId = parseInt(id);
+    const fetchEvent = async () => {
+      const event = await getEventFromStorage(parseInt(id));
+      
+      if (event) {
+        setLocation(event);
+      } else {
+        console.log('Event not found in AsyncStorage');
+      }
+    };
 
-        // Find the location with the matching ID
-        const location = data.locations.find((loc) => loc.id === parsedLocationId);
-
-        // Set the location in the state
-        setLocation(location);
-      })
-      .catch((error) => {
-        console.error('Error fetching location data:', error);
-      });
-    }
-    
-    fetchData();
+    fetchEvent();
 
   }, [id])
   );

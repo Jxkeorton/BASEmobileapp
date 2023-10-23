@@ -1,6 +1,6 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Text, Alert, TextInput } from 'react-native';
 import React, {useState} from 'react';
-import { ActivityIndicator, Button, Divider } from 'react-native-paper';
+import { ActivityIndicator, Button } from 'react-native-paper';
 import { appSignIn } from '../../store';
 import { useRouter } from 'expo-router';
 
@@ -19,13 +19,14 @@ const Login = () => {
                 <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
                 <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
                 
-                {loading ? <ActivityIndicator size="large" color="#0000ff" /> 
-                : 
+                {loading ? (<ActivityIndicator size="small" color="#0000ff" /> 
+                ) : ( 
                 <>
                     <Button title="Login" 
                         mode="contained"
                         buttonColor='black'
                         onPress={async () => {
+                            setLoading(true);
                             const resp = await appSignIn(email, password);
                             if (resp?.user) {
                                 router.replace("/(tabs)/map");
@@ -42,11 +43,22 @@ const Login = () => {
                                         Alert.alert('Login Error', 'Invalid email or password. Please try again.');
                                     }
                             }
+                            setLoading(false);
                         }} >Login</Button>   
                     <Button textColor='black' title="Register" onPress={() => router.replace("Register")} >Sign Up here!</Button>
                     <Button textColor='black' title="Forgot Password" onPress={() => router.replace("Reset")} >Forgot Password</Button>
                 </>
-                }
+                )}
+                {/* Privacy Policy Link */}
+                <Button 
+                    textColor='black' 
+                    style={styles.privacyPolicyLink}
+                    onPress={() => {
+                        router.push('/components/PrivacyPolicy.js');
+                    }}
+                >
+                    Privacy Policy
+                </Button>
             </KeyboardAvoidingView>
         </View>
         </TouchableWithoutFeedback>
@@ -73,5 +85,11 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
         color: '#888'
+    },
+    privacyPolicyLink: {
+        textAlign: 'center',
+        color: '#00ABF0',
+        textDecorationLine: 'underline', 
+        marginTop: 20, 
     }
 })

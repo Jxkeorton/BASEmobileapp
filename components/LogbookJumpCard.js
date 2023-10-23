@@ -81,7 +81,9 @@ return (
           <Ionicons name='ios-search' size={20} color='#000' />
         </View>
       </View>
-      {filteredJumps.map((jump, index) => (
+
+      {filteredJumps.length > 0 ? (
+        filteredJumps.map((jump, index) => (
         <TouchableOpacity key={index} style={styles.jumpCard} onPress={() => onCardPress(index, jump)}>
           {jump.imageURLs && jump.imageURLs.length > 0 ? (
             <ImageBackground source={{ uri: jump.imageURLs[0] }} style={styles.backgroundImage}>
@@ -99,7 +101,14 @@ return (
             </View>
           )}
         </TouchableOpacity>
-      ))}
+      ))
+    ) : (
+      <View style={styles.emptyMessage}>
+        <Text style={styles.emptyMessageText}>
+          Add jumps using the + button, and you can edit the total jump number within your profile.
+        </Text>
+      </View>
+    )}
     </ScrollView>
 )
 };
@@ -167,5 +176,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginRight: 10,
         marginBottom: 10, 
+    },
+    emptyMessage: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    emptyMessageText: {
+      fontWeight: 'bold',
+      fontSize: 16,
+      textAlign: 'center',
     },
   });

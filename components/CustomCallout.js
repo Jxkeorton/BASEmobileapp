@@ -6,6 +6,9 @@ import { router, useFocusEffect} from 'expo-router';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../firebaseConfig';
 import { onSaveToggle } from '../store';
 
+//async storage
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export default function CustomCallout({info}) {
   const [Saved, setSaved] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,7 +38,27 @@ export default function CustomCallout({info}) {
     };
 
     checkLocationSaved();
-  }, [info.id]));
+
+    const saveEventToStorage = async (eventInfo) => {
+      try {
+        if (eventInfo) {
+          // Convert the event object to a JSON string
+          const eventJSON = JSON.stringify(eventInfo);
+
+          // Save the event data to AsyncStorage
+          await AsyncStorage.setItem('selectedEvent', eventJSON);
+
+          // Optionally, you can display a message or perform any other action after saving.
+          console.log('Event saved to AsyncStorage:', eventInfo);
+        }
+      } catch (error) {
+        console.error('Error saving event to AsyncStorage:', error);
+      }
+    };
+
+    saveEventToStorage();
+
+  }, [info]));
 
   // toggle save when save button pressed 
   const onSave = async () => {
@@ -68,6 +91,9 @@ export default function CustomCallout({info}) {
           <Text style={styles.calloutTitle}>{info.name.toUpperCase()}</Text>
           <Text style={styles.calloutCoordinates}>
             Rock Drop: {info.details.rockdrop ? `${info.details.rockdrop} ft` : '?' }
+          </Text>
+          <Text style={styles.calloutCoordinates}>
+            Total: {info.details.total ? `${info.details.total} ft` : '?' }
           </Text>
           {isLoggedIn && (
             <TouchableOpacity

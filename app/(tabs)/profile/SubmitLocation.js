@@ -22,6 +22,9 @@ const SubmitLocation = () => {
     const [visible, setVisible] = useState(false);
     const [permission, requestPermission] = ImagePicker.useCameraPermissions();
 
+    const [imageLoading, setImageLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
+
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
     const containerStyle = {backgroundColor: 'white', padding: 20};
@@ -43,12 +46,15 @@ const SubmitLocation = () => {
 
     // when form submitted
     const handleSubmit = async () => {
+      setLoading(true);
       try {
         await submitLocationsHandler({ formData });
         // Optionally, you can navigate to another screen or display a success message here.
       } catch (error) {
         Alert.alert('Error', 'An error occurred while submitting the location.');
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -65,6 +71,7 @@ const SubmitLocation = () => {
 
 // if choosing new image from camera roll this function opens album 
   const pickImage = async () => {
+    setImageLoading(true);
     try {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -80,11 +87,14 @@ const SubmitLocation = () => {
     }
   } catch (e) {
     Alert.alert("Error Uploading Image " + e.message);
+  } finally {
+    setImageLoading(false);
   }
   };
 
   // if taking image this function opens the camera 
   const takePhoto = async () => {
+    setImageLoading(true);
     try {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
@@ -100,6 +110,8 @@ const SubmitLocation = () => {
     }
     } catch (e) {
       Alert.alert("Error Uploading Image " + e.message);
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -146,7 +158,24 @@ const SubmitLocation = () => {
                     <TextInput value={openedDate} style={styles.textInput} placeholder='Opened Date' autoCapitalize='none' onChangeText={(text) => setOpenedDate(text)}></TextInput>
                     <Button onPress={uploadImage} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Add Images</Text></Button>
 
-                    <Button onPress={handleSubmit} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Submit</Text></Button>
+                    {imageLoading ? (
+                      <Text style={styles.imageCountText}>Loading images <ActivityIndicator size="small" color="#0000ff" /></Text>
+                    ) : (
+                      <></>
+                    )}
+
+                    {images.length > 0 ? (
+                      <Text>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
+                    ) : (
+                      <></>
+                    )}
+
+                    {loading ? (
+                      <ActivityIndicator size="small" color="#0000ff" />
+                    ) : (
+                      <Button onPress={handleSubmit} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Submit</Text></Button>
+                    )}
+                    
                 </KeyboardAvoidingView>
             </View>
             </ScrollView>
@@ -199,5 +228,10 @@ const styles = StyleSheet.create({
       backgroundColor: '#00ABF0',
       alignItems: 'center',
       marginVertical: 7,
-    }
+    },
+    imageCountText: {
+      marginTop: 8, 
+      fontSize: 16,
+      color: 'gray', 
+  },
 })

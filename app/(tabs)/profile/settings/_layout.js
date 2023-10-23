@@ -37,6 +37,12 @@ export default () => {
                 title: "Delete Account",
             }}
         />
+        <Stack.Screen
+            name="Policies"
+            options={{
+                title: "Privacy Policy",
+            }}
+        />
     </Stack>
     )
 };

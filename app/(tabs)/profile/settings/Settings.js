@@ -10,6 +10,7 @@ const Settings = () => {
     { key: 'contactUs', label: 'Contact Us' },
     { key: 'logout', label: 'Logout' },
     { key: 'deleteAccount', label: 'Delete Account' },
+    { key: 'policies', label: 'Privacy Policy' },
   ];
 
   // Function to render each item in the FlatList
@@ -37,6 +38,10 @@ const Settings = () => {
       case 'deleteAccount':
         // Handle 'Delete Account' press
         router.push('/profile/settings/DeleteAccount')
+        break;
+      case 'policies':
+        // Handle 'Privacy policy' press
+        router.push('/profile/settings/Policies')
         break;
       default:
         
