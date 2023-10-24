@@ -27,6 +27,7 @@ const EditProfile = () => {
   const [jumpNumber, setJumpNumber] = useState(false);
 
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [ imageChangeLoading, setImageChangeLoading] = useState(false);
 
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
@@ -70,6 +71,7 @@ const EditProfile = () => {
 
   // if choosing new image from camera roll this function opens album 
   const pickImage = async () => {
+    setImageChangeLoading(true);
     try {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -91,11 +93,13 @@ const EditProfile = () => {
     }
   } catch (e) {
     Alert.alert("Error Uploading Image " + e.message);
+    setImageChangeLoading(false);
   }
   };
 
   // if taking image this function opens the camera 
   const takePhoto = async () => {
+    setImageChangeLoading(true);
     try {
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
@@ -115,6 +119,8 @@ const EditProfile = () => {
     }
     } catch (e) {
       Alert.alert("Error Uploading Image " + e.message);
+    } finally {
+      setImageChangeLoading(false);
     }
   };
 
@@ -131,19 +137,26 @@ const EditProfile = () => {
 
   const RenderInner = () => (
     <View style={styles.panel}>
-      <View style={{alignItems: 'center'}}>
-        <Text style={styles.panelTitle}>Upload Photo</Text>
-        <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
-      </View>
-      <TouchableOpacity style={styles.panelButton} onPress={takePhoto}>
-        <Text style={styles.panelButtonTitle}>Take Photo</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
-        <Text style={styles.panelButtonTitle}>Choose From Library</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.panelButton} onPress={hideModal}>
-        <Text style={styles.panelButtonTitle}>Cancel</Text>
-      </TouchableOpacity>
+      {!imageChangeLoading ? (
+        <>
+          <View style={{alignItems: 'center'}}>
+            <Text style={styles.panelTitle}>Upload Photo</Text>
+            <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
+          </View>
+          <TouchableOpacity style={styles.panelButton} onPress={takePhoto}>
+            <Text style={styles.panelButtonTitle}>Take Photo</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
+            <Text style={styles.panelButtonTitle}>Choose From Library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.panelButton} onPress={hideModal}>
+            <Text style={styles.panelButtonTitle}>Cancel</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <ActivityIndicator style={{alignItems: 'center', justifyContent: 'center'}} />
+      )}
+
     </View>
   );
 
