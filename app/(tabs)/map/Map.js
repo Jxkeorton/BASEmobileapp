@@ -38,14 +38,24 @@ const saveEventToStorage = async (event) => {
       id: parseInt(event.id, 10) // Parse the ID as an integer
     };
 
-    // Convert the modified event object to a JSON string
-    const eventJSON = JSON.stringify(eventWithIntegerId);
+    let savedEvents = await AsyncStorage.getItem('savedEvents');
+    if (savedEvents) {
+      savedEvents = JSON.parse(savedEvents);
+    } else {
+      savedEvents = [];
+    }
+
+    // Add the new event to the list
+    savedEvents.push(eventWithIntegerId);
+
+    // Ensure that the list doesn't exceed the maximum limit (10)
+    if (savedEvents.length > 10) {
+      savedEvents.shift(); // Remove the oldest event
+    }
+
+    await AsyncStorage.setItem('savedEvents', JSON.stringify(savedEvents));
     
-    // Save the event data to AsyncStorage
-    await AsyncStorage.setItem('selectedEvent', eventJSON);
-    
-    // Optionally, you can display a message or perform any other action after saving.
-    console.log('Event saved to AsyncStorage:', eventWithIntegerId);
+    console.log('Event saved to AsyncStorage:', eventWithIntegerId , savedEvents.length);
   } catch (error) {
     console.error('Error saving event to AsyncStorage:', error);
   }

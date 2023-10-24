@@ -21,22 +21,18 @@ function Location() {
 
   const getEventFromStorage = async (eventId) => {
     try {
-      // Retrieve the event data from AsyncStorage
-      const eventJSON = await AsyncStorage.getItem('selectedEvent');
-      
-      if (eventJSON) {
-        // Parse the JSON data to get the event object
-        const event = JSON.parse(eventJSON);
-        
-        if (event.id === eventId) {
-          return event;
-        }
+      let savedEvents = await AsyncStorage.getItem('savedEvents');
+      if (savedEvents) {
+        savedEvents = JSON.parse(savedEvents);
+        // Find the event with the matching ID
+        const event = savedEvents.find((event) => event.id === eventId);
+        return event; // Return the event with the matching ID
+      } else {
+        return null; // No saved events found
       }
-      
-      return null; // Return null if no matching event is found
     } catch (error) {
       console.error('Error retrieving event from AsyncStorage:', error);
-      return null;
+      return null; // Handle the error and return null
     }
   };
   

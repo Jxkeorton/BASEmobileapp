@@ -6,9 +6,6 @@ import { router, useFocusEffect} from 'expo-router';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../firebaseConfig';
 import { onSaveToggle } from '../store';
 
-//async storage
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
 export default function CustomCallout({info}) {
   const [Saved, setSaved] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -38,25 +35,6 @@ export default function CustomCallout({info}) {
     };
 
     checkLocationSaved();
-
-    const saveEventToStorage = async (eventInfo) => {
-      try {
-        if (eventInfo) {
-          // Convert the event object to a JSON string
-          const eventJSON = JSON.stringify(eventInfo);
-
-          // Save the event data to AsyncStorage
-          await AsyncStorage.setItem('selectedEvent', eventJSON);
-
-          // Optionally, you can display a message or perform any other action after saving.
-          console.log('Event saved to AsyncStorage:', eventInfo);
-        }
-      } catch (error) {
-        console.error('Error saving event to AsyncStorage:', error);
-      }
-    };
-
-    saveEventToStorage();
 
   }, [info]));
 
