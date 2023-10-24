@@ -14,6 +14,7 @@ import React, {useState} from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { submitJumpHandler } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
+import { router } from 'expo-router';
 
 const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [location, setLocation] = useState('');
@@ -67,6 +68,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
           await submitJumpHandler({ formData });
           //hidemodal
           onClose()
+          router.replace('/(tabs)/logbook/LogBook')
 
            // Clear the form fields by resetting state to initial values
             setLocation('');

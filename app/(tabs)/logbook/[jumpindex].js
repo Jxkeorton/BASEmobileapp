@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocalSearchParams, useFocusEffect, Stack} from 'expo-router';
 import { getLoggedJumps } from "../../../store";
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { ActivityIndicator } from "react-native-paper";
 import { Image } from 'expo-image';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
@@ -55,8 +55,9 @@ const jumpDetails = () => {
         // Call the deleteJumpHandler with the jump ID
         await deleteJumpHandler(jumpId);
         await takeawayJumpNumber();
-    
+
         router.back()
+        
 
       } catch (error) {
         console.error('Error deleting jump:', error);

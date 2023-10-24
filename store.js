@@ -18,10 +18,12 @@ import {
     arrayUnion,
     arrayRemove 
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, uploadBytes } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
+import { v4 as uuidv4 } from 'uuid';
+
 
 const router = useRouter()
 
@@ -326,9 +328,13 @@ export const takeawayJumpNumber = async () => {
                 const imageURL = await getDownloadURL(storageRef);
                 imageURLs.push(imageURL);
               }
+
+            // Generate a unique ID for the new jump using the uuid package
+            const jumpId = uuidv4();
     
             // Create submission data without images
             const submissionData = {
+                id: jumpId,
                 location: formData.location,
                 exitType: formData.exitType,
                 delay: formData.delay,
@@ -377,9 +383,8 @@ export const takeawayJumpNumber = async () => {
         const jumpIndex = jumps.findIndex((jump) => jump.id === jumpId);
     
         if (jumpIndex !== -1) {
-          // If the jump with the specified ID is found, remove it from the array
-          jumps.splice(jumpIndex, 1);
-    
+          const jumpToDelete = jumps[jumpIndex];
+          
           // Get the user's ID
           const user = FIREBASE_AUTH.currentUser;
           const userId = user.uid;
@@ -387,17 +392,27 @@ export const takeawayJumpNumber = async () => {
           // Get the user's logbook document reference
           const logbookRef = doc(FIREBASE_DB, 'logbook', userId);
     
+          // Delete the images from Firebase Storage
+          for (const imageURL of jumpToDelete.imageURLs) {
+            const storageRef = ref(FIREBASE_STORAGE, imageURL);
+            await deleteObject(storageRef);
+          }
+    
+          // Remove the jump with the specified ID from the array
+          jumps.splice(jumpIndex, 1);
+    
           // Update the logbook document with the updated jumps array
           await updateDoc(logbookRef, {
             jumps: jumps,
           });
     
-          console.log('Jump deleted successfully.');
+          console.log('Jump deleted successfully, including attached images.');
         }
       } catch (error) {
         console.error('Error deleting jump:', error);
       }
     };
+    
 
     // When logbook jump is added to firebase 
     export const submitDetailsHandler = async ({formData}) => {
