@@ -83,6 +83,19 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         }
       };
 
+
+      const handleCancel = () => {
+
+        // close modal
+        onClose();
+        // clear state 
+        setLocation('');
+        setExitType('');
+        setDelay('');
+        setDetails('');
+        setDate('');
+        setImage([]);
+      };
    
 
    
@@ -162,7 +175,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                     <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
                       <Text style={styles.panelButtonTitle}>Submit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.panelButton} onPress={onClose}>
+                    <TouchableOpacity style={styles.panelButton} onPress={handleCancel}>
                     <Text style={styles.panelButtonTitle}>Cancel</Text>
                     </TouchableOpacity>
                   </>

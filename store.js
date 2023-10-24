@@ -368,6 +368,37 @@ export const takeawayJumpNumber = async () => {
         }; 
     };
 
+    export const deleteJumpHandler = async (jumpId) => {
+      try {
+        // Fetch the user's logged jumps
+        const jumps = await getLoggedJumps();
+    
+        // Find the jump with the specified ID
+        const jumpIndex = jumps.findIndex((jump) => jump.id === jumpId);
+    
+        if (jumpIndex !== -1) {
+          // If the jump with the specified ID is found, remove it from the array
+          jumps.splice(jumpIndex, 1);
+    
+          // Get the user's ID
+          const user = FIREBASE_AUTH.currentUser;
+          const userId = user.uid;
+    
+          // Get the user's logbook document reference
+          const logbookRef = doc(FIREBASE_DB, 'logbook', userId);
+    
+          // Update the logbook document with the updated jumps array
+          await updateDoc(logbookRef, {
+            jumps: jumps,
+          });
+    
+          console.log('Jump deleted successfully.');
+        }
+      } catch (error) {
+        console.error('Error deleting jump:', error);
+      }
+    };
+
     // When logbook jump is added to firebase 
     export const submitDetailsHandler = async ({formData}) => {
       //get user from firebase

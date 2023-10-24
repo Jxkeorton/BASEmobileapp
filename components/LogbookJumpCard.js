@@ -68,6 +68,7 @@ const LogbookJumpCard = () => {
 
 return (
     <ScrollView contentContainerStyle={styles.container}>
+      
       <View style={styles.searchBox} >
         <View style={styles.textInputContainer} >
           <TextInput 
@@ -105,10 +106,14 @@ return (
     ) : (
       <View style={styles.emptyMessage}>
         <Text style={styles.emptyMessageText}>
-          Add jumps using the + button, and you can edit the total jump number within your profile.
+          Add jumps using the + button
+        </Text>
+        <Text style={[styles.emptyMessageText, {marginTop: 30}]}>
+            You can edit the total jump number within your profile/edit profile.
         </Text>
       </View>
     )}
+    
     </ScrollView>
 )
 };
@@ -178,9 +183,10 @@ const styles = StyleSheet.create({
         marginBottom: 10, 
     },
     emptyMessage: {
-      flex: 1,
+      position: 'fixed',
       alignItems: 'center',
       justifyContent: 'center',
+      marginTop: 20,
     },
     emptyMessageText: {
       fontWeight: 'bold',

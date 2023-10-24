@@ -4,7 +4,9 @@ import { getLoggedJumps } from "../../../store";
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { ActivityIndicator } from "react-native-paper";
 import { Image } from 'expo-image';
-import { Card, Title, Paragraph } from 'react-native-paper';
+import { Card, Title, Paragraph, Button } from 'react-native-paper';
+import { router } from "expo-router";
+import { deleteJumpHandler, takeawayJumpNumber } from "../../../store";
 
 const jumpDetails = () => {
     const [jump , setJump] = useState(null)
@@ -43,6 +45,24 @@ const jumpDetails = () => {
             loadData();
         }, [jumpindex])
     )
+
+    const handleDeleteJump = async () => {
+      try {
+        // You should have access to jump ID or some unique identifier
+        // for the jump you want to delete. Replace 'jump.id' with the actual ID.
+        const jumpId = jump.id;
+    
+        // Call the deleteJumpHandler with the jump ID
+        await deleteJumpHandler(jumpId);
+        await takeawayJumpNumber();
+    
+        router.back()
+
+      } catch (error) {
+        console.error('Error deleting jump:', error);
+      }
+    };
+
 
     if (!jump) {
       return <ActivityIndicator />;
@@ -99,6 +119,15 @@ const jumpDetails = () => {
             <Text>No images available</Text>
           )}
         </View>
+
+        <Button
+          style={styles.deleteButton}
+          mode="contained"
+          buttonColor="red"
+          onPress={handleDeleteJump}
+        >
+          Delete Jump
+        </Button>
           
       </ScrollView>
     )
