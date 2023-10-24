@@ -12,12 +12,21 @@ import { doc, getDoc } from 'firebase/firestore';
 // async storage 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+//Modal imports 
+import { Portal, PaperProvider } from 'react-native-paper'
+import SubmitDetailsModal from '../../../components/SubmitDetailsModal';
+
 
 function Location() {
   const [location , setLocation] = useState(null)
   const [isSaved , setSaved] = useState(false)
   const [isLoggedIn , setIsLoggedIn] = useState(false)
   const { id } = useLocalSearchParams();
+
+   //Modal
+   const [visible, setVisible] = useState(false);
+   const showModal = () => setVisible(true);
+   const hideModal = () => setVisible(false);
 
   const getEventFromStorage = async (eventId) => {
     try {
@@ -40,8 +49,6 @@ function Location() {
 
   useFocusEffect(
     React.useCallback(() => {
-    // Define the API URL
-    const apiUrl = 'https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json';
 
     const checkLocationSaved = async () => {
       try {
@@ -101,7 +108,17 @@ function Location() {
   }
 
   return (
+    <PaperProvider>
     <View style={styles.container}>
+
+        <Portal>
+          <SubmitDetailsModal
+            visible={visible}
+            onClose={hideModal}
+            info={location}
+          />
+        </Portal>
+        
       {location ? (
         <React.Fragment>
           <Stack.Screen
@@ -111,8 +128,13 @@ function Location() {
           />
 
         <View style={styles.centeredContainer}>
+
+        
+
+
           <View style={styles.buttonContainer}>
             <Button style={styles.button} mode="contained" onPress={openMaps}>Open in maps</Button>
+            <Button style={styles.button} mode="contained" onPress={showModal}>Update</Button>
             <Button 
               style={[
                 styles.button,
@@ -211,6 +233,7 @@ function Location() {
         <ActivityIndicator style={styles.loadingIndicator} size="large" color="#00ABF0" />
       )}
     </View>
+    </PaperProvider>
   )
 }
 
@@ -265,12 +288,13 @@ const styles = StyleSheet.create({
   },
   openedByText: {
     fontSize: 11,
-    marginRight: 20,
+    marginHorizontal: 10,
+    marginVertical: 5,
   },
   openedByContainer: {
-    alignItems: 'center',
-    marginVertical: 5,
     flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'flex-start',
     justifyContent: 'center',
   },
   loadingIndicator: {

@@ -1,4 +1,4 @@
-import { View, TextInput, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
+import { View, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, {useState} from 'react'
 import { useFocusEffect } from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
@@ -44,6 +44,7 @@ const LogBook = () => {
     <ScrollView style={styles.container}>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View>
+        
       <Portal>
         <LogbookModal
           visible={visible}

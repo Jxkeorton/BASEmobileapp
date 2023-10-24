@@ -368,6 +368,72 @@ export const takeawayJumpNumber = async () => {
         }; 
     };
 
+    // When logbook jump is added to firebase 
+    export const submitDetailsHandler = async ({formData}) => {
+      //get user from firebase
+      const user = FIREBASE_AUTH.currentUser;
+      
+      //upload images to storage and get download URL
+      try {
+          // Upload the image files to Firebase Storage
+          const imageURLs = [];
+          for (const uri of formData.images) {
+              const response = await fetch(uri);
+              const blob = await response.blob();
+              const storageRef = ref(FIREBASE_STORAGE, `details/${Date.now()}.jpg`);
+              await uploadBytes(storageRef, blob);
+              const imageURL = await getDownloadURL(storageRef);
+              imageURLs.push(imageURL);
+            }
+  
+          // Create submission data without images
+          const submissionData = {
+              rockDrop: formData.rockDrop,
+              total: formData.total,
+              anchor: formData.anchor,
+              access: formData.access,
+              notes: formData.notes,
+              coordinates: formData.coordinates,
+              cliffAspect: formData.cliffAspect,
+              videoLink: formData.videoLink,
+              openedBy: formData.openedBy,
+              openedDate: formData.openedDate,
+              imageURLs
+          };
+
+          //add formdata and image urls to users logbook document within firebase
+              const userId = user.uid;
+          
+              // Get the user's logbook document reference
+              const detailsRef = doc(FIREBASE_DB, 'detailSubmits', userId);
+              
+              // Check if the document exists
+              const detailsSnapshot = await getDoc(detailsRef);
+
+              if (!detailsSnapshot.exists()) {
+              // If the logbook document doesn't exist, create it with the user's ID
+              await setDoc(detailsRef, { jumps: [] });
+              }
+
+              const existingSubmitData = detailsSnapshot.data() || { detailSubmits: [] };
+          
+              // Add the new jump to the existing jumps array
+              existingSubmitData.detailSubmits.push(submissionData);
+          
+              // Update the logbook document with the new jumps array
+              await setDoc(detailsRef, existingSubmitData);
+          
+              console.log('submitted successfully.');
+              Alert.alert('Update request sent successfully');
+
+
+      } catch (e) {
+          Alert.alert(e.message);
+          console.log(e);
+      }; 
+  };
+
+
     export const getLoggedJumps = async () => {
         try {
           const user = FIREBASE_AUTH.currentUser;
