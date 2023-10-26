@@ -16,14 +16,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.jakeorton.basemap"
+      "bundleIdentifier": "com.jxkeorton.basemobileapp"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/bitmap.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "dev.jakeorton.basemap"
+      "package": "com.jxkeorton.basemobileapp"
     },
     "web": {
       "favicon": "./assets/favicon.png",
