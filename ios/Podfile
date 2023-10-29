@@ -84,8 +84,4 @@ target 'basemobileapp' do
       Pod::UI.warn e
     end
   end
-
-  # Mapbox SDK pod here
-  pod 'MapboxMaps', '10.16.1'
-
 end

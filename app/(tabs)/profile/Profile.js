@@ -17,11 +17,12 @@ import {
   Caption,
   Text,
   TouchableRipple,
-  Button,
 } from 'react-native-paper';
 import { View, StyleSheet, Alert, SafeAreaView, Share, ScrollView } from 'react-native';
 import SavedLocationsCard from '../../../components/SavedLocationsCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const router = useRouter();
 
@@ -76,10 +77,13 @@ const Profile = () => {
   
               // Update the state with filtered data
               setFilteredLocations(filteredData);
+              
             })
             .catch((error) => {
               console.error('Error fetching data from API:', error);
             });
+            
+            await AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations));
         } catch (error) {
           console.error('Error checking if location saved:', error);
         }

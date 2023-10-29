@@ -8,6 +8,7 @@ const router = useRouter()
 
 const SavedLocationsCard = ({ data, onDelete }) => {
 
+
     // function to direct to the locations details page
    const onDetailsPress = (itemId) => {
     router.push(`/(tabs)/map/${itemId}`)

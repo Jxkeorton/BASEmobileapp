@@ -28,17 +28,21 @@ function Location() {
    const showModal = () => setVisible(true);
    const hideModal = () => setVisible(false);
 
-  const getEventFromStorage = async (eventId) => {
+   const getEventFromStorage = async (eventId) => {
     try {
-      let savedEvents = await AsyncStorage.getItem('savedEvents');
-      if (savedEvents) {
-        savedEvents = JSON.parse(savedEvents);
-        // Find the event with the matching ID
-        const event = savedEvents.find((event) => event.id === eventId);
-        return event; // Return the event with the matching ID
-      } else {
-        return null; // No saved events found
-      }
+      // Retrieve 'filteredLocations' and 'savedItems' from AsyncStorage
+      const filteredLocations = await AsyncStorage.getItem('filteredLocations');
+      const savedItems = await AsyncStorage.getItem('savedItems');
+  
+      // Parse the retrieved data
+      const parsedFilteredLocations = JSON.parse(filteredLocations) || [];
+      const parsedSavedItems = JSON.parse(savedItems) || [];
+  
+      // Search for the event with the matching ID in both arrays
+      const matchingEvent = parsedFilteredLocations.find((event) => event.id === eventId)
+        || parsedSavedItems.find((event) => event.id === eventId);
+  
+      return matchingEvent;
     } catch (error) {
       console.error('Error retrieving event from AsyncStorage:', error);
       return null; // Handle the error and return null

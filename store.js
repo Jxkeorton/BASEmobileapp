@@ -22,6 +22,7 @@ import { ref, uploadBytesResumable, getDownloadURL, uploadBytes, deleteObject } 
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
 import { useRouter } from 'expo-router';
 import { Alert } from 'react-native';
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
 
@@ -358,6 +359,11 @@ export const takeawayJumpNumber = async () => {
                 }
 
                 const existingLogbookData = logbookSnapshot.data() || { jumps: [] };
+
+                // Add the new jump to the existing jumps array
+                if (!Array.isArray(existingLogbookData.jumps)) {
+                  existingLogbookData.jumps = []; // Initialize it as an array if it's not
+                }
             
                 // Add the new jump to the existing jumps array
                 existingLogbookData.jumps.push(submissionData);

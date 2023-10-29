@@ -1,8 +1,9 @@
-import { Button, ActivityIndicator } from 'react-native-paper'
+import { Button, ActivityIndicator, Checkbox } from 'react-native-paper'
 import { useState } from 'react';
 import { useRouter } from 'expo-router'
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
 import { appSignUp } from '../../store';
+import TermsAndConditionsScreen from '../../components/Terms';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -10,6 +11,8 @@ const Register = () => {
     const [displayName, setDisplayName] = useState('');
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
+    const [termsChecked, setTermsChecked] = useState(false);
+
 
     const router = useRouter()
 
@@ -21,6 +24,16 @@ const Register = () => {
                     <TextInput value={username} style={styles.textInput} placeholder='Username' autoCapitalize='none' onChangeText={(text) => setUsername(text)}></TextInput>
                     <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
                     <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
+
+                    <View style={styles.checkboxContainer}>
+                        <Checkbox
+                            status={termsChecked ? 'checked' : 'unchecked'}
+                            onPress={() => setTermsChecked(!termsChecked)}
+                        />
+                        <Text>
+                            I agree to the <Button textColor='black' onPress={() => router.push('/components/Terms.js')}>Terms and Conditions</Button>
+                        </Text>
+                    </View>
             
                     {loading ? (<ActivityIndicator size="small" color="#0000ff" /> 
                     ) : (
@@ -30,6 +43,10 @@ const Register = () => {
                         mode="contained"
                         buttonColor='black'
                         onPress={async () => {
+                            if (!termsChecked) {
+                                Alert.alert('Terms and Conditions', 'You must agree to the Terms and Conditions to register.');
+                                return;
+                              }
                             setLoading(true);
                             const resp = await appSignUp(email, password, displayName, username);
                             if (resp?.user) {

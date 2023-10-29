@@ -19,12 +19,14 @@
     "expo-image-picker": "~14.3.2",
     "expo-linking": "~5.0.2",
     "expo-router": "2.0.0",
+    "expo-splash-screen": "~0.20.5",
     "expo-status-bar": "~1.6.0",
     "firebase": "^10.1.0",
     "pullstate": "^1.25.0",
     "react": "18.2.0",
     "react-native": "0.72.5",
     "react-native-gesture-handler": "~2.12.0",
+    "react-native-get-random-values": "^1.9.0",
     "react-native-map-clustering": "^3.4.2",
     "react-native-maps": "^1.7.1",
     "react-native-paper": "^5.10.4",
@@ -35,11 +37,13 @@
     "react-native-web": "~0.19.6",
     "uglify-js": "^3.17.4",
     "uuid": "^9.0.1",
-    "expo-splash-screen": "~0.20.5"
+    "expo-location": "~16.1.0",
+    "expo-dev-client": "~2.4.11"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@types/react-native-vector-icons": "^6.4.16"
+    "@types/react-native-vector-icons": "^6.4.16",
+    "@types/uuid": "^9.0.6"
   },
   "overrides": {
     "metro": "0.76.0",
