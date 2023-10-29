@@ -1,9 +1,9 @@
 import { Button, ActivityIndicator, Checkbox } from 'react-native-paper'
 import { useState } from 'react';
 import { useRouter } from 'expo-router'
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Text } from 'react-native';
 import { appSignUp } from '../../store';
-import TermsAndConditionsScreen from '../../components/Terms';
+
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -26,13 +26,17 @@ const Register = () => {
                     <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
 
                     <View style={styles.checkboxContainer}>
-                        <Checkbox
-                            status={termsChecked ? 'checked' : 'unchecked'}
-                            onPress={() => setTermsChecked(!termsChecked)}
-                        />
-                        <Text>
-                            I agree to the <Button textColor='black' onPress={() => router.push('/components/Terms.js')}>Terms and Conditions</Button>
-                        </Text>
+                        <View style={styles.checkbox}>
+                            <Checkbox
+                                
+                                color="black" 
+                                status={termsChecked ? 'checked' : 'unchecked'}
+                                onPress={() => setTermsChecked(!termsChecked)}
+                            />
+                        </View>
+                        <Button textColor='black' onPress={() => router.push('/components/Terms.js')}>
+                            I agree to the Terms and Conditions
+                        </Button>
                     </View>
             
                     {loading ? (<ActivityIndicator size="small" color="#0000ff" /> 
@@ -121,5 +125,17 @@ const styles = StyleSheet.create({
         color: '#00ABF0',
         textDecorationLine: 'underline', 
         marginTop: 20, 
-    }
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    checkbox: {
+        borderColor: 'black', // Add the border color here
+        borderWidth: 2, // Add the border width here
+        borderRadius: 4, // Add the border radius here
+        padding: 1, // Adjust the padding as needed
+        marginRight: 10, // Adjust the margin as needed
+    },
 })
