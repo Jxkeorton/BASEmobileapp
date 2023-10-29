@@ -1,11 +1,11 @@
 PODS:
   - boost (1.76.0)
   - DoubleConversion (1.1.6)
-  - EXApplication (5.3.0):
+  - EXApplication (5.3.1):
     - ExpoModulesCore
   - EXConstants (14.4.2):
     - ExpoModulesCore
-  - EXFileSystem (15.4.2):
+  - EXFileSystem (15.4.4):
     - ExpoModulesCore
   - EXFont (11.4.0):
     - ExpoModulesCore
@@ -17,7 +17,7 @@ PODS:
     - ExpoModulesCore
   - EXManifests (0.7.2):
     - ExpoModulesCore
-  - Expo (49.0.6):
+  - Expo (49.0.16):
     - ExpoModulesCore
   - expo-dev-client (2.4.11):
     - EXManifests
@@ -86,7 +86,7 @@ PODS:
     - ExpoModulesCore
   - ExpoKeepAwake (12.3.0):
     - ExpoModulesCore
-  - ExpoModulesCore (1.5.9):
+  - ExpoModulesCore (1.5.11):
     - RCT-Folly (= 2021.07.22.00)
     - React-Core
     - React-NativeModulesApple
@@ -434,7 +434,7 @@ PODS:
     - glog
   - react-native-get-random-values (1.9.0):
     - React-Core
-  - react-native-maps (1.7.1):
+  - react-native-maps (1.8.0):
     - React-Core
   - react-native-safe-area-context (4.6.3):
     - RCT-Folly
@@ -588,7 +588,8 @@ PODS:
   - RNScreens (3.22.1):
     - React-Core
     - React-RCTImage
-  - RNVectorIcons (10.0.0):
+  - RNVectorIcons (10.0.1):
+    - RCT-Folly (= 2021.07.22.00)
     - React-Core
   - SDWebImage (5.15.8):
     - SDWebImage/Core (= 5.15.8)
@@ -829,15 +830,15 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
-  EXApplication: 02655a251434d564bb0e73291f5a490c74b5b76f
+  EXApplication: 042aa2e3f05258a16962ea1a9914bf288db9c9a1
   EXConstants: ce5bbea779da8031ac818c36bea41b10e14d04e1
-  EXFileSystem: d7f59869885cfeab3ac771e2a8d0f5ed98cd3fdb
+  EXFileSystem: 2b826a3bf1071a4b80a8457e97124783d1ac860e
   EXFont: 738c44c390953ebcbab075a4848bfbef025fd9ee
   EXImageLoader: 34b214f9387e98f3c73989f15d8d5b399c9ab3f7
   EXJSONUtils: 6802be4282d42b97c51682468ddc1026a06f8276
   EXLocation: a425ace19c0445e7ea9702982fc6b9a402791510
   EXManifests: cf66451b11b2c2f6464917528d792759f7fd6ce0
-  Expo: 5601f86edc81c7e7e1772b9af9ae58fa3b45ad53
+  Expo: fcfd60c1ed6806dee5103b210335ae0c72f675ed
   expo-dev-client: a97a68508a6104ad99f4b2613fd808cda7a4186c
   expo-dev-launcher: 7336e6dc8ed51b87225f8a96d787add81a99748c
   expo-dev-menu: 9542570483a647626570cb4333c80add4cea1254
@@ -846,7 +847,7 @@ SPEC CHECKSUMS:
   ExpoImage: 912063c1082ed72f8ae6bbbe0196602257022fa9
   ExpoImagePicker: c58fdf28be551681a8edc550bcec76c397a8dfcd
   ExpoKeepAwake: be4cbd52d9b177cde0fd66daa1913afa3161fc1d
-  ExpoModulesCore: e4e437139259c5a73530a8895af69774ff8ec12d
+  ExpoModulesCore: 51cb2e7ab4c8da14be3f40b66d54c1781002e99d
   EXSplashScreen: c0e7f2d4a640f3b875808ed0b88575538daf6d82
   EXUpdatesInterface: 82ed48d417cdcd376c12ca1c2ce390d35500bed6
   FBLazyVector: 71803c074f6325f10b5ec891c443b6bbabef0ca7
@@ -875,7 +876,7 @@ SPEC CHECKSUMS:
   React-jsinspector: aef73cbd43b70675f572214d10fa438c89bf11ba
   React-logger: 2e4aee3e11b3ec4fa6cfd8004610bbb3b8d6cca4
   react-native-get-random-values: dee677497c6a740b71e5612e8dbd83e7539ed5bb
-  react-native-maps: 667f9b975549c6fa9b1631bf859440f68ebd3b8f
+  react-native-maps: f699e0753c22c4d5c3a44d03895b193a4dbca6c2
   react-native-safe-area-context: 36cc67648134e89465663b8172336a19eeda493d
   React-NativeModulesApple: 797bc6078d566eef3fb3f74127e6e1d2e945a15f
   React-perflogger: cd8886513f68e1c135a1e79d20575c6489641597
@@ -898,7 +899,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: c0d04458598fcb26052494ae23dda8f8f5162b13
   RNReanimated: 9f7068e43b9358a46a688d94a5a3adb258139457
   RNScreens: 50ffe2fa2342eabb2d0afbe19f7c1af286bc7fb3
-  RNVectorIcons: 8b5bb0fa61d54cd2020af4f24a51841ce365c7e9
+  RNVectorIcons: ace237de89f1574ef3c963ae9d5da3bd6fbeb02a
   SDWebImage: cb032eba469c54e0000e78bcb0a13cdde0a52798
   SDWebImageAVIFCoder: 8348fef6d0ec69e129c66c9fe4d74fbfbf366112
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c

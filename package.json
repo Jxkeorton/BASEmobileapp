@@ -9,15 +9,19 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@babel/plugin-transform-class-properties": "^7.22.5",
+    "@babel/plugin-transform-optional-chaining": "^7.23.0",
     "@expo/metro-config": "^0.10.7",
     "@expo/vector-icons": "^13.0.0",
     "@npmcli/fs": "^3.1.0",
     "@react-native-async-storage/async-storage": "^1.19.3",
     "expo": "^49.0.6",
     "expo-constants": "~14.4.2",
+    "expo-dev-client": "~2.4.11",
     "expo-image": "~1.3.4",
     "expo-image-picker": "~14.3.2",
     "expo-linking": "~5.0.2",
+    "expo-location": "~16.1.0",
     "expo-router": "2.0.0",
     "expo-splash-screen": "~0.20.5",
     "expo-status-bar": "~1.6.0",
@@ -36,9 +40,7 @@
     "react-native-vector-icons": "^10.0.0",
     "react-native-web": "~0.19.6",
     "uglify-js": "^3.17.4",
-    "uuid": "^9.0.1",
-    "expo-location": "~16.1.0",
-    "expo-dev-client": "~2.4.11"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

@@ -55,7 +55,6 @@ const saveEventToStorage = async (event) => {
 
     await AsyncStorage.setItem('savedEvents', JSON.stringify(savedEvents));
     
-    console.log('Event saved to AsyncStorage:', eventWithIntegerId , savedEvents.length);
   } catch (error) {
     console.error('Error saving event to AsyncStorage:', error);
   }

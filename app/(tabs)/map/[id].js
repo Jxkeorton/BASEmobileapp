@@ -31,12 +31,14 @@ function Location() {
    const getEventFromStorage = async (eventId) => {
     try {
       // Retrieve 'filteredLocations' and 'savedItems' from AsyncStorage
+     
+      const savedItems = await AsyncStorage.getItem('savedEvents');
       const filteredLocations = await AsyncStorage.getItem('filteredLocations');
-      const savedItems = await AsyncStorage.getItem('savedItems');
   
       // Parse the retrieved data
-      const parsedFilteredLocations = JSON.parse(filteredLocations) || [];
+      
       const parsedSavedItems = JSON.parse(savedItems) || [];
+      const parsedFilteredLocations = JSON.parse(filteredLocations) || [];
   
       // Search for the event with the matching ID in both arrays
       const matchingEvent = parsedFilteredLocations.find((event) => event.id === eventId)

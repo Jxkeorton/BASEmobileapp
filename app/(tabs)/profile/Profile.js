@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 // firebase imports for fetching user data
@@ -82,17 +82,31 @@ const Profile = () => {
             .catch((error) => {
               console.error('Error fetching data from API:', error);
             });
-            
-            await AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations));
+
         } catch (error) {
           console.error('Error checking if location saved:', error);
         }
       };
   
       getLocations();
+  
+      
     }, [])
   );
   
+  useEffect(() => {
+    // This effect will run whenever filteredLocations changes
+    const saveFilteredLocationsToAsyncStorage = async () => {
+      try {
+        await AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations));
+        console.log('Saved locations added to AsyncStorage', filteredLocations.length);
+      } catch (error) {
+        console.error('Error saving filtered locations to AsyncStorage:', error);
+      }
+    };
+
+    saveFilteredLocationsToAsyncStorage();
+  }, [filteredLocations]);
 
 
   // When saved location is deleted/unsaved 
