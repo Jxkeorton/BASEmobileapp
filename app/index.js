@@ -5,7 +5,7 @@ import {
 } from "expo-router";
 import { AuthStore } from "../store";
 import { useEffect } from "react";
-import { ActivityIndicator, MD2Colors, PaperProvider } from "react-native-paper";
+import { ActivityIndicator, MD2Colors} from "react-native-paper";
 
 const Index = () => {
 
@@ -31,12 +31,12 @@ const Index = () => {
   }, [segments, navigationState?.key, initialized]);
 
   return (
-    <PaperProvider>
-      {!navigationState?.key ? <ActivityIndicator animating={true} color={MD2Colors.red800}/> 
-      :
-      <></>
-      }
-    </PaperProvider>
+      <>
+          {!navigationState?.key ? <ActivityIndicator animating={true} color={MD2Colors.red800}/> 
+          :
+          <></>
+          }
+      </> 
   )
 };
 

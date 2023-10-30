@@ -1,7 +1,15 @@
-import { Stack } from "expo-router";
+import { Slot } from "expo-router";
+import { RevenueCatProvider } from "../providers/RevenueCatProvider";
+import { PaperProvider } from "react-native-paper";
 
 export default function Layout(){
     return (
-        <Stack screenOptions={{ headerShown: false}} />
+        <PaperProvider>
+            <RevenueCatProvider>
+                <Slot/>
+            </RevenueCatProvider>
+        </PaperProvider>
+        
+        
     );
 }

@@ -1,9 +1,11 @@
 import { View, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import React, {useState} from 'react'
-import { useFocusEffect } from 'expo-router';
+import React, {useState, useEffect} from 'react'
+import { useFocusEffect , router} from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
+
+import { useRevenueCat } from '../../../providers/RevenueCatProvider';
 
 //Modal imports 
 import { Portal, PaperProvider, Title, Caption } from 'react-native-paper'
@@ -19,6 +21,15 @@ const LogBook = () => {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
+  // checks subscriptions 
+  const { user, restorePermissions } = useRevenueCat();
+
+
+  useEffect(() => {
+    if (!user.pro) {
+      router.replace('/SubscriptionsPage')
+    }
+  }, [user.pro]);
 
    // this hook ensures new saved locations are fetched on screen focus
    useFocusEffect(
@@ -40,6 +51,7 @@ const LogBook = () => {
     );
 
   return (
+    
     <PaperProvider>
     <ScrollView style={styles.container}>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>

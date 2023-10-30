@@ -1,7 +1,7 @@
 import { Button, ActivityIndicator, Checkbox } from 'react-native-paper'
 import { useState } from 'react';
 import { useRouter } from 'expo-router'
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Text } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput } from 'react-native';
 import { appSignUp } from '../../store';
 
 

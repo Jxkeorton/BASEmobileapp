@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { Platform } from 'react-native'
-import Purchases, { LOG_LEVEL, PurchasesPackage } from 'react-native-purchases'
-import { CustomerInfo } from 'react-native-purchases'
+import Purchases, { LOG_LEVEL } from 'react-native-purchases'
 
 // Revenue cat api key
 const APIKeys = {
@@ -9,7 +8,7 @@ const APIKeys = {
     google: 'nullfornow'
 };
 
-const RevenueCatContext = createContext
+const RevenueCatContext = createContext()
 
 // export context for easy use
 export const useRevenueCat = () => {
@@ -24,11 +23,9 @@ export const RevenueCatProvider = ({children}) => {
 
     useEffect(() => {
         const init = async () => {
-            if (Platform.OS === 'ios'){
-                await Purchases.configure({apiKey: APIKeys.apple });
-            } else {
-                await Purchases.configure({ apiKey: APIKeys.google });
-            }
+           
+            Purchases.configure({apiKey: APIKeys.apple });
+            
             setIsReady(true);
 
             Purchases.setLogLevel(LOG_LEVEL.DEBUG);
@@ -89,10 +86,11 @@ export const RevenueCatProvider = ({children}) => {
 
     const value = {
         restorePermissions,
-        user,
+        user: { pro: false }, 
         packages,
         purchasePackage,
-    };
+      };
+      
 
     // return empty fragment if provider is not ready 
     if (!isReady) return <></>;
