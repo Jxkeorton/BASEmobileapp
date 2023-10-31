@@ -27,7 +27,7 @@ const LogBook = () => {
 
   useEffect(() => {
     if (!user.pro) {
-      router.replace('/SubscriptionsPage')
+      router.replace('/SubscriptionsPage');
     }
   }, [user.pro]);
 

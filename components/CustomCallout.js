@@ -6,9 +6,31 @@ import { router, useFocusEffect} from 'expo-router';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../firebaseConfig';
 import { onSaveToggle } from '../store';
 
+import { useRevenueCat } from '../providers/RevenueCatProvider';
+
 export default function CustomCallout({info}) {
   const [Saved, setSaved] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+   // Check user's pro subscription status
+   const { user } = useRevenueCat;
+   const isProUser = user && user.pro;
+
+   // Function to handle button press, checking subscription status
+  const handleButtonPress = (action) => {
+    if (isProUser) {
+      if (action === 'save') {
+        onSave();
+      } else if (action === 'details') {
+        onDetailsPress();
+      } else if (action === 'openMaps') {
+        openMaps();
+      }
+    } else {
+      // Redirect to the SubscriptionScreen if the user is not subscribed
+      router.push('/SubscriptionsPage'); // Adjust the path as needed
+    }
+  };
 
   // checking if user is logged in and if location is saved 
   useFocusEffect(
@@ -87,13 +109,13 @@ export default function CustomCallout({info}) {
             </TouchableOpacity>
           )}
           <TouchableOpacity
-            onPress={onDetailsPress}
+            onPress={() => handleButtonPress('details')}
             style={styles.calloutButton}
           >
             <Text style={styles.calloutButtonText}>Details</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={openMaps}
+            onPress={() => handleButtonPress('openMaps')}
             style={styles.calloutButton}
           >
             <Text style={styles.calloutButtonText}>Maps pin</Text>
