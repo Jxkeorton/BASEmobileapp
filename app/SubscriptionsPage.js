@@ -43,8 +43,9 @@ const PackageList = () => {
   // Assuming you have two packages
   const package1 = packages[0];
   const package2 = packages[1];
+  const package3 = packages[2];
 
-  console.log(package1, package2);
+  console.log('available packages',packages.length);
 
   return (
     <View style={styles.container}>
@@ -104,6 +105,13 @@ const PackageList = () => {
           )}
         </LinearGradient>
       </View>
+      
+      {/* 7-day Trial Button with LinearGradient Effect */}
+      <LinearGradient colors={['#007AFF', '#00AFFF']} style={styles.trialButton}>
+        <TouchableOpacity onPress={() => handlePurchase(package3)}>
+          <Text style={[styles.packageText, { textAlign: 'center'}]}>7-day Free Trial</Text>
+        </TouchableOpacity>
+      </LinearGradient>
 
       {/* Back to Map Button */}
       <TouchableOpacity 
@@ -196,6 +204,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold', 
     textAlign: 'center',
   },
+  trialText: {
+    color: 'white', 
+    fontSize: 18, 
+    textAlign: 'center',
+  },
+  trialButton: {
+    backgroundColor: 'black', // Background color
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 30,
+    width: '80%',
+  }
 });
 
 export default PackageList;

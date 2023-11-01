@@ -18,7 +18,7 @@ export default () => {
                     <Button
                       mode="contained-tonal"
                       buttonColor="white"
-                      onPress={() => router.replace('/profile/Profile')}
+                      onPress={() => router.back()}
                     >
                       Back
                     </Button>
@@ -38,9 +38,15 @@ export default () => {
             }}
         />
         <Stack.Screen
-            name="Policies"
+            name="PrivacyPolicy"
             options={{
                 title: "Privacy Policy",
+            }}
+        />
+        <Stack.Screen
+            name="Terms"
+            options={{
+                title: "Terms and conditions",
             }}
         />
     </Stack>

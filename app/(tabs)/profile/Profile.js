@@ -99,7 +99,7 @@ const Profile = () => {
     const saveFilteredLocationsToAsyncStorage = async () => {
       try {
         await AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations));
-        console.log('Saved locations added to AsyncStorage', filteredLocations.length);
+       
       } catch (error) {
         console.error('Error saving filtered locations to AsyncStorage:', error);
       }

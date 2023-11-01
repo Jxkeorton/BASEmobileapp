@@ -85,7 +85,7 @@ const Register = () => {
                         textColor='black' 
                         style={styles.privacyPolicyLink}
                         onPress={() => {
-                        router.push('/components/PrivacyPolicy.js');
+                        router.push('/components/PrivacyPolicy');
                         }}
                     >
                         Privacy Policy

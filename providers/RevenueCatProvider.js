@@ -30,13 +30,12 @@ export const RevenueCatProvider = ({children}) => {
             Purchases.setLogLevel(LOG_LEVEL.DEBUG);
 
             Purchases.addCustomerInfoUpdateListener((customerInfo) => {
-                console.log('customerinfo', customerInfo);
 
                 updateCustomerInformation(customerInfo);
             });
 
             await loadOfferings();
-            console.log('init user...',user);
+            console.log('initialized user...',user);
             
         };
 
@@ -46,7 +45,7 @@ export const RevenueCatProvider = ({children}) => {
     // load offerings
     const loadOfferings = async () => {
         const offerings = await Purchases.getOfferings();
-        console.log('offerings:', offerings);
+        
 
         const currentOffering = offerings.current;
         if(currentOffering) {
@@ -76,14 +75,12 @@ export const RevenueCatProvider = ({children}) => {
     const updateCustomerInformation = async (customerInfo) => {
         const newUser = {pro: false};
 
-        console.log('update customer info... proFeatures is :',customerInfo.entitlements.active);
         if (
             customerInfo.entitlements.active["proFeatures"] !== undefined
           ) {
             // Check if the 'proFeatures' entitlement is not empty or falsy
             newUser.pro = true;
           }
-          console.log('newUser',newUser);
           setUser(newUser);
     };
 

@@ -1,6 +1,6 @@
 import { Slot } from "expo-router";
 import { RevenueCatProvider } from "../providers/RevenueCatProvider";
-import { PaperProvider } from "react-native-paper";
+import { PaperProvider } from "react-native-paper"; 
 
 export default function Layout(){
     return (
@@ -9,7 +9,5 @@ export default function Layout(){
                 <Slot/>
             </RevenueCatProvider>
         </PaperProvider>
-        
-        
     );
 }

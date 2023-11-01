@@ -16,7 +16,7 @@ const Contact = () => {
     return (
         <View style={styles.mainContainer}>
             <View style={styles.container}>
-            <Text style={styles.paragraph}> We value your feedback and ask for you to offer any suggestions on improving the app for your needs </Text>
+            <Text style={styles.paragraph}> We value your feedback on how we can improve the app </Text>
                 <Text style={styles.text}>worldbasemap@gmail.com</Text>
                 <Text style={styles.text}>(+44) 7986273803</Text>
                 <TouchableOpacity onPress={handleInstagramPress}>

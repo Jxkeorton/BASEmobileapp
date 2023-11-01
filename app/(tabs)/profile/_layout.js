@@ -21,7 +21,7 @@ export default () => {
                     <Button 
                         mode='contained-tonal' 
                         buttonColor="white" 
-                        onPress={() => router.replace('/profile/settings/Settings')} 
+                        onPress={() => router.push('/profile/settings')} 
                         title="Settings" >
                             <Icon name="cog" size={20} color="#000" />
                     </Button>
@@ -66,7 +66,7 @@ export default () => {
                 headerShown: false,
             }}
             
-            
+
         >
             
         </Stack.Screen>
