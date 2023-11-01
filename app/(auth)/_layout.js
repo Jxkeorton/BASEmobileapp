@@ -26,6 +26,16 @@ const PublicLayout = () => {
         options={{
           headerTitle: 'Reset Password',
         }}></Stack.Screen>
+        <Stack.Screen
+        name="AuthTerms"
+        options={{
+          headerTitle: 'Terms and Conditions',
+        }}/>
+        <Stack.Screen
+        name="AuthPrivacyPolicy"
+        options={{
+          headerTitle: 'Privacy Policy',
+        }}/>
     </Stack>
   );
 };

@@ -54,7 +54,7 @@ const Login = () => {
                     textColor='black' 
                     style={styles.privacyPolicyLink}
                     onPress={() => {
-                        router.push('/components/PrivacyPolicy.js');
+                        router.push('/AuthPrivacyPolicy');
                     }}
                 >
                     Privacy Policy

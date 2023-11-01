@@ -36,7 +36,7 @@ export const AuthStore = new Store({
 });
 
 const unsub = onAuthStateChanged(FIREBASE_AUTH, (user) => {
-    console.log('onAuthStateChanged', user.displayName);
+  
     AuthStore.update((store) => {
         store.user = user;
         store.isLoggedIn = user ? true : false;

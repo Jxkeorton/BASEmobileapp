@@ -34,7 +34,7 @@ const Register = () => {
                                 onPress={() => setTermsChecked(!termsChecked)}
                             />
                         </View>
-                        <Button textColor='black' onPress={() => router.push('/components/Terms.js')}>
+                        <Button textColor='black' onPress={() => router.push('/AuthTerms')}>
                             I agree to the Terms and Conditions
                         </Button>
                     </View>
@@ -85,7 +85,7 @@ const Register = () => {
                         textColor='black' 
                         style={styles.privacyPolicyLink}
                         onPress={() => {
-                        router.push('/components/PrivacyPolicy');
+                        router.push('/AuthPrivacyPolicy');
                         }}
                     >
                         Privacy Policy
