@@ -3,15 +3,26 @@ import { Button, Card, Title, Paragraph } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
+import { useRevenueCat } from '../providers/RevenueCatProvider';
+
 const router = useRouter()
 
 
 const SavedLocationsCard = ({ data, onDelete }) => {
 
+  // Check user's pro subscription status
+  const { user } = useRevenueCat();
+  const isProUser = user && user.pro;
+
 
     // function to direct to the locations details page
    const onDetailsPress = (itemId) => {
-    router.push(`/(tabs)/map/${itemId}`)
+    if (isProUser) {
+      router.push(`/(tabs)/map/${itemId}`)
+    } else {
+      router.push('/SubscriptionsPage')
+    }
+    
   };
 
     // Check if data is empty

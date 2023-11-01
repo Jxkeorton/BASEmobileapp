@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { Platform } from 'react-native'
 import Purchases, { LOG_LEVEL } from 'react-native-purchases'
 
 // Revenue cat api key
@@ -37,6 +36,8 @@ export const RevenueCatProvider = ({children}) => {
             });
 
             await loadOfferings();
+            console.log('init user...',user);
+            
         };
 
         init();
@@ -59,9 +60,13 @@ export const RevenueCatProvider = ({children}) => {
             await Purchases.purchasePackage(pack);
 
             // update user state 
-            if(pack.product.identifier === 'monthly' || 'yearly') {
+            if(pack.product.identifier === 'monthly' || pack.product.identifier === 'yearly') {
                 setUser({...user, pro: true})
             } 
+
+            // Update user state based on customer information
+            const customerInfo = await Purchases.getPurchaserInfo();
+            updateCustomerInformation(customerInfo);
         } catch (e) {
             console.log(e);
         }
@@ -71,11 +76,15 @@ export const RevenueCatProvider = ({children}) => {
     const updateCustomerInformation = async (customerInfo) => {
         const newUser = {pro: false};
 
-        if(customerInfo?.entitlements.active['proFeatures'] !== undefined) {
+        console.log('update customer info... proFeatures is :',customerInfo.entitlements.active);
+        if (
+            customerInfo.entitlements.active["proFeatures"] !== undefined
+          ) {
+            // Check if the 'proFeatures' entitlement is not empty or falsy
             newUser.pro = true;
-        }
-
-        setUser(newUser);
+          }
+          console.log('newUser',newUser);
+          setUser(newUser);
     };
 
     //restore previous purchases
@@ -86,7 +95,7 @@ export const RevenueCatProvider = ({children}) => {
 
     const value = {
         restorePermissions,
-        user: { pro: false }, 
+        user: user, 
         packages,
         purchasePackage,
       };

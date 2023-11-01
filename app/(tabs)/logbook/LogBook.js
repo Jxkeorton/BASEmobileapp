@@ -24,6 +24,8 @@ const LogBook = () => {
   // checks subscriptions 
   const { user, restorePermissions } = useRevenueCat();
 
+  console.log('logbook user is:', user)
+
 
   useEffect(() => {
     if (!user.pro) {

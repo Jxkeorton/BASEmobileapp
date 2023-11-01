@@ -3,17 +3,27 @@ import { View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import { useRevenueCat } from '../providers/RevenueCatProvider';
 import LinearGradient from 'react-native-linear-gradient';
 import {router} from 'expo-router';
+import { ActivityIndicator } from 'react-native-paper';
 
 const PackageList = () => {
-  const { user, packages, purchasePackage } = useRevenueCat();
-  const [purchasedPackage, setPurchasedPackage] = useState(null);
+  const { user, packages, purchasePackage, updateCustomerInformation } = useRevenueCat();
+  const [isLoading, setIsLoading ] = useState(false);
+
+  console.log('subpage user is',user);
 
   const handlePurchase = async (pkg) => {
+    setIsLoading(true);
     try {
       await purchasePackage(pkg);
+
+      if (user.pro) {
+        router.push('/(tabs)/map/Map')
+      }
       
     } catch (error) {
       console.error('Failed to purchase package:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -34,7 +44,7 @@ const PackageList = () => {
   const package1 = packages[0];
   const package2 = packages[1];
 
-  console.log(packages);
+  console.log(package1, package2);
 
   return (
     <View style={styles.container}>
@@ -58,7 +68,9 @@ const PackageList = () => {
           <Text style={styles.packageText}>
             {package1.product.priceString}
           </Text>
-          {userHasAccessToPackage(package1) ? (
+          {isLoading ? ( // Check if isLoading is true
+            <ActivityIndicator color="white" size="small" /> // Show ActivityIndicator
+          ) : userHasAccessToPackage(package1) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
           ) : (
             <TouchableOpacity
@@ -78,7 +90,9 @@ const PackageList = () => {
           <Text style={styles.packageText}>
             {package2.product.priceString}
           </Text>
-          {userHasAccessToPackage(package2) ? (
+          {isLoading ? ( // Check if isLoading is true
+            <ActivityIndicator color="white" size="small" /> 
+          ) : userHasAccessToPackage(package2) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
           ) : (
             <TouchableOpacity
@@ -94,7 +108,7 @@ const PackageList = () => {
       {/* Back to Map Button */}
       <TouchableOpacity 
         style={styles.backToMapButton}
-        onPress={() => router.replace('/map/Map')}
+        onPress={() => router.push('/(tabs)/map/Map')}
       >
         <Text style={styles.backToMapButtonText}>Back to Map</Text>
       </TouchableOpacity>
@@ -142,7 +156,7 @@ const styles = StyleSheet.create({
   },
   accessText: {
     fontSize: 16,
-    color: 'green',
+    color: 'gray',
   },
   image: {
     width: 200,

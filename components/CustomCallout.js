@@ -13,11 +13,12 @@ export default function CustomCallout({info}) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
    // Check user's pro subscription status
-   const { user } = useRevenueCat;
+   const { user } = useRevenueCat();
    const isProUser = user && user.pro;
 
    // Function to handle button press, checking subscription status
   const handleButtonPress = (action) => {
+    console.log(action);
     if (isProUser) {
       if (action === 'save') {
         onSave();
