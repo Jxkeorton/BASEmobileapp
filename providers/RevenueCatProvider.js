@@ -23,7 +23,10 @@ export const RevenueCatProvider = ({children}) => {
     useEffect(() => {
         const init = async () => {
            
-            Purchases.configure({apiKey: APIKeys.apple });
+            if (Platform.OS === "ios") {
+                Purchases.configure({ apiKey: APIKeys.apple });
+                
+              }
             
             setIsReady(true);
 
@@ -62,10 +65,6 @@ export const RevenueCatProvider = ({children}) => {
             if(pack.product.identifier === 'monthly' || pack.product.identifier === 'yearly') {
                 setUser({...user, pro: true})
             } 
-
-            // Update user state based on customer information
-            const customerInfo = await Purchases.getPurchaserInfo();
-            updateCustomerInformation(customerInfo);
         } catch (e) {
             console.log(e);
         }
