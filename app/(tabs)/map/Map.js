@@ -187,7 +187,10 @@ export default function Map() {
           clusteringEnabled={true}
         >
         {eventData
-          .filter(event => event.name.toLowerCase().includes(searchTerm.toLowerCase()))
+          .filter((event) =>
+            event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            event.country.toLowerCase().includes(searchTerm.toLowerCase())
+          )
           .filter(event => filterEventsByRockDrop(event))
           .map((event, index) => (
               <Marker
