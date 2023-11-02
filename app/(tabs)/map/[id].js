@@ -16,12 +16,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Portal, PaperProvider } from 'react-native-paper'
 import SubmitDetailsModal from '../../../components/SubmitDetailsModal';
 
+// unit state 
+import { useUnitSystem } from '../../../context/UnitSystemContext';
+
 
 function Location() {
   const [location , setLocation] = useState(null)
   const [isSaved , setSaved] = useState(false)
   const [isLoggedIn , setIsLoggedIn] = useState(false)
   const { id } = useLocalSearchParams();
+  const { isMetric } = useUnitSystem();
 
    //Modal
    const [visible, setVisible] = useState(false);
@@ -135,9 +139,6 @@ function Location() {
 
         <View style={styles.centeredContainer}>
 
-        
-
-
           <View style={styles.buttonContainer}>
             <Button style={styles.button} mode="contained" onPress={openMaps}>Open in maps</Button>
             <Button style={styles.button} mode="contained" onPress={showModal}>Update</Button>
@@ -187,17 +188,25 @@ function Location() {
                 <Text style={styles.subtitleText}>Anchor: </Text>
               </View>
               <View>
-                {location.details.rockdrop ? 
-                  <Text style={styles.text}>{location.details.rockdrop}ft</Text>
-                : 
-                  <Text style={styles.text}>?</Text> 
-                } 
+              {location.details.rockdrop ? (
+                <Text style={styles.text}>
+                  {isMetric
+                    ? `${Math.round(extractNumericPart(location.details.rockdrop) * 0.3048)} m`
+                    : `${Math.round(extractNumericPart(location.details.rockdrop))} ft`}
+                </Text>
+              ) : (
+                <Text style={styles.text}> ? </Text>
+              )}
 
-                {location.details.total ? 
-                  <Text style={styles.text}>{location.details.total}ft</Text>
-                : 
-                  <Text style={styles.text}> ? </Text> 
-                }
+              {location.details.total ? (
+                <Text style={styles.text}>
+                  {isMetric
+                    ? `${Math.round(extractNumericPart(location.details.total) * 0.3048)} m`
+                    : `${Math.round(extractNumericPart(location.details.total))} ft`}
+                </Text>
+              ) : (
+                <Text style={styles.text}> ? </Text>
+              )}
 
                 {location.details.cliffAspect ? 
                   <Text style={styles.text}>{location.details.cliffAspect}</Text>

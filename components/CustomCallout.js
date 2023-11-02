@@ -8,9 +8,13 @@ import { onSaveToggle } from '../store';
 
 import { useRevenueCat } from '../providers/RevenueCatProvider';
 
+// unit state 
+import { useUnitSystem } from '../context/UnitSystemContext';
+
 export default function CustomCallout({info}) {
   const [Saved, setSaved] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isMetric } = useUnitSystem();
 
    // Check user's pro subscription status
    const { user } = useRevenueCat();
@@ -85,16 +89,21 @@ export default function CustomCallout({info}) {
 
   Linking.openURL(url);
 }
+
+// Function to convert feet to meters when isMetric is true
+const convertToMeters = (value) => {
+  return (value ? `${Math.round(parseFloat(value) * 0.3048)} meters` : '?');
+};
   
   return (
     <Callout>
         <View style={styles.calloutContainer}>
           <Text style={styles.calloutTitle}>{info.name.toUpperCase()}</Text>
           <Text style={styles.calloutCoordinates}>
-            Rock Drop: {info.details.rockdrop ? `${info.details.rockdrop} ft` : '?' }
+            Rock Drop: {isMetric ? convertToMeters(info.details.rockdrop) : (info.details.rockdrop ? `${info.details.rockdrop} ft` : '?')}
           </Text>
           <Text style={styles.calloutCoordinates}>
-            Total: {info.details.total ? `${info.details.total} ft` : '?' }
+            Total: {isMetric ? convertToMeters(info.details.total) : (info.details.total ? `${info.details.total} ft` : '?')}
           </Text>
           {isLoggedIn && (
             <TouchableOpacity

@@ -5,9 +5,11 @@ import MapView from 'react-native-map-clustering';
 import {Marker} from 'react-native-maps';
 import CustomCallout from '../../../components/CustomCallout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
 import { FontAwesome } from '@expo/vector-icons'; 
 import ModalContent from '../../../components/ModalContent';
+
+//state 
+import { useUnitSystem } from '../../../context/UnitSystemContext';
 
 //async storage
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -83,6 +85,9 @@ export default function Map() {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
+  //unit state
+  const { isMetric, toggleUnitSystem } = useUnitSystem();
+
   useEffect(() => {
     async function fetchDataAndSetState() {
       const locations = await fetchData();
@@ -93,37 +98,56 @@ export default function Map() {
     fetchDataAndSetState();
   }, []);
 
-  const onRegionChange = (Region) => {
-    console.log(Region)
-  }
+  useEffect(() => {
+    console.log('isMetric has changed:', isMetric);
+  }, [isMetric]);
 
-  // when filter by rockdrop is used 
   const filterEventsByRockDrop = (event) => {
     // Extract the numeric part from event.details.rockdrop
     const rockdropString = event.details.rockdrop;
-
+  
     // Check if the rockdrop value contains a question mark and if unknownRockdrop is false
     if (unknownRockdrop && (rockdropString === '' || rockdropString.includes('?'))) {
       return false;
     }
-
-    const numericRockdrop = parseFloat(rockdropString.match(/\d+/)); // Extract the first numeric value
   
-    // Check if either minRockDrop or maxRockDrop is not an empty string
-    if (minRockDrop !== '') {
-      // Check if numericRockdrop is greater than or equal to the minimum
-      if (numericRockdrop < parseFloat(minRockDrop)) {
-        return false;
+    // Extract the numeric part of rockdropString using a regular expression
+    const numericRockdrop = parseFloat(rockdropString.match(/\d+/));
+  
+    // If isMetric is true, convert to meters
+    if (isMetric) {
+      const numericRockdropMeters = numericRockdrop * 0.3048; // Convert to meters
+      // Check if either minRockDrop or maxRockDrop is not an empty string
+      if (minRockDrop !== '') {
+        // Check if numericRockdropMeters is greater than or equal to the minimum
+        if (numericRockdropMeters < parseFloat(minRockDrop)) {
+          return false;
+        }
+      }
+  
+      if (maxRockDrop !== '') {
+        // Check if numericRockdropMeters is less than or equal to the maximum
+        if (numericRockdropMeters > parseFloat(maxRockDrop)) {
+          return false;
+        }
+      }
+    } else {
+      // Check if either minRockDrop or maxRockDrop is not an empty string
+      if (minRockDrop !== '') {
+        // Check if numericRockdrop is greater than or equal to the minimum
+        if (numericRockdrop < parseFloat(minRockDrop)) {
+          return false;
+        }
+      }
+  
+      if (maxRockDrop !== '') {
+        // Check if numericRockdrop is less than or equal to the maximum
+        if (numericRockdrop > parseFloat(maxRockDrop)) {
+          return false;
+        }
       }
     }
   
-    if (maxRockDrop !== '') {
-      // Check if numericRockdrop is less than or equal to the maximum
-      if (numericRockdrop > parseFloat(maxRockDrop)) {
-        return false;
-      }
-    }
-
     // If both minRockDrop and maxRockDrop are null or pass the checks, return true (no filtering)
     return true;
   };
@@ -230,6 +254,14 @@ export default function Map() {
               color="#00ABF0" // Change the color as desired
             />
           )}
+          <Text style={[styles.switchLabel, {paddingLeft: 5}]}>Imperial</Text>
+          {/* Switch for changing between Imperial and Metric units */}
+          <Switch
+            value={isMetric}
+            onValueChange={toggleUnitSystem}
+            color="#00ABF0" // Change the color as desired
+          />
+          <Text style={styles.switchLabel}>Metric</Text>
 
         </View>
       </View>
@@ -314,7 +346,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   switchLabel: {
-    marginRight: 10,
+    marginHorizontal: 5,
     color: 'black',
   },
   textInputContainer: {
