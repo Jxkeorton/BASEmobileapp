@@ -115,7 +115,13 @@ function Location() {
     });
 
     Linking.openURL(url);
-  }
+  };
+
+  // Define a function to extract the numeric part from a string
+  const extractNumericPart = (value) => {
+    const numericPart = value.match(/\d+(\.\d+)?/); // Use a regular expression to extract numeric part
+    return numericPart ? numericPart[0] : null;
+  };
 
   return (
     <PaperProvider>

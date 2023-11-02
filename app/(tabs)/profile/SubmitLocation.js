@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput,Text, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
-import { Button, Portal, Modal, PaperProvider } from "react-native-paper";
+import { Button, Portal, Modal, PaperProvider, ActivityIndicator } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
 
 import { submitLocationsHandler } from "../../../store";
