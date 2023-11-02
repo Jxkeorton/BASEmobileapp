@@ -1,4 +1,4 @@
-import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Text, Alert, TextInput } from 'react-native';
+import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Image, Alert, TextInput } from 'react-native';
 import React, {useState} from 'react';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { appSignIn } from '../../store';
@@ -13,83 +13,124 @@ const Login = () => {
     const router = useRouter();
 
     return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.container}>
-            <KeyboardAvoidingView behavior='padding' >
-                <TextInput value={email} style={styles.textInput} placeholder='Email' autoCapitalize='none' onChangeText={(text) => setEmail(text)}></TextInput>
-                <TextInput secureTextEntry={true} value={password} style={styles.textInput} placeholder='Password' autoCapitalize='none' onChangeText={(text) => setPassword(text)}></TextInput>
-                
-                {loading ? (<ActivityIndicator size="small" color="#0000ff" /> 
-                ) : ( 
-                <>
-                    <Button title="Login" 
-                        mode="contained"
-                        buttonColor='black'
-                        onPress={async () => {
-                            setLoading(true);
-                            const resp = await appSignIn(email, password);
-                            if (resp?.user) {
-                                router.replace("/(tabs)/map");
-                            } else {
-                                console.log(resp.error);
-                                const errorCode = resp.error?.code;
-                                    if (errorCode === 'auth/invalid-email' ) {
-                                        Alert.alert('Invalid Email', 'Please enter a valid email address.');
-                                    } else if (errorCode === 'auth/user-not-found') {
-                                        Alert.alert('Invalid Email','User not found')
-                                    } else if (errorCode === 'auth/wrong-password'){
-                                        Alert.alert('Password Error', 'Wrong password. Please try again.');
-                                    } else {
-                                        Alert.alert('Login Error', 'Invalid email or password. Please try again.');
-                                    }
-                            }
-                            setLoading(false);
-                        }} >Login</Button>   
-                    <Button textColor='black' title="Register" onPress={() => router.replace("Register")} >Sign Up here!</Button>
-                    <Button textColor='black' title="Forgot Password" onPress={() => router.replace("Reset")} >Forgot Password</Button>
-                </>
-                )}
-                {/* Privacy Policy Link */}
-                <Button 
-                    textColor='black' 
-                    style={styles.privacyPolicyLink}
-                    onPress={() => {
-                        router.push('/AuthPrivacyPolicy');
-                    }}
-                >
-                    Privacy Policy
-                </Button>
-            </KeyboardAvoidingView>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+      <View style={styles.imageContainer}> 
+          <Image
+            source={require('../../assets/bitmap.png')}
+            style={styles.image}
+          />
         </View>
-        </TouchableWithoutFeedback>
-    );
+        <KeyboardAvoidingView behavior='padding'>
+          <TextInput
+            value={email}
+            style={styles.textInput}
+            placeholder='Email'
+            autoCapitalize='none'
+            onChangeText={(text) => setEmail(text)}
+          ></TextInput>
+          <TextInput
+            secureTextEntry={true}
+            value={password}
+            style={styles.textInput}
+            placeholder='Password'
+            autoCapitalize='none'
+            onChangeText={(text) => setPassword(text)}
+          ></TextInput>
+
+          {loading ? (
+            <ActivityIndicator size="small" color="#007AFF" /> 
+          ) : (
+            <>
+              <Button
+                title="Login"
+                mode="contained"
+                style={styles.loginButton} 
+                onPress={async () => {
+                  setLoading(true);
+                  const resp = await appSignIn(email, password);
+                  if (resp?.user) {
+                    router.replace("/(tabs)/map");
+                  } else {
+                    console.log(resp.error);
+                    const errorCode = resp.error?.code;
+                    if (errorCode === 'auth/invalid-email') {
+                      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+                    } else if (errorCode === 'auth/user-not-found') {
+                      Alert.alert('Invalid Email', 'User not found');
+                    } else if (errorCode === 'auth/wrong-password') {
+                      Alert.alert('Password Error', 'Wrong password. Please try again.');
+                    } else {
+                      Alert.alert('Login Error', 'Invalid email or password. Please try again.');
+                    }
+                  }
+                  setLoading(false);
+                }}
+              >
+                Login
+              </Button>
+              <Button textColor='#007AFF' title="Register" onPress={() => router.replace("Register")} style={styles.button}>
+                Sign Up here!
+              </Button>
+              <Button textColor='#007AFF' title="Forgot Password" onPress={() => router.replace("Reset")} style={styles.button}>
+                Forgot Password
+              </Button>
+            </>
+          )}
+          {/* Privacy Policy Link */}
+          <Button
+            textColor='#007AFF' // Use blue color for the privacy policy link
+            style={styles.privacyPolicyLink}
+            onPress={() => {
+              router.push('/AuthPrivacyPolicy');
+            }}
+          >
+            Privacy Policy
+          </Button>
+        </KeyboardAvoidingView>
+      </View>
+    </TouchableWithoutFeedback>
+  );
 };
 
-export default Login;
-
 const styles = StyleSheet.create({
-    container: {
-        marginHorizontal: 20,
-        flex: 1,
-        justifyContent: 'center',
-    },
-    textInput: {
-        marginVertical: 4,
-        height: 50,
-        borderWidth: 1,
-        borderRadius: 4,
-        padding: 10,
-        backgroundColor: '#fff',
-    },
-    text: {
-        textAlign: 'center',
-        marginTop: 10,
-        color: '#888'
-    },
-    privacyPolicyLink: {
-        textAlign: 'center',
-        color: '#00ABF0',
-        textDecorationLine: 'underline', 
-        marginTop: 20, 
-    }
-})
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'black', 
+    padding: 20, 
+  },
+  imageContainer: {
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    marginBottom: 20,
+  },
+  image: {
+    width: 200,
+    height: 200,
+  },
+  textInput: {
+    marginVertical: 10, 
+    height: 50,
+    backgroundColor: 'white', 
+    borderRadius: 8, 
+    padding: 10,
+  },
+  loginButton: {
+    backgroundColor: '#007AFF', 
+    marginVertical: 10, 
+  },
+  button: {
+    backgroundColor: 'transparent', 
+    borderWidth: 1,
+    borderColor: '#007AFF', 
+    marginVertical: 10, 
+  },
+  privacyPolicyLink: {
+    textAlign: 'center',
+    color: '#00ABF0',
+    textDecorationLine: 'underline',
+    marginTop: 20,
+  },
+});
+export default Login;
