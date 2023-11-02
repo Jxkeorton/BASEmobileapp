@@ -2,15 +2,13 @@ import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keybo
 import React, {useState} from 'react';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { appSignIn } from '../../store';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const router = useRouter();
 
     return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

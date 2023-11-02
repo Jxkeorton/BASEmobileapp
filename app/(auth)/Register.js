@@ -1,6 +1,6 @@
 import { Button, ActivityIndicator, Checkbox , Text} from 'react-native-paper'
 import { useState } from 'react';
-import { useRouter } from 'expo-router'
+import { router } from 'expo-router'
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Image } from 'react-native';
 import { appSignUp } from '../../store';
 
@@ -12,9 +12,6 @@ const Register = () => {
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [termsChecked, setTermsChecked] = useState(false);
-
-
-    const router = useRouter()
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

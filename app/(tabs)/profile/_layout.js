@@ -1,9 +1,6 @@
-import { Stack, useRouter } from "expo-router";
+import { Stack, router } from "expo-router";
 import { Button } from "react-native-paper";
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-
-const router = useRouter()
 
 export default () => {
     return (

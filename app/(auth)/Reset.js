@@ -2,13 +2,11 @@ import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keybo
 import React, {useState} from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
 import { appResetPassword } from '../../store';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 
 const Reset = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
-
-    const router = useRouter();
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

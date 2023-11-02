@@ -20,14 +20,10 @@ import {
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 import { Alert } from 'react-native';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-
-
-const router = useRouter()
-
 
 export const AuthStore = new Store({
     isLoggedIn: false,

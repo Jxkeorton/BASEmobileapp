@@ -1,11 +1,11 @@
 import React from 'react';
 import { Button, Card, Title, Paragraph } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
-import { useRouter } from 'expo-router';
+import { router } from 'expo-router';
 
 import { useRevenueCat } from '../providers/RevenueCatProvider';
 
-const router = useRouter()
+
 
 
 const SavedLocationsCard = ({ data, onDelete }) => {

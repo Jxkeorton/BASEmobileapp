@@ -1,5 +1,5 @@
 import React, { useState, useEffect} from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, router } from 'expo-router';
 
 // firebase imports for fetching user data
 import { FIREBASE_AUTH, FIREBASE_DB} from '../../../firebaseConfig';
@@ -22,9 +22,6 @@ import { View, StyleSheet, Alert, SafeAreaView, Share, ScrollView } from 'react-
 import SavedLocationsCard from '../../../components/SavedLocationsCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-
-const router = useRouter();
 
 const Profile = () => {
   const [ filteredLocations, setFilteredLocations ] = useState([]);

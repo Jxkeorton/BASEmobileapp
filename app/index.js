@@ -1,6 +1,6 @@
 import { 
   useRootNavigationState,
-  useRouter,
+  router,
   useSegments,
 } from "expo-router";
 import { AuthStore } from "../store";
@@ -10,7 +10,6 @@ import { ActivityIndicator, MD2Colors} from "react-native-paper";
 const Index = () => {
 
   const segments = useSegments();
-  const router = useRouter();
 
   const navigationState = useRootNavigationState();
 
