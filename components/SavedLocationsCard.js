@@ -6,8 +6,6 @@ import { router } from 'expo-router';
 import { useRevenueCat } from '../providers/RevenueCatProvider';
 
 
-
-
 const SavedLocationsCard = ({ data, onDelete }) => {
 
   // Check user's pro subscription status

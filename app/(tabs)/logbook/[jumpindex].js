@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useLocalSearchParams, useFocusEffect, Stack} from 'expo-router';
 import { getLoggedJumps } from "../../../store";
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { ActivityIndicator } from "react-native-paper";
 import { Image } from 'expo-image';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
