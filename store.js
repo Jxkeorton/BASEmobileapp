@@ -16,7 +16,8 @@ import {
     getDoc,
     deleteDoc,
     arrayUnion,
-    arrayRemove 
+    arrayRemove,
+    addDoc
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
