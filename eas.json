@@ -1,16 +1,18 @@
 {
-    "build": {
-      "development": {
-        "developmentClient": true,
-        "distribution": "internal"
-      },
-      "preview": {
-        "distribution": "internal"
-      },
-      "production": {}
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
     },
-    "submit": {
-      "production": {}
-    }
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {}
+  },
+  "cli": {
+    "promptToConfigurePushNotifications": false
   }
-  
+}

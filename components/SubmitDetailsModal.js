@@ -38,7 +38,7 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: false,
-          quality: 0.2,
+          quality: 0,
           selectionLimit: 4,
           allowsMultipleSelection: true,
         });

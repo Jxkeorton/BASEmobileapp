@@ -17,7 +17,8 @@ import {
     deleteDoc,
     arrayUnion,
     arrayRemove,
-    addDoc
+    addDoc,
+    collection
 } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
@@ -226,7 +227,7 @@ export const submitLocationsHandler = async ({formData}) => {
             const response = await fetch(uri);
             const blob = await response.blob();
             const storageRef = ref(FIREBASE_STORAGE, `submissions/${Date.now()}.jpg`);
-            await uploadBytes(storageRef, blob);
+            await uploadBytesResumable(storageRef, blob);
             const imageURL = await getDownloadURL(storageRef);
             imageURLs.push(imageURL);
           }
@@ -322,7 +323,7 @@ export const takeawayJumpNumber = async () => {
                 const response = await fetch(uri);
                 const blob = await response.blob();
                 const storageRef = ref(FIREBASE_STORAGE, `logbooks/${Date.now()}.jpg`);
-                await uploadBytes(storageRef, blob);
+                await uploadBytesResumable(storageRef, blob);
                 const imageURL = await getDownloadURL(storageRef);
                 imageURLs.push(imageURL);
               }

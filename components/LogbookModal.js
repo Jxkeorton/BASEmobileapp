@@ -15,6 +15,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { submitJumpHandler } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+
 
 const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [location, setLocation] = useState('');
@@ -33,13 +35,21 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: false,
-          quality: 0.2,
+          quality: 1, // Set the quality to 1 (no compression)
           selectionLimit: 4,
           allowsMultipleSelection: true,
         });
     
         if (!result.canceled) {
-          const newImages = result.assets.map((asset) => asset.uri);
+          const newImages = [];
+          for (const asset of result.assets) {
+            // Manipulate the image to save as PNG with the correct file type
+            const newImage = await manipulateAsync(asset.uri, [], {
+              compress: 0.1,
+              format: SaveFormat.PNG,
+            });
+            newImages.push(newImage.uri);
+          }
           setImage((prevImages) => [...prevImages, ...newImages]);
         }
       } catch (e) {

@@ -16,14 +16,18 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jxkeorton.basemobileapp"
+      "bundleIdentifier": "com.jxkeorton.basemobileapp",
+      "runtimeVersion": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/bitmap.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jxkeorton.basemobileapp"
+      "package": "com.jxkeorton.basemobileapp",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -41,6 +45,9 @@
         "projectId": "28d69f8e-6084-4159-a419-2e40940ea865"
       }
     },
-    "owner": "jxkeorton"
+    "owner": "jxkeorton",
+    "updates": {
+      "url": "https://u.expo.dev/28d69f8e-6084-4159-a419-2e40940ea865"
+    }
   }
 }

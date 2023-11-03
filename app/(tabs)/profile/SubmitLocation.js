@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, TextInput,Text, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
 import { Button, Portal, Modal, PaperProvider, ActivityIndicator } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
+import { router } from "expo-router";
 
 import { submitLocationsHandler } from "../../../store";
 
@@ -49,6 +50,8 @@ const SubmitLocation = () => {
       setLoading(true);
       try {
         await submitLocationsHandler({ formData });
+        router.back();
+        Alert.alert('Successfully sent Submission');
         // Optionally, you can navigate to another screen or display a success message here.
       } catch (error) {
         Alert.alert('Error', 'An error occurred while submitting the location.');
@@ -76,7 +79,7 @@ const SubmitLocation = () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 1,
+      quality: 0,
       selectionLimit: 4,
     });
 

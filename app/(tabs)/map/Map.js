@@ -182,8 +182,8 @@ export default function Map() {
               longitudeDelta: 14.52603159394414,
           }}
           mapType={satelliteActive ? 'hybrid' : 'standard'}
-          clusterColor='#00ABF0'
-          clusterTextColor='black'
+          clusterColor='black'
+          clusterTextColor='white'
           clusteringEnabled={true}
         >
         {eventData
