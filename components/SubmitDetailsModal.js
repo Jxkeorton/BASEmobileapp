@@ -240,8 +240,8 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
                 autoCapitalize="none"
               />
 
-                <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
-                    <Text style={styles.panelButtonTitle}>Add Images</Text>
+                <TouchableOpacity style={styles.borderButton} onPress={pickImage}>
+                    <Text style={styles.imageButtonTitle}>Add Images</Text>
                 </TouchableOpacity>
 
                 {imageLoading ? (
@@ -258,7 +258,7 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
                     <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
                       <Text style={styles.panelButtonTitle}>Submit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.panelButton} onPress={handleCancel}>
+                    <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
                     <Text style={styles.panelButtonTitle}>Cancel</Text>
                     </TouchableOpacity>
                   </>
@@ -330,6 +330,27 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
         fontSize: 16,
         color: 'gray', 
     },
+    borderButton: {
+      padding:13,
+      borderRadius: 10,
+      borderWidth: 1,            // Add a border width
+      borderColor: 'black',    // Specify the border color
+      alignItems: 'center',
+      marginVertical: 7,
+      backgroundColor: 'transparent', // Make the background transparent
+    },
+    imageButtonTitle: {
+      fontSize: 17,
+      fontWeight: 'bold',
+      color: 'black',
+  },
+  cancelButton: {
+    padding: 13,
+    borderRadius: 10,
+    backgroundColor: '#A52A2A',
+    alignItems: 'center',
+    marginVertical: 7,
+  },
   });
   
   export default SubmitDetailsModal;
