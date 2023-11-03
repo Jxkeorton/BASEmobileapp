@@ -173,7 +173,7 @@ const SubmitLocation = () => {
 
                     <View style={styles.buttonContainer}>
 
-                      <TouchableOpacity onPress={uploadImage} style={styles.commandButton} ><Text style={styles.panelButtonTitle}>Add images</Text></TouchableOpacity>
+                      <TouchableOpacity onPress={uploadImage} style={styles.borderButton} ><Text style={styles.imageButtonTitle}>Add images</Text></TouchableOpacity>
 
                       {imageLoading ? (
                         <Text style={styles.imageCountText}>Loading images <ActivityIndicator size="small" color="#0000ff" /></Text>
@@ -257,5 +257,21 @@ const styles = StyleSheet.create({
     buttonContainer: {
       alignItems: 'center',
       justifyContent: 'center'
-    }
+    },
+    borderButton: {
+      borderRadius: 10,
+      borderWidth: 1,            // Add a border width
+      borderColor: 'black',    // Specify the border color
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginVertical: 10,
+      width: '100%',
+      height: 40,
+      backgroundColor: 'transparent', // Make the background transparent
+    },
+    imageButtonTitle: {
+      fontSize: 17,
+      fontWeight: 'bold',
+      color: 'black',
+  },
 })

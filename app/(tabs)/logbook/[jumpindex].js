@@ -81,7 +81,7 @@ const jumpDetails = () => {
           <Card.Content>
             {jump.location && 
             <View>
-                <Title style={styles.title}>{jump.location}</Title>
+                <Title style={styles.title}>{jump.location.toUpperCase()}</Title>
             </View>
             }
 

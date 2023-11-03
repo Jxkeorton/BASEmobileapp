@@ -10,6 +10,7 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
   const clearFilter = () => {
     setTempMinRockDrop('');
     setTempMaxRockDrop('');
+    setTempUnknownRockDrop(false);
   };
 
   const applyFilter = () => {
@@ -58,8 +59,8 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
         />
 
         <View style={styles.modalFooter}>
-          <TouchableOpacity onPress={clearFilter} style={styles.panelButton}>
-            <Text style={styles.panelButtonTitle}>Clear Filter</Text>
+          <TouchableOpacity onPress={clearFilter} style={styles.borderButton}>
+            <Text style={styles.imageButtonTitle}>Clear Filter</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={applyFilter} style={styles.panelButton}>
             <Text style={styles.panelButtonTitle}>Apply Filter</Text>
@@ -121,7 +122,21 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: 'bold',
     color: 'white',
-  }
+  },
+  borderButton: {
+    padding:13,
+    borderRadius: 10,
+    borderWidth: 1,            // Add a border width
+    borderColor: 'black',    // Specify the border color
+    alignItems: 'center',
+    marginVertical: 7,
+    backgroundColor: 'transparent', // Make the background transparent
+  },
+  imageButtonTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    color: 'black',
+},
 });
 
 export default ModalContent;
