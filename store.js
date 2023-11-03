@@ -20,7 +20,7 @@ import {
     addDoc,
     collection
 } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL, uploadBytes, deleteObject } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_STORAGE } from './firebaseConfig';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
@@ -431,7 +431,7 @@ export const takeawayJumpNumber = async () => {
               const response = await fetch(uri);
               const blob = await response.blob();
               const storageRef = ref(FIREBASE_STORAGE, `details/${Date.now()}.jpg`);
-              await uploadBytes(storageRef, blob);
+              await uploadBytesResumable(storageRef, blob);
               const imageURL = await getDownloadURL(storageRef);
               imageURLs.push(imageURL);
             }

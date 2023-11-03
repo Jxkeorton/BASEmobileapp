@@ -6,6 +6,8 @@ import { router } from "expo-router";
 
 import { submitLocationsHandler } from "../../../store";
 
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+
 const SubmitLocation = () => {
     const [exitName, setExitName] = useState('');
     const [rockDrop, setRockDrop] = useState('');
@@ -78,15 +80,23 @@ const SubmitLocation = () => {
     try {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 0,
+      allowsEditing: false,
+      quality: 1,
       selectionLimit: 4,
+      allowsMultipleSelection: true,
     });
 
     if (!result.canceled) {
-      const newImages = result.assets.map((asset) => asset.uri);
-      setImage((prevImages) => [...prevImages, ...newImages]);
-      hideModal();
+      const newImages = [];
+      for (const asset of result.assets) {
+        // Manipulate the image to save as PNG with the correct file type
+        const newImage = await manipulateAsync(asset.uri, [], {
+          compress: 0.1,
+          format: SaveFormat.PNG,
+        });
+        newImages.push(newImage.uri);
+      }
+      setImage(newImages);
     }
   } catch (e) {
     Alert.alert("Error Uploading Image " + e.message);
@@ -159,25 +169,31 @@ const SubmitLocation = () => {
                     <TextInput value={videoLink} style={styles.textInput} placeholder='Video Link' autoCapitalize='none' onChangeText={(text) => setVideoLink(text)}></TextInput>
                     <TextInput value={openedBy} style={styles.textInput} placeholder='Opened By' autoCapitalize='none' onChangeText={(text) => setOpenedBy(text)}></TextInput>
                     <TextInput value={openedDate} style={styles.textInput} placeholder='Opened Date' autoCapitalize='none' onChangeText={(text) => setOpenedDate(text)}></TextInput>
-                    <Button onPress={uploadImage} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Add Images</Text></Button>
+                    
 
-                    {imageLoading ? (
-                      <Text style={styles.imageCountText}>Loading images <ActivityIndicator size="small" color="#0000ff" /></Text>
-                    ) : (
-                      <></>
-                    )}
+                    <View style={styles.buttonContainer}>
 
-                    {images.length > 0 ? (
-                      <Text>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
-                    ) : (
-                      <></>
-                    )}
+                      <TouchableOpacity onPress={uploadImage} style={styles.commandButton} ><Text style={styles.panelButtonTitle}>Add images</Text></TouchableOpacity>
 
-                    {loading ? (
-                      <ActivityIndicator size="small" color="#0000ff" />
-                    ) : (
-                      <Button onPress={handleSubmit} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Submit</Text></Button>
-                    )}
+                      {imageLoading ? (
+                        <Text style={styles.imageCountText}>Loading images <ActivityIndicator size="small" color="#0000ff" /></Text>
+                      ) : (
+                        <></>
+                      )}
+
+                      {images.length > 0 ? (
+                        <Text>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
+                      ) : (
+                        <></>
+                      )}
+
+                      {loading ? (
+                        <ActivityIndicator size="small" color="#0000ff" />
+                      ) : (
+                        <TouchableOpacity onPress={handleSubmit} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Submit</Text></TouchableOpacity>
+                      )}
+                    </View>
+                    
                     
                 </KeyboardAvoidingView>
             </View>
@@ -209,11 +225,13 @@ const styles = StyleSheet.create({
         color: 'white',
     },
     commandButton: {
-        padding: 15,
         borderRadius: 10,
         backgroundColor: '#00ABF0',
         alignItems: 'center',
-        marginTop: 10,
+        justifyContent: 'center',
+        marginVertical: 10,
+        width: '100%',
+        height: 40,
     },
     panelTitle: {
       fontSize: 27,
@@ -226,7 +244,6 @@ const styles = StyleSheet.create({
       marginBottom: 10,
     },
     panelButton: {
-      padding: 13,
       borderRadius: 10,
       backgroundColor: '#00ABF0',
       alignItems: 'center',
@@ -236,5 +253,9 @@ const styles = StyleSheet.create({
       marginTop: 8, 
       fontSize: 16,
       color: 'gray', 
-  },
+    },
+    buttonContainer: {
+      alignItems: 'center',
+      justifyContent: 'center'
+    }
 })

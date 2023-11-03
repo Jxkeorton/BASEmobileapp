@@ -15,6 +15,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { submitDetailsHandler } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
 
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+
 const SubmitDetailsModal = ({ onClose , info, visible }) => {
     
     const [rockDrop, setRockDrop] = useState('');
@@ -38,14 +40,22 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: false,
-          quality: 0,
+          quality: 1,
           selectionLimit: 4,
           allowsMultipleSelection: true,
         });
     
         if (!result.canceled) {
-          const newImages = result.assets.map((asset) => asset.uri);
-          setImage((prevImages) => [...prevImages, ...newImages]);
+          const newImages = [];
+          for (const asset of result.assets) {
+            // Manipulate the image to save as PNG with the correct file type
+            const newImage = await manipulateAsync(asset.uri, [], {
+              compress: 0.1,
+              format: SaveFormat.PNG,
+            });
+            newImages.push(newImage.uri);
+          }
+          setImage(newImages);
         }
       } catch (e) {
         Alert.alert('Error Uploading Image ' + e.message);

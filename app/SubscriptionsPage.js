@@ -108,18 +108,29 @@ const PackageList = () => {
       
       {/* 7-day Trial Button with LinearGradient Effect */}
       <LinearGradient colors={['#007AFF', '#00AFFF']} style={styles.trialButton}>
-        <TouchableOpacity onPress={() => handlePurchase(package3)}>
-          <Text style={[styles.packageText, { textAlign: 'center'}]}>7-day Free Trial</Text>
-        </TouchableOpacity>
+      {isLoading ? ( // Check if isLoading is true
+            <ActivityIndicator color="white" size="small" /> 
+          ) : userHasAccessToPackage(package2) ? (
+            <Text style={styles.accessText}>Already Purchased</Text>
+          ) : (
+            <TouchableOpacity onPress={() => handlePurchase(package3)}>
+              <Text style={[styles.packageText, { textAlign: 'center'}]}>7-day Free Trial</Text>
+            </TouchableOpacity>
+          )}
       </LinearGradient>
 
       {/* Back to Map Button */}
-      <TouchableOpacity 
+      {isLoading ? ( // Check if isLoading is true
+       <Text style={styles.backToMapButtonText}>Please wait...</Text>
+      ) : (
+        <TouchableOpacity 
         style={styles.backToMapButton}
         onPress={() => router.push('/(tabs)/map/Map')}
       >
         <Text style={styles.backToMapButtonText}>Back to Map</Text>
       </TouchableOpacity>
+      )}
+      
     </View>
   );
 };

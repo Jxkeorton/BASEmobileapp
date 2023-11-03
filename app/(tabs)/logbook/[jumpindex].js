@@ -86,20 +86,21 @@ const jumpDetails = () => {
             }
 
             <View style={styles.mainContainer}>
-              <View>
+              <View style={styles.subtitleContainer}>
                 <Text style={styles.subtitleText}>Exit Type: </Text>
                 <Text style={styles.subtitleText}>Delay: </Text>
-                <Text style={styles.subtitleText}>Date of Jump: </Text>
-                <Text style={styles.subtitleText}>Details: </Text>
+                <Text style={styles.subtitleText}>Date: </Text>
+                
               </View>
-              <View>
+              <View style={styles.textContainer}>
                 {jump.exitType && <Text style={styles.text}>{jump.exitType}</Text>}
                 {jump.delay && <Text style={styles.text}>{jump.delay} sec</Text>}
                 {jump.date && <Text style={styles.text}>{jump.date}</Text>}
-
-                {jump.details && <Paragraph style={styles.text}>{jump.details}</Paragraph>}
+                
               </View>
             </View>
+            <Text style={styles.subtitleText}>Details: </Text>
+            {jump.details && <Paragraph style={styles.text}>{jump.details}</Paragraph>}
 
             
           </Card.Content>
@@ -176,10 +177,17 @@ const jumpDetails = () => {
       fontWeight: 'bold',
     },
     mainContainer: {
-      flexWrap: 'wrap',
       flexDirection: 'row',
       marginTop: 10,
       marginBottom: 5,
+      alignItems: 'flex-start'
+    },
+    textContainer: {
+      width: '60%', // Adjust the width as needed
+    },
+    subtitleContainer: {
+      width: '40%', // Adjust the width as needed
+      alignItems: 'flex-start',
     },
   });
   

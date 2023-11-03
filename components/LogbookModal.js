@@ -50,7 +50,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
             });
             newImages.push(newImage.uri);
           }
-          setImage((prevImages) => [...prevImages, ...newImages]);
+          setImage(newImages);
         }
       } catch (e) {
         Alert.alert('Error Uploading Image ' + e.message);

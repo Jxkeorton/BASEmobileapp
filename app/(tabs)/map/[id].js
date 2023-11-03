@@ -1,8 +1,10 @@
-import { View, StyleSheet, ScrollView, Platform, Linking, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, ScrollView, Platform, Linking, ActivityIndicator, Alert} from 'react-native'
 import { useLocalSearchParams, Stack, useFocusEffect} from 'expo-router';
 import React ,{ useState } from 'react';
 import MapView, {Marker} from 'react-native-maps';
-import { Button, Text, Divider } from 'react-native-paper';
+import { Button, Text, Divider, IconButton } from 'react-native-paper';
+
+import Clipboard from '@react-native-clipboard/clipboard';
 
 //firebase
 import { onSaveToggle } from '../../../store';
@@ -24,6 +26,7 @@ function Location() {
   const [location , setLocation] = useState(null)
   const [isSaved , setSaved] = useState(false)
   const [isLoggedIn , setIsLoggedIn] = useState(false)
+  const [isCopied, setIsCopied] = useState(false);
   const { id } = useLocalSearchParams();
   const { isMetric } = useUnitSystem();
 
@@ -54,8 +57,15 @@ function Location() {
       return null; // Handle the error and return null
     }
   };
-  
 
+  const copyToClipboard = () => {
+    const coordinates = location.coordinates;
+    const coordinatesText = `${coordinates[0]}, ${coordinates[1]}`;
+
+    Clipboard.setString(coordinatesText);
+    setIsCopied(true);
+    Alert.alert('Copied to clipboard')
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -184,6 +194,23 @@ function Location() {
           <Text style={styles.openedByText}>{location.openedBy.name.toUpperCase()}</Text>
           <Text style={styles.openedByText}>{location.openedBy.date}</Text>
         </View>
+        <Divider />
+
+        <View style={styles.openedByContainer}>
+        <View style={styles.coordinatesContainer}>
+          <Text style={styles.coordinatesText}>
+            {location.coordinates[0]}, {location.coordinates[1]}
+          </Text>
+        </View>
+        <View style={styles.copyIconContainer}>
+          <IconButton
+            icon="content-copy"
+            color={isCopied ? 'black' : 'grey'} 
+            size={15}
+            onPress={copyToClipboard}
+          />
+        </View>
+       </View>
         <Divider />
           
             <View style={styles.mainContainer}>
@@ -315,7 +342,7 @@ const styles = StyleSheet.create({
   openedByContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'center',
   },
   loadingIndicator: {
