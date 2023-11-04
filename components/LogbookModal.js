@@ -186,8 +186,8 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                 numberOfLines={4}
                 />
 
-                <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
-                    <Text style={styles.panelButtonTitle}>Add Images</Text>
+                <TouchableOpacity style={styles.borderButton} onPress={pickImage}>
+                    <Text style={styles.imageButtonTitle}>Add Images</Text>
                 </TouchableOpacity>
 
                 {imageLoading ? (
@@ -205,7 +205,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                       <Text style={styles.panelButtonTitle}>Submit</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.panelButton} onPress={handleCancel}>
-                    <Text style={styles.panelButtonTitle}>Cancel</Text>
+                    <Text style={styles.styles.cancelButton}>Cancel</Text>
                     </TouchableOpacity>
                   </>
                 )}
@@ -271,6 +271,27 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         fontSize: 16,
         color: 'gray', 
     },
+    borderButton: {
+      padding:13,
+      borderRadius: 10,
+      borderWidth: 1,            // Add a border width
+      borderColor: 'black',    // Specify the border color
+      alignItems: 'center',
+      marginVertical: 7,
+      backgroundColor: 'transparent', // Make the background transparent
+    },
+    imageButtonTitle: {
+      fontSize: 17,
+      fontWeight: 'bold',
+      color: 'black',
+  },
+  cancelButton: {
+    padding: 13,
+    borderRadius: 10,
+    backgroundColor: '#A52A2A',
+    alignItems: 'center',
+    marginVertical: 7,
+  },
   });
   
   export default LogbookModal;

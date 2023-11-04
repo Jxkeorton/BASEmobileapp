@@ -79,7 +79,7 @@ const EditProfile = () => {
     setImageChangeLoading(true);
     try {
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -96,7 +96,7 @@ const EditProfile = () => {
       setImage(uri)
       hideModal();
       Toast.show({
-        type: 'Success', // You can customize the type (success, info, error, etc.)
+        type: 'success', // You can customize the type (success, info, error, etc.)
         text1: 'New Profile image set',
         position: 'top',
       });

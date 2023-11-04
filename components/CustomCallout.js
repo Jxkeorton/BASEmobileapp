@@ -74,11 +74,19 @@ export default function CustomCallout({info}) {
   const onSave = async () => {
     const updatedSaved = await onSaveToggle(info.id, isLoggedIn);
     setSaved(updatedSaved);
-    Toast.show({
-      type: 'success', // You can customize the type (success, info, error, etc.)
-      text1: 'Location saved to profile',
-      position: 'top',
-    });
+    if (updatedSaved) {
+      Toast.show({
+        type: 'success',
+        text1: 'Location saved to profile',
+        position: 'top',
+      });
+    } else {
+      Toast.show({
+        type: 'info',
+        text1: 'Location unsaved from profile',
+        position: 'top',
+      });
+    }
   };
 
 

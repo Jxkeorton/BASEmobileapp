@@ -81,7 +81,7 @@ const isUsernameTaken = async (username) => {
         // If the document exists, the username is taken
         return docSnapshot.exists();
     } catch (error) {
-        console.error('Error checking username:', error);
+        console.error('Error checking username:');
         throw error;
     }
 };
@@ -204,7 +204,7 @@ export const updateProfileDetails = async ( name, email, jumpNumber) => {
         await setDoc(userDocRef, updatedData, { merge: true });
         return true; // Successful update
     } catch (error) {
-        console.error('Error updating profile details:', error);
+        console.error('Error updating profile details:');
         throw error;
     } finally {
         router.replace('/(tabs)/profile/Profile')
@@ -248,12 +248,12 @@ export const submitLocationsHandler = async ({formData}) => {
           };
 
         const docRef = await addDoc(collection(FIREBASE_DB, 'submits'), submissionData);
-        console.log('Document written with ID: ', docRef.id);
+        console.log('Document written with ID');
 
 
       } catch (e) {
         Alert.alert(e.message);
-        console.log(e);
+      
       }
 };
 
@@ -277,7 +277,7 @@ export const addJumpNumber = async () => {
         console.log(`Jump number increased to ${newJumpNumber}`);
       }
     } catch (error) {
-      console.error('Error adding jump number:', error);
+      console.error('Error adding jump number:',);
     }
   };
 
@@ -305,7 +305,7 @@ export const takeawayJumpNumber = async () => {
           }
         }
     } catch (error) {
-        console.error('Error taking away jump number:', error);
+        console.error('Error taking away jump number:');
     }
 };
 
@@ -374,7 +374,7 @@ export const takeawayJumpNumber = async () => {
 
         } catch (e) {
             Alert.alert(e.message);
-            console.log(e);
+           
         }; 
     };
 
@@ -413,7 +413,7 @@ export const takeawayJumpNumber = async () => {
           console.log('Jump deleted successfully, including attached images.');
         }
       } catch (error) {
-        console.error('Error deleting jump:', error);
+        throw error;
       }
     };
     
@@ -479,7 +479,6 @@ export const takeawayJumpNumber = async () => {
 
       } catch (e) {
           Alert.alert(e.message);
-          console.log(e);
       }; 
   };
 
@@ -503,7 +502,7 @@ export const takeawayJumpNumber = async () => {
             return [];
           }
         } catch (error) {
-          console.error('Error retrieving logged jumps:', error);
+          
           throw error;
         }
       };

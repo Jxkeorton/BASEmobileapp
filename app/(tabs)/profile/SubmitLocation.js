@@ -104,6 +104,7 @@ const SubmitLocation = () => {
         });
         newImages.push(newImage.uri);
       }
+      hideModal();
       setImage(newImages);
     }
   } catch (e) {
