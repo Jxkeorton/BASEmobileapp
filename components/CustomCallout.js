@@ -5,7 +5,7 @@ import {Callout} from 'react-native-maps';
 import { router, useFocusEffect} from 'expo-router';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../firebaseConfig';
 import { onSaveToggle } from '../store';
-
+import Toast from 'react-native-toast-message';
 import { useRevenueCat } from '../providers/RevenueCatProvider';
 
 // unit state 
@@ -34,6 +34,11 @@ export default function CustomCallout({info}) {
     } else {
       // Redirect to the SubscriptionScreen if the user is not subscribed
       router.push('/SubscriptionsPage'); // Adjust the path as needed
+      Toast.show({
+        type: 'info', // You can customize the type (success, info, error, etc.)
+        text1: 'Subscribe for this feature !',
+        position: 'top',
+      });
     }
   };
 
@@ -69,6 +74,11 @@ export default function CustomCallout({info}) {
   const onSave = async () => {
     const updatedSaved = await onSaveToggle(info.id, isLoggedIn);
     setSaved(updatedSaved);
+    Toast.show({
+      type: 'success', // You can customize the type (success, info, error, etc.)
+      text1: 'Location saved to profile',
+      position: 'top',
+    });
   };
 
 

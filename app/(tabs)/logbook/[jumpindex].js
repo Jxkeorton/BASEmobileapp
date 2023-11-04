@@ -7,6 +7,7 @@ import { Image } from 'expo-image';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { router } from "expo-router";
 import { deleteJumpHandler, takeawayJumpNumber } from "../../../store";
+import Toast from 'react-native-toast-message';
 
 const jumpDetails = () => {
     const [jump , setJump] = useState(null)
@@ -14,13 +15,6 @@ const jumpDetails = () => {
     const [ images, setImages ] = useState([]);
 
     const { jumpindex, jumpNumber} = params;
-
-    const [loadingProgress, setLoadingProgress] = useState(0);
-
-    const handleImageLoad = (progressEvent) => {
-      const progress = progressEvent.loaded / progressEvent.total;
-      setLoadingProgress(progress);
-    };
 
     useFocusEffect(
         React.useCallback(() => {
@@ -56,7 +50,14 @@ const jumpDetails = () => {
         await deleteJumpHandler(jumpId);
         await takeawayJumpNumber();
 
-        router.back()
+        router.back('Logbook');
+
+        // Show a toast notification to inform the user
+        Toast.show({
+          type: 'info', // You can customize the type (success, info, error, etc.)
+          text1: 'Jump deleted',
+          position: 'top',
+        });
         
 
       } catch (error) {
@@ -64,9 +65,13 @@ const jumpDetails = () => {
       }
     };
 
-
     if (!jump) {
-      return <ActivityIndicator />;
+      return (
+        <View style={styles.noJumpContainer}>
+          <Text style={[styles.noImageText, {fontSize: 25} ]}>Cannot Fetch Jump, Try again</Text>
+        </View>
+      
+      );
     }
 
     return (
@@ -104,23 +109,23 @@ const jumpDetails = () => {
 
             
           </Card.Content>
-        </Card>
-
-        {loadingProgress > 0 && loadingProgress < 1 && (
-            <View style={styles.progressBar}>
-              <View style={{ width: `${loadingProgress * 100}%`, height: 5, backgroundColor: 'blue', marginBottom: 20 }} />
-            </View>
-        )}
+        </Card>    
         
         <View style={styles.imageContainer}>
           {images && images.length > 0 ? (
             images.map((image, index) => (
-              <Image key={index} source={{ uri: image }} style={{width: 150, height: 150, margin: 8}} onError={() => console.log('Image failed to load')} onProgress={handleImageLoad}/>
+              <Image
+                key={index}
+                source={{ uri: image }}
+                style={{ width: 150, height: 150, margin: 8 }}
+                onError={() => console.log('Image failed to load')}
+              />
             ))
           ) : (
-            <Text>No images available</Text>
+            <Text style={styles.noImageText}>No images available</Text>
           )}
         </View>
+    
 
         <Button
           style={styles.deleteButton}
@@ -189,6 +194,15 @@ const jumpDetails = () => {
       width: '40%', // Adjust the width as needed
       alignItems: 'flex-start',
     },
+    noImageText: {
+      marginVertical:15,
+      fontWeight: 'bold'
+    },
+    noJumpContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      margin: 20,
+    }
   });
   
   export default jumpDetails;

@@ -5,6 +5,7 @@ import { getLoggedJumps } from '../store';
 import { getJumpnumber } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import Toast from 'react-native-toast-message';
 
 const LogbookJumpCard = () => {
     const [jumps, setLoggedJumps ] = useState([]);
@@ -44,6 +45,11 @@ const LogbookJumpCard = () => {
                   
                 } catch (error) {
                   console.error('Error fetching data:', error);
+                  Toast.show({
+                    type: 'error', // You can customize the type (success, info, error, etc.)
+                    text1: 'Could not fetch data',
+                    position: 'top',
+                  });
                 } finally {
                     setIsLoading(false); // Set loading to false once data is fetched
                 }

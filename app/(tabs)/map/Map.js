@@ -198,7 +198,7 @@ export default function Map() {
               coordinate={{ latitude: event.coordinates[0], longitude: event.coordinates[1] }}
               title={event.name || 'Unknown Name'}
               description={event.openedBy && event.openedBy.name ? event.openedBy.name : ''}
-              pinColor='black'
+              pinColor='red'
               onPress={() => saveEventToStorage(event)}
           >
             <CustomCallout info={event} />

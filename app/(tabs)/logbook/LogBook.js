@@ -4,6 +4,7 @@ import { useFocusEffect , router} from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 
 import { useRevenueCat } from '../../../providers/RevenueCatProvider';
 
@@ -22,10 +23,7 @@ const LogBook = () => {
   const hideModal = () => setVisible(false);
 
   // checks subscriptions 
-  const { user, restorePermissions } = useRevenueCat();
-
-  console.log('logbook user is:', user)
-
+  const { user } = useRevenueCat();
 
   useEffect(() => {
     if (!user.pro) {
@@ -43,7 +41,12 @@ const LogBook = () => {
               setJumpNumber(jumps);
               setLoading(false);
           } catch (error) {
-            console.error('Error checking if location saved:', error);
+            console.error('Error getting jumps:', error);
+            Toast.show({
+              type: 'error', // You can customize the type (success, info, error, etc.)
+              text1: 'Error fetching Jumps',
+              position: 'top',
+            });
             setLoading(false);
           }
         };

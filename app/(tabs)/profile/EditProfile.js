@@ -16,6 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { uploadImageToProfile, updateProfileDetails } from '../../../store';
 import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
+import Toast from 'react-native-toast-message';
 
 
 const EditProfile = () => {
@@ -42,7 +43,11 @@ const EditProfile = () => {
             // fetching users saved location ID's
             const currentUser = FIREBASE_AUTH.currentUser;
             if (!currentUser) {
-            Alert.alert('No authenticated user found');
+              Toast.show({
+                type: 'error', // You can customize the type (success, info, error, etc.)
+                text1: 'No Authenticated user found',
+                position: 'top',
+              });
             return;
             }
             const userId = currentUser.uid;
@@ -90,9 +95,18 @@ const EditProfile = () => {
       console.log(uploadResp);
       setImage(uri)
       hideModal();
+      Toast.show({
+        type: 'Success', // You can customize the type (success, info, error, etc.)
+        text1: 'New Profile image set',
+        position: 'top',
+      });
     }
   } catch (e) {
-    Alert.alert("Error Uploading Image " + e.message);
+    Toast.show({
+      type: 'error', // You can customize the type (success, info, error, etc.)
+      text1: 'Error uploading image',
+      position: 'top',
+    });
     setImageChangeLoading(false);
   }
   };
@@ -116,9 +130,18 @@ const EditProfile = () => {
       );
       setImage(uri)
       hideModal();
+      Toast.show({
+        type: 'Success', // You can customize the type (success, info, error, etc.)
+        text1: 'New Profile image set',
+        position: 'top',
+      });
     }
     } catch (e) {
-      Alert.alert("Error Uploading Image " + e.message);
+      Toast.show({
+        type: 'error', // You can customize the type (success, info, error, etc.)
+        text1: 'Error uploading image',
+        position: 'top',
+      });
     } finally {
       setImageChangeLoading(false);
     }

@@ -14,7 +14,7 @@ import React, {useState} from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { submitDetailsHandler } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
-
+import Toast from 'react-native-toast-message';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 const SubmitDetailsModal = ({ onClose , info, visible }) => {
@@ -58,7 +58,11 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
           setImage(newImages);
         }
       } catch (e) {
-        Alert.alert('Error Uploading Image ' + e.message);
+        Toast.show({
+          type: 'error', // You can customize the type (success, info, error, etc.)
+          text1: 'Error uplaoding image',
+          position: 'top',
+        });
       } finally {
         setImageLoading(false);
       }
@@ -89,6 +93,11 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
           //hidemodal
           onClose()
 
+          Toast.show({
+            type: 'success', // You can customize the type (success, info, error, etc.)
+            text1: 'New details submitted',
+            position: 'top',
+          });
            // Clear the form fields by resetting state to initial values
             setRockDrop('');
             setTotal('');
@@ -102,7 +111,11 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
             setOpenedDate('');
             setImage([]);
         } catch (error) {
-          Alert.alert('Error', 'An error occurred while submitting the location.');
+          Toast.show({
+            type: 'error', // You can customize the type (success, info, error, etc.)
+            text1: 'Error trying to submit details',
+            position: 'top',
+          });
           console.error(error);
         } finally {
           setLoading(false);
@@ -125,6 +138,12 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
             setOpenedBy('');
             setOpenedDate('');
             setImage([]);
+
+            Toast.show({
+              type: 'info', // You can customize the type (success, info, error, etc.)
+              text1: 'Cancelled location details update',
+              position: 'top',
+            });
       };
 
    

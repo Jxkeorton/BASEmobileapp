@@ -1,5 +1,6 @@
 import React, { useState, useEffect} from 'react';
 import { useFocusEffect, router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 // firebase imports for fetching user data
 import { FIREBASE_AUTH, FIREBASE_DB} from '../../../firebaseConfig';
@@ -81,7 +82,11 @@ const Profile = () => {
             });
 
         } catch (error) {
-          console.error('Error checking if location saved:', error);
+          Toast.show({
+            type: 'error', // You can customize the type (success, info, error, etc.)
+            text1: 'Error fetching saved locations',
+            position: 'top',
+          });
         }
       };
   
@@ -126,7 +131,11 @@ const Profile = () => {
       setFilteredLocations(filteredLocations.filter((location) => location.id !== locationId));
     } catch (error) {
       console.error(error);
-      Alert.alert('Error','Could not delete location');
+      Toast.show({
+        type: 'error', // You can customize the type (success, info, error, etc.)
+        text1: 'Error could not delete location',
+        position: 'top',
+      });
     }
   };
 

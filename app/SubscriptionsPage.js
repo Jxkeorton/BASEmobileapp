@@ -4,12 +4,11 @@ import { useRevenueCat } from '../providers/RevenueCatProvider';
 import LinearGradient from 'react-native-linear-gradient';
 import {router} from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
+import Toast from 'react-native-toast-message';
 
 const PackageList = () => {
   const { user, packages, purchasePackage, updateCustomerInformation } = useRevenueCat();
   const [isLoading, setIsLoading ] = useState(false);
-
-  console.log('subpage user is',user);
 
   const handlePurchase = async (pkg) => {
     setIsLoading(true);
@@ -22,6 +21,11 @@ const PackageList = () => {
       
     } catch (error) {
       console.error('Failed to purchase package:', error);
+      Toast.show({
+        type: 'error', // You can customize the type (success, info, error, etc.)
+        text1: 'Failed to purchase package',
+        position: 'top',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -44,8 +48,6 @@ const PackageList = () => {
   const package1 = packages[0];
   const package2 = packages[1];
   const package3 = packages[2];
-
-  console.log('available packages',packages.length);
 
   return (
     <View style={styles.container}>

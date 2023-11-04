@@ -5,6 +5,7 @@ import MapView, {Marker} from 'react-native-maps';
 import { Button, Text, Divider, IconButton } from 'react-native-paper';
 
 import Clipboard from '@react-native-clipboard/clipboard';
+import Toast from 'react-native-toast-message';
 
 //firebase
 import { onSaveToggle } from '../../../store';
@@ -54,7 +55,12 @@ function Location() {
       return matchingEvent;
     } catch (error) {
       console.error('Error retrieving event from AsyncStorage:', error);
-      return null; // Handle the error and return null
+      Toast.show({
+        type: 'error', // You can customize the type (success, info, error, etc.)
+        text1: 'Failed to get location, Try again',
+        position: 'top',
+      });
+      return null; 
     }
   };
 
@@ -64,7 +70,13 @@ function Location() {
 
     Clipboard.setString(coordinatesText);
     setIsCopied(true);
-    Alert.alert('Copied to clipboard')
+    
+    // Show a toast notification to inform the user
+    Toast.show({
+      type: 'success', // You can customize the type (success, info, error, etc.)
+      text1: 'Coordinates Copied',
+      position: 'top',
+    });
   };
 
   useFocusEffect(
@@ -112,6 +124,13 @@ function Location() {
   const onSave = async () => {
     const updatedSaved = await onSaveToggle(id, isLoggedIn);
     setSaved(updatedSaved);
+
+    // Show a toast notification to inform the user
+    Toast.show({
+      type: 'success', // You can customize the type (success, info, error, etc.)
+      text1: 'Location saved',
+      position: 'top',
+    });
   };
 
   // for directing to maps app button 
@@ -191,7 +210,9 @@ function Location() {
         <ScrollView>
 
         <View style={styles.openedByContainer}>
-          <Text style={styles.openedByText}>{location.openedBy.name.toUpperCase()}</Text>
+          <Text style={styles.openedByText}>
+            {location.openedBy.name.replace(/JOSH B/g, 'JOSH BREGMEN').toUpperCase()}
+          </Text>
           <Text style={styles.openedByText}>{location.openedBy.date}</Text>
         </View>
         <Divider />

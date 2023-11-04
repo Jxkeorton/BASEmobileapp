@@ -16,6 +16,7 @@ import { submitJumpHandler } from '../store';
 import { ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import Toast from 'react-native-toast-message';
 
 
 const LogbookModal = ({ visible, onClose, isLoading }) => {
@@ -53,7 +54,11 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
           setImage(newImages);
         }
       } catch (e) {
-        Alert.alert('Error Uploading Image ' + e.message);
+        Toast.show({
+          type: 'error', // You can customize the type (success, info, error, etc.)
+          text1: 'Error uploading image',
+          position: 'top',
+        });
       } finally {
         setImageLoading(false);
       }
@@ -80,6 +85,12 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
           onClose()
           router.replace('/(tabs)/logbook/LogBook')
 
+          Toast.show({
+            type: 'success', // You can customize the type (success, info, error, etc.)
+            text1: 'New jump Logged',
+            position: 'top',
+          });
+
            // Clear the form fields by resetting state to initial values
             setLocation('');
             setExitType('');
@@ -100,6 +111,12 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
 
         // close modal
         onClose();
+
+        Toast.show({
+          type: 'info', // You can customize the type (success, info, error, etc.)
+          text1: 'Logging jump cancelled',
+          position: 'top',
+        });
         // clear state 
         setLocation('');
         setExitType('');

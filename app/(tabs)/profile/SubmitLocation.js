@@ -3,7 +3,7 @@ import { View, TextInput,Text, StyleSheet, Alert, TouchableWithoutFeedback, Keyb
 import { Button, Portal, Modal, PaperProvider, ActivityIndicator } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
 import { router } from "expo-router";
-
+import Toast from 'react-native-toast-message';
 import { submitLocationsHandler } from "../../../store";
 
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
@@ -53,10 +53,18 @@ const SubmitLocation = () => {
       try {
         await submitLocationsHandler({ formData });
         router.back();
-        Alert.alert('Successfully sent Submission');
+        Toast.show({
+          type: 'Success', // You can customize the type (success, info, error, etc.)
+          text1: 'Successfully sent submission',
+          position: 'top',
+        });
         // Optionally, you can navigate to another screen or display a success message here.
       } catch (error) {
-        Alert.alert('Error', 'An error occurred while submitting the location.');
+        Toast.show({
+          type: 'error', // You can customize the type (success, info, error, etc.)
+          text1: 'Error Trying to send submission',
+          position: 'top',
+        });
         console.error(error);
       } finally {
         setLoading(false);
@@ -99,7 +107,11 @@ const SubmitLocation = () => {
       setImage(newImages);
     }
   } catch (e) {
-    Alert.alert("Error Uploading Image " + e.message);
+    Toast.show({
+      type: 'error', // You can customize the type (success, info, error, etc.)
+      text1: 'Error uploading image',
+      position: 'top',
+    });
   } finally {
     setImageLoading(false);
   }
@@ -122,7 +134,11 @@ const SubmitLocation = () => {
       hideModal();
     }
     } catch (e) {
-      Alert.alert("Error Uploading Image " + e.message);
+      Toast.show({
+        type: 'error', // You can customize the type (success, info, error, etc.)
+        text1: 'Error uploading image',
+        position: 'top',
+      });
     } finally {
       setImageLoading(false);
     }

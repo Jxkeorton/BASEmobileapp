@@ -1,7 +1,7 @@
 // ModalContent.js
 import React, { useState } from 'react';
 import { Modal, Text, View, TextInput, TouchableOpacity, StyleSheet, ScrollView, TouchableWithoutFeedback, Keyboard, Switch } from 'react-native';
-
+import Toast from 'react-native-toast-message';
 const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop }) => {
   const [tempMinRockDrop, setTempMinRockDrop] = useState(minRockDrop);
   const [tempMaxRockDrop, setTempMaxRockDrop] = useState(maxRockDrop);
@@ -11,6 +11,12 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
     setTempMinRockDrop('');
     setTempMaxRockDrop('');
     setTempUnknownRockDrop(false);
+
+    Toast.show({
+      type: 'info', // You can customize the type (success, info, error, etc.)
+      text1: 'Filter cleared',
+      position: 'top',
+    });
   };
 
   const applyFilter = () => {
@@ -20,6 +26,11 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
     } else {
       onClose();
       onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
+      Toast.show({
+        type: 'success', // You can customize the type (success, info, error, etc.)
+        text1: 'Filter applied',
+        position: 'top',
+      });
     }
   };
 
