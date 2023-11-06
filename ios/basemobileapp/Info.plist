@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>basemobile-app</string>
+	<string>BASE map</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -77,6 +77,9 @@
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
 		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER).expo.index_route</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>SplashScreen</string>
@@ -95,10 +98,10 @@
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>

@@ -204,8 +204,8 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                     <TouchableOpacity style={styles.panelButton} onPress={handleSubmit}>
                       <Text style={styles.panelButtonTitle}>Submit</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.panelButton} onPress={handleCancel}>
-                    <Text style={styles.styles.cancelButton}>Cancel</Text>
+                    <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                    <Text style={styles.panelButtonTitle}>Cancel</Text>
                     </TouchableOpacity>
                   </>
                 )}
@@ -284,14 +284,14 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
       fontSize: 17,
       fontWeight: 'bold',
       color: 'black',
-  },
-  cancelButton: {
-    padding: 13,
-    borderRadius: 10,
-    backgroundColor: '#A52A2A',
-    alignItems: 'center',
-    marginVertical: 7,
-  },
+    },
+    cancelButton: {
+      padding: 13,
+      borderRadius: 10,
+      backgroundColor: '#A52A2A',
+      alignItems: 'center',
+      marginVertical: 7,
+    },
   });
   
   export default LogbookModal;

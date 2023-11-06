@@ -74,18 +74,20 @@ export const RevenueCatProvider = ({children}) => {
     const updateCustomerInformation = async (customerInfo) => {
         const newUser = {pro: false};
 
-        if (
-            customerInfo.entitlements.active["proFeatures"] !== undefined
-          ) {
+        if ( customerInfo.entitlements.active["proFeatures"] !== undefined ) {
             // Check if the 'proFeatures' entitlement is not empty or falsy
             newUser.pro = true;
           }
+
+        
           setUser(newUser);
     };
 
     //restore previous purchases
     const restorePermissions = async () => {
         const customer = await Purchases.restorePurchases();
+
+        console.log(customer);
         return customer;
     };
 

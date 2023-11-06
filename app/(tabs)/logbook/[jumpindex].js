@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useLocalSearchParams, useFocusEffect, Stack} from 'expo-router';
 import { getLoggedJumps } from "../../../store";
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { ActivityIndicator } from "react-native-paper";
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { Image } from 'expo-image';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { router } from "expo-router";
@@ -13,6 +12,9 @@ const jumpDetails = () => {
     const [jump , setJump] = useState(null)
     const params = useLocalSearchParams();
     const [ images, setImages ] = useState([]);
+
+    
+    const [imageLoadStates, setImageLoadStates] = useState([]);
 
     const { jumpindex, jumpNumber} = params;
 
@@ -30,7 +32,9 @@ const jumpDetails = () => {
                   if (jumpindex >= 0 && jumpindex < reversedJumps.length) {
                     // Set the jump with the specified index to the jump state
                     setJump(reversedJumps[jumpindex]);
-                    setImages(reversedJumps[jumpindex].imageURLs)
+                    setImages(reversedJumps[jumpindex].imageURLs);
+                    setImageLoadStates(Array(reversedJumps[jumpindex].imageURLs.length).fill(false));
+
                   }
                 } catch (error) {
                     console.error('Error fetching data:', error);
@@ -63,6 +67,18 @@ const jumpDetails = () => {
       } catch (error) {
         console.error('Error deleting jump:', error);
       }
+    };
+
+    const handleImageProgress = (index, loaded, total) => {
+      // Calculate the progress as a percentage
+      const progress = (loaded / total) * 100;
+  
+      // Update the loading state for this image
+      setImageLoadStates((prevStates) => {
+        const newState = [...prevStates];
+        newState[index] = progress < 100;
+        return newState;
+      });
     };
 
     if (!jump) {
@@ -114,12 +130,30 @@ const jumpDetails = () => {
         <View style={styles.imageContainer}>
           {images && images.length > 0 ? (
             images.map((image, index) => (
-              <Image
-                key={index}
-                source={{ uri: image }}
-                style={{ width: 150, height: 150, margin: 8 }}
-                onError={() => console.log('Image failed to load')}
-              />
+              <View key={index}>
+                {imageLoadStates[index] !== false && (
+                  <View style={styles.progressBarContainer}>
+                    <ActivityIndicator />
+                    
+                  </View>
+                )}
+                <Image
+                  source={{ uri: image }}
+                  style={{ width: 150, height: 150, margin: 8 }}
+                  onError={() => console.log('Image failed to load')}
+                  onProgress={(event) => {
+                    handleImageProgress(index, event.loaded, event.total);
+                  }}
+                  onLoadEnd={() => {
+                    // Mark the image as fully loaded
+                    setImageLoadStates((prevStates) => {
+                      const newState = [...prevStates];
+                      newState[index] = false;
+                      return newState;
+                    });
+                  }}
+                />
+              </View>
             ))
           ) : (
             <Text style={styles.noImageText}>No images available</Text>
@@ -165,11 +199,6 @@ const jumpDetails = () => {
       aspectRatio: 1, // Maintain aspect ratio (1:1)
       marginBottom: 8,
     },
-    progressBar: {
-      backgroundColor: '#ccc',
-      height: 5,
-      marginBottom: 8,
-    },
     text: {
       marginBottom: 10,
       fontSize: 16,
@@ -202,7 +231,14 @@ const jumpDetails = () => {
       alignItems: 'center',
       justifyContent: 'center',
       margin: 20,
-    }
+    },
+    progressBarContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%', 
+      borderRadius: 5, 
+      marginBottom: 8, 
+    },
   });
   
   export default jumpDetails;

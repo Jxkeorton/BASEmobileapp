@@ -123,7 +123,8 @@ export const appResetPassword = async (email) => {
         await sendPasswordResetEmail(FIREBASE_AUTH, email);
         return { success: true };
     } catch (e) {
-        return { error: e };
+        console.log(e);
+        
     }
 };
 

@@ -7,7 +7,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 
 const PackageList = () => {
-  const { user, packages, purchasePackage, updateCustomerInformation } = useRevenueCat();
+  const { user, packages, purchasePackage } = useRevenueCat();
   const [isLoading, setIsLoading ] = useState(false);
 
   const handlePurchase = async (pkg) => {
@@ -47,7 +47,6 @@ const PackageList = () => {
   // Assuming you have two packages
   const package1 = packages[0];
   const package2 = packages[1];
-  const package3 = packages[2];
 
   return (
     <View style={styles.container}>
@@ -109,17 +108,10 @@ const PackageList = () => {
       </View>
       
       {/* 7-day Trial Button with LinearGradient Effect */}
-      <LinearGradient colors={['#007AFF', '#00AFFF']} style={styles.trialButton}>
-      {isLoading ? ( // Check if isLoading is true
-            <ActivityIndicator color="white" size="small" /> 
-          ) : userHasAccessToPackage(package2) ? (
-            <Text style={styles.accessText}>Already Purchased</Text>
-          ) : (
-            <TouchableOpacity onPress={() => handlePurchase(package3)}>
-              <Text style={[styles.packageText, { textAlign: 'center'}]}>7-day Free Trial</Text>
-            </TouchableOpacity>
-          )}
-      </LinearGradient>
+      {isLoading ? null : ( 
+      <View style={styles.trialContainer}>
+        <Text style={styles.trialText}>A 7 Day Free trial will be applied if it is your first time subscribing</Text>
+      </View> )}
 
       {/* Back to Map Button */}
       {isLoading ? ( // Check if isLoading is true
@@ -219,15 +211,12 @@ const styles = StyleSheet.create({
   },
   trialText: {
     color: 'white', 
-    fontSize: 18, 
+    fontSize: 14, 
     textAlign: 'center',
   },
-  trialButton: {
-    backgroundColor: 'black', // Background color
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 30,
-    width: '80%',
+  trialContainer: {
+    marginTop: 20,
+    marginHorizontal:20,
   }
 });
 

@@ -5,8 +5,13 @@ import { router } from 'expo-router';
 
 import { useRevenueCat } from '../providers/RevenueCatProvider';
 
+// unit state 
+import { useUnitSystem } from '../context/UnitSystemContext';
+
 
 const SavedLocationsCard = ({ data, onDelete }) => {
+
+  const { isMetric } = useUnitSystem();
 
   // Check user's pro subscription status
   const { user } = useRevenueCat();
@@ -21,7 +26,12 @@ const SavedLocationsCard = ({ data, onDelete }) => {
       router.push('/SubscriptionsPage')
     }
     
-  };
+    };
+
+    // Function to convert feet to meters when isMetric is true
+    const convertToMeters = (value) => {
+      return (value ? `${Math.round(parseFloat(value) * 0.3048)} meters` : '?');
+    };
 
     // Check if data is empty
     if (data.length === 0) {
@@ -45,9 +55,9 @@ const SavedLocationsCard = ({ data, onDelete }) => {
             <Card>
               <Card.Content>
                 <Title>{item.name}</Title>
-                <Paragraph>
-                  Rock Drop: {item.details.rockdrop ? item.details.rockdrop : "?"}
-                </Paragraph>
+                <Text style={styles.calloutCoordinates}>
+                  Rock Drop: {isMetric ? convertToMeters(item.details.rockdrop) : (item.details.rockdrop ? `${item.details.rockdrop} ft` : '?')}
+                </Text>
               </Card.Content>
               <Card.Actions>
                 <Button

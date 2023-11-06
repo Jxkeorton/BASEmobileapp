@@ -3,6 +3,7 @@ import React, {useState} from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
 import { appResetPassword } from '../../store';
 import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 const Reset = () => {
     const [email, setEmail] = useState('');
@@ -37,20 +38,32 @@ const Reset = () => {
                     onPress={async () => {
                       setLoading(true);
                       const resp = await appResetPassword(email);
-                      if (resp?.user) {
+                      if (resp?.success) {
                         router.replace("/(auth)/Login");
+                        Toast.show({
+                          type: 'success', // You can customize the type (success, info, error, etc.)
+                          text1: 'Reset password email sent',
+                          position: 'top',
+                        });
                       } else {
-                        console.log(resp.error);
-                        const errorCode = resp.error?.code;
-                        if (errorCode === 'auth/invalid-email') {
-                          Alert.alert('Invalid Email', 'Please enter a valid email address.');
-                        } else if (errorCode === 'auth/user-not-found') {
-                          Alert.alert('Invalid Email', 'User not found');
+                        if (resp.error) { // Check if error object exists
+                          console.log("Firebase Error Details:", resp.error); // Log the error details
+                          const errorCode = resp.error.code;
+                  
+                          if (errorCode === 'auth/invalid-email') {
+                            Alert.alert('Invalid Email', 'Please enter a valid email address.');
+                          } else if (errorCode === 'auth/user-not-found') {
+                            Alert.alert('User Not Found', 'User not found');
+                          } else {
+                            Alert.alert('Error', `Error Code: ${errorCode}`);
+                          }
                         } else {
-                          Alert.alert('Reset Password Error', 'Please try again.');
+                          console.log("Unknown Error Details:", resp); // Log unknown error details
+                          Alert.alert('Error', 'An unknown error occurred');
                         }
+                  
+                        setLoading(false);
                       }
-                      setLoading(false);
                     }}
                   >
                     Send Reset Email
