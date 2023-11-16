@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native'
+import { StyleSheet, View, Text, TouchableOpacity, Linking, Platform} from 'react-native'
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useState }from 'react'
 import {Callout} from 'react-native-maps';
@@ -114,7 +114,7 @@ const convertToMeters = (value) => {
 };
   
   return (
-    <Callout>
+    <Callout onPress={() => handleButtonPress('details')}>
         <View style={styles.calloutContainer}>
           <Text style={styles.calloutTitle}>{info.name.toUpperCase()}</Text>
           <Text style={styles.calloutCoordinates}>
@@ -123,7 +123,7 @@ const convertToMeters = (value) => {
           <Text style={styles.calloutCoordinates}>
             Total: {isMetric ? convertToMeters(info.details.total) : (info.details.total ? `${info.details.total} ft` : '?')}
           </Text>
-          {isLoggedIn && (
+          {Platform.OS === 'ios' && isLoggedIn && (
             <TouchableOpacity
               onPress={onSave}
               style={[
@@ -136,18 +136,22 @@ const convertToMeters = (value) => {
               </Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            onPress={() => handleButtonPress('details')}
-            style={styles.calloutButton}
-          >
-            <Text style={styles.calloutButtonText}>Details</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => handleButtonPress('openMaps')}
-            style={styles.calloutButton}
-          >
-            <Text style={styles.calloutButtonText}>Maps pin</Text>
-          </TouchableOpacity>
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              onPress={() => handleButtonPress('details')}
+              style={styles.calloutButton}
+            >
+              <Text style={styles.calloutButtonText}>Details</Text>
+            </TouchableOpacity>
+          )}
+          {Platform.OS === 'ios' && (
+            <TouchableOpacity
+              onPress={() => handleButtonPress('openMaps')}
+              style={styles.calloutButton}
+            >
+              <Text style={styles.calloutButtonText}>Maps pin</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Callout>
   )

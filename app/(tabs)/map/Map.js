@@ -2,7 +2,7 @@ import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Text, 
 import { Switch, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper'
 import React, { useState, useEffect } from 'react'
 import MapView from 'react-native-map-clustering';
-import {Marker} from 'react-native-maps';
+import {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import CustomCallout from '../../../components/CustomCallout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons'; 
@@ -185,6 +185,7 @@ export default function Map() {
           clusterColor='black'
           clusterTextColor='white'
           clusteringEnabled={true}
+          provider={PROVIDER_GOOGLE}
         >
         {eventData
           .filter((event) =>

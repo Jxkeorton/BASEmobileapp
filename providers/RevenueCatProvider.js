@@ -1,10 +1,11 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import Purchases, { LOG_LEVEL } from 'react-native-purchases'
+import { Platform } from 'react-native';
 
 // Revenue cat api key
 const APIKeys = {
     apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
-    google: 'nullfornow'
+    google: 'goog_TwvdVGeikOQFmRxsiZkqbWOpChv'
 };
 
 const RevenueCatContext = createContext()
@@ -23,10 +24,11 @@ export const RevenueCatProvider = ({children}) => {
     useEffect(() => {
         const init = async () => {
            
-            if (Platform.OS === "ios") {
-                Purchases.configure({ apiKey: APIKeys.apple });
-                
-              }
+            if (Platform.OS === 'android') {
+				Purchases.configure({ apiKey: APIKeys.google });
+			} else {
+				Purchases.configure({ apiKey: APIKeys.apple });
+			}
             
             setIsReady(true);
 
@@ -62,7 +64,7 @@ export const RevenueCatProvider = ({children}) => {
             await Purchases.purchasePackage(pack);
 
             // update user state 
-            if(pack.product.identifier === 'monthly' || pack.product.identifier === 'yearly') {
+            if(pack.product.identifier === 'monthly' || pack.product.identifier === 'yearly' || pack.product.identifier === '1:monthly' || pack.product.identifier === '1:yearly' ) {
                 setUser({...user, pro: true})
             } 
         } catch (e) {
