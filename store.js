@@ -245,7 +245,7 @@ export const submitLocationsHandler = async ({formData}) => {
             videoLink: formData.videoLink,
             openedBy: formData.openedBy,
             openedDate: formData.openedDate,
-            unit: selectedUnit,
+            unit: formData.selectedUnit,
             imageURLs
           };
 

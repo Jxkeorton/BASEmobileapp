@@ -123,33 +123,12 @@ const convertToMeters = (value) => {
           <Text style={styles.calloutCoordinates}>
             Total: {isMetric ? convertToMeters(info.details.total) : (info.details.total ? `${info.details.total} ft` : '?')}
           </Text>
-          {Platform.OS === 'ios' && isLoggedIn && (
-            <TouchableOpacity
-              onPress={onSave}
-              style={[
-                styles.calloutButton,
-                Saved ? styles.savedButton : null
-              ]}
-            >
-              <Text style={styles.calloutButtonText}>
-                {Saved ? 'Unsave' : 'Save'}
-              </Text>
-            </TouchableOpacity>
-          )}
           {Platform.OS === 'ios' && (
             <TouchableOpacity
               onPress={() => handleButtonPress('details')}
               style={styles.calloutButton}
             >
               <Text style={styles.calloutButtonText}>Details</Text>
-            </TouchableOpacity>
-          )}
-          {Platform.OS === 'ios' && (
-            <TouchableOpacity
-              onPress={() => handleButtonPress('openMaps')}
-              style={styles.calloutButton}
-            >
-              <Text style={styles.calloutButtonText}>Maps pin</Text>
             </TouchableOpacity>
           )}
         </View>
