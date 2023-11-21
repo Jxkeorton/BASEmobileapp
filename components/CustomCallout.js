@@ -16,7 +16,7 @@ export default function CustomCallout({info}) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { isMetric } = useUnitSystem();
 
-   // Check user's pro subscription status
+   // Check user's pro subscription status  
    const { user } = useRevenueCat();
    const isProUser = user && user.pro;
 

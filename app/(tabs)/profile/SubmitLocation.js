@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { View, TextInput,Text, StyleSheet, Alert, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
-import { Button, Portal, Modal, PaperProvider, ActivityIndicator } from "react-native-paper";
+import { View, TextInput,Text, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
+import { Switch, Portal, Modal, PaperProvider, ActivityIndicator } from "react-native-paper";
 import * as ImagePicker from 'expo-image-picker';
 import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
@@ -21,6 +21,8 @@ const SubmitLocation = () => {
     const [openedBy, setOpenedBy] = useState('');
     const [openedDate, setOpenedDate] = useState('');
     const [images, setImage] = useState([]);
+    const [selectedUnit, setSelectedUnit] = useState('Meters'); // Default to meters
+
 
     const [visible, setVisible] = useState(false);
     const [permission, requestPermission] = ImagePicker.useCameraPermissions();
@@ -44,7 +46,8 @@ const SubmitLocation = () => {
       videoLink,
       openedBy,
       openedDate,
-      images
+      images,
+      selectedUnit,
     };
 
     // when form submitted
@@ -52,9 +55,9 @@ const SubmitLocation = () => {
       setLoading(true);
       try {
         await submitLocationsHandler({ formData });
-        router.back();
+        router.replace('/(tabs)/profile/Profile')
         Toast.show({
-          type: 'Success', // You can customize the type (success, info, error, etc.)
+          type: 'success', // You can customize the type (success, info, error, etc.)
           text1: 'Successfully sent submission',
           position: 'top',
         });
@@ -176,12 +179,21 @@ const SubmitLocation = () => {
                 <KeyboardAvoidingView behavior="padding" >
                     <Text style={{alignItems: 'center', justifyContent: 'center' , marginVertical: 20,}}>Fields marked with * must be filled in </Text>
                     <TextInput value={exitName} style={styles.textInput} placeholder='Exit Name *' autoCapitalize='none' onChangeText={(text) => setExitName(text)}></TextInput>
-                    <TextInput value={rockDrop} style={styles.textInput} placeholder='Rock Drop *' autoCapitalize='none' onChangeText={(text) => setRockDrop(text)}></TextInput>
+                    <TextInput value={coordinates} style={styles.textInput} placeholder='Exact Coordinates *' autoCapitalize='none' onChangeText={(text) => setCoordinates(text)}></TextInput>
+                    <View style={styles.switchContainer}>
+                      <Text style={styles.switchText}><Text style={styles.bold}>Unit: </Text>{selectedUnit}</Text>
+                      <Switch
+                        value={selectedUnit === 'Feet'}
+                        onValueChange={() =>
+                          setSelectedUnit(selectedUnit === 'Meters' ? 'Feet' : 'Meters')
+                        }
+                      />
+                    </View>
+                    <TextInput value={rockDrop} style={styles.textInput} placeholder={`Rock Drop * (${selectedUnit})`} autoCapitalize='none' onChangeText={(text) => setRockDrop(text)}></TextInput>
                     <TextInput value={total} style={styles.textInput} placeholder='Overall Height' autoCapitalize='none' onChangeText={(text) => setTotal(text)}></TextInput>
                     <TextInput value={anchor} style={styles.textInput} placeholder='Anchor Info' autoCapitalize='none' onChangeText={(text) => setAnchor(text)}></TextInput>
                     <TextInput value={access} style={styles.textInput} placeholder='Access' autoCapitalize='none' onChangeText={(text) => setAccess(text)}></TextInput>
                     <TextInput value={notes} style={styles.textInput} placeholder='Notes' autoCapitalize='none' onChangeText={(text) => setNotes(text)}></TextInput>
-                    <TextInput value={coordinates} style={styles.textInput} placeholder='Exact Coordinates *' autoCapitalize='none' onChangeText={(text) => setCoordinates(text)}></TextInput>
                     <TextInput value={cliffAspect} style={styles.textInput} placeholder='Cliff Aspect' autoCapitalize='none' onChangeText={(text) => setCliffAspect(text)}></TextInput>
                     <TextInput value={videoLink} style={styles.textInput} placeholder='Video Link' autoCapitalize='none' onChangeText={(text) => setVideoLink(text)}></TextInput>
                     <TextInput value={openedBy} style={styles.textInput} placeholder='Opened By' autoCapitalize='none' onChangeText={(text) => setOpenedBy(text)}></TextInput>
@@ -291,4 +303,16 @@ const styles = StyleSheet.create({
       fontWeight: 'bold',
       color: 'black',
   },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  switchText: {
+    fontSize: 16,
+    marginRight: 20,
+  },
+  bold: {
+    fontWeight: 'bold',
+  }
 })

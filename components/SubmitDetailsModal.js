@@ -81,7 +81,8 @@ const SubmitDetailsModal = ({ onClose , info, visible }) => {
         videoLink,
         openedBy,
         openedDate,
-        images
+        images,
+        jumpId: info ? info.id : null
     };
 
     const handleSubmit = async () => {

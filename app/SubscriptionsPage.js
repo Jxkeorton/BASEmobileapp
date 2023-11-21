@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   },
   backToMapButtonText: {
     color: 'white', 
-    fontSize: 18, 
+    fontSize: 20, 
     fontWeight: 'bold', 
     textAlign: 'center',
   },

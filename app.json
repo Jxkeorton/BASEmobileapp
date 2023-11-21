@@ -2,7 +2,7 @@
   "expo": {
     "name": "BASE map",
     "slug": "basemobile-app",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/bitmap.png",
     "userInterfaceStyle": "light",
@@ -17,7 +17,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.jxkeorton.basemobileapp",
-      "runtimeVersion": "1.0.1",
+      "runtimeVersion": "1.0.2",
       "config": {
         "googleMapsApiKey": "AIzaSyAB-T7J31Ln4kTXkJTYCjoPguJIUNPChJY"
       }
@@ -31,7 +31,7 @@
       "runtimeVersion": {
         "policy": "appVersion"
       },
-      "versionCode": 2,
+      "versionCode": 3,
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAB-T7J31Ln4kTXkJTYCjoPguJIUNPChJY"

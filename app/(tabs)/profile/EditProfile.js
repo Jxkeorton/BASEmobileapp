@@ -25,7 +25,7 @@ const EditProfile = () => {
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
   const [name, setName] = useState(false);
   const [email, setEmail] = useState(false);
-  const [jumpNumber, setJumpNumber] = useState(false);
+  const [jumpNumber, setJumpNumber] = useState(null);
 
   const [submitLoading, setSubmitLoading] = useState(false);
   const [ imageChangeLoading, setImageChangeLoading] = useState(false);

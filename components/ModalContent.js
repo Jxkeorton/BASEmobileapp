@@ -50,6 +50,7 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
           onChangeText={setTempMinRockDrop}
           autoCorrect={false}
           autoCapitalize="none"
+          accessibilityLabel="Minimum Rock Drop"
         />
 
         <Text style={styles.panelSubtitle}>Max Rock Drop: </Text>
@@ -60,6 +61,7 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
           onChangeText={setTempMaxRockDrop}
           autoCorrect={false}
           autoCapitalize="none"
+          accessibilityLabel="Maximum Rock Drop"
         />
 
         <Text style={styles.panelSubtitle}>Remove Unknown Rockdrops </Text>
@@ -107,7 +109,7 @@ const styles = StyleSheet.create({
   },
   panelSubtitle: {
     fontSize: 14,
-    color: 'gray',
+    color: 'black',
     height: 30,
   },
   input: {
@@ -132,7 +134,7 @@ const styles = StyleSheet.create({
   panelButtonTitle: {
     fontSize: 17,
     fontWeight: 'bold',
-    color: 'white',
+    color: 'black',
   },
   borderButton: {
     padding:13,

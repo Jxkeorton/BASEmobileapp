@@ -196,7 +196,7 @@ export const updateProfileDetails = async ( name, email, jumpNumber) => {
         updatedData.email = email;
       }
 
-    if (jumpNumber !== undefined && !isNaN(Number(jumpNumber))) {
+    if (jumpNumber !== undefined && jumpNumber !== null && !isNaN(Number(jumpNumber))) {
         updatedData.jumpNumber = Number(jumpNumber); // Ensure jumpNumber is a number
       }
 
@@ -245,6 +245,7 @@ export const submitLocationsHandler = async ({formData}) => {
             videoLink: formData.videoLink,
             openedBy: formData.openedBy,
             openedDate: formData.openedDate,
+            unit: selectedUnit,
             imageURLs
           };
 
@@ -449,20 +450,19 @@ export const takeawayJumpNumber = async () => {
               videoLink: formData.videoLink,
               openedBy: formData.openedBy,
               openedDate: formData.openedDate,
-              imageURLs
+              imageURLs,
+              jumpId: formData.jumpId
           };
 
-          //add formdata and image urls to users logbook document within firebase
+             // adding to the users submissions so i can see who submitted what if i need to 
               const userId = user.uid;
           
-              // Get the user's logbook document reference
+              // eeing if the document exists
               const detailsRef = doc(FIREBASE_DB, 'detailSubmits', userId);
-              
-              // Check if the document exists
               const detailsSnapshot = await getDoc(detailsRef);
 
               if (!detailsSnapshot.exists()) {
-              // If the logbook document doesn't exist, create it with the user's ID
+              // If the detailsupdate document doesn't exist, create it with the user's ID
               await setDoc(detailsRef, { jumps: [] });
               }
 
@@ -471,7 +471,7 @@ export const takeawayJumpNumber = async () => {
               // Add the new jump to the existing jumps array
               existingSubmitData.detailSubmits.push(submissionData);
           
-              // Update the logbook document with the new jumps array
+              // Update the document with the new jumps array
               await setDoc(detailsRef, existingSubmitData);
           
               console.log('submitted successfully.');
