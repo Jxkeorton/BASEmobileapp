@@ -75,25 +75,28 @@ Users can explore the site from the Home page where they are greeted with a bann
 
 - **Map:** 
 
-  ![map](assets/map.PNG)
+  ![map](assets/map.PNG){:height="200px"}
 
 - **Infobox:** 
 
-  ![infobox](assets/infobox.png)
+  ![infobox](assets/infobox.PNG){:height="200px"}
 
 - **Details:** 
-  ![details](assets/details.png)
+
+  ![details](assets/details.PNG){:height="200px"}
 
 - **Profile:** 
-  ![Profile](assets/profile.png)
+
+  ![Profile](assets/profile.PNG){:height="200px"}
 
 - **Logbook:** 
 
-  ![logbook](assets/logbook.png)
+  ![logbook](assets/logbook.PNG){:height="200px"}
 
 - **Login:** 
 
-  ![login](assets/login.png)
+  ![login](assets/login.PNG){:height="200px"}
+
 
 ## Technologies Used
 
