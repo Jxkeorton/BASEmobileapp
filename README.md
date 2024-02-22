@@ -73,27 +73,27 @@ Users can explore the site from the Home page where they are greeted with a bann
 
 ## Actual Features
 
-- **Map:** 
+- **Map:** An interactive map for users to navigate across the different locations. The pins are clustered to improve rendering speeds, I also feel that this is a more user friendly method of displaying the pins. The Search input allows you to search via the jump name or country. The two toggles allow the user to toggle satellite view and to choose the metric or imperial system for measurements across the whole app.
 
   <img src="assets/map.PNG" alt="map" height="200px">
 
-- **Infobox:** 
+- **Infobox:** The infobox is displayed when the user clicks a location allowing them to preview the name of the jump and decide if they would like to proceed to the details page.
 
   <img src="assets/infobox.PNG" alt="infobox" height="200px">
 
-- **Details:** 
+- **Details:** The details page is designed to be easy to read and understand more about the specific location. Including hazards, measurements and a map in satellite view. You can also choose to save the location , submit new details or even open in the default maps app on the users phone.
 
   <img src="assets/details.PNG" alt="details" height="200px">
 
-- **Profile:** 
+- **Profile:** The profile page is where users get to feel a personal touch. Here they will see all their saved locations, they can submit a new location or see the ammount of logged jumps they have which is a very important statistic to indicate experience levels.
 
   <img src="assets/profile.PNG" alt="profile" height="200px">
 
-- **Logbook:** 
+- **Logbook:** The logbook feature allows users to upload new jumps and also add relevent details including up to 4 photos. This decission was made due to the ammount of storage too many photos could take in the backend. Upon reevaluating since the apps use it turns out users would prefer a more basic view which prioritises increased load times and speed of adding new jumps. This will be updated in the future.
 
   <img src="assets/logbook.PNG" alt="logbook" height="200px">
 
-- **Login:** 
+- **Login:** The login screen is the first screen a user will see if they have never used the app before, here they can navigate to the register screen or forgotten password screen.
 
   <img src="assets/login.PNG" alt="login" height="200px">
 
@@ -107,6 +107,7 @@ Users can explore the site from the Home page where they are greeted with a bann
 
 - **Frameworks & Libraries:**
   - [React Native](https://reactnative.dev/): A JavaScript framework for building native mobile applications.
+  - [RevenueCat](https://www.revenuecat.com/): A platform for managing in-app purchases and subscriptions in mobile apps.
   - [Expo](https://expo.dev/): A platform and set of tools for building and deploying React Native applications.
   - [Firebase](https://firebase.google.com/): A comprehensive platform provided by Google for mobile and web application development, offering features like authentication, database, and storage.
   - [Expo Router](https://github.com/lukebrandonfarrell/expo-router): A routing library specifically designed for use with Expo projects.
@@ -135,10 +136,14 @@ Users can explore the site from the Home page where they are greeted with a bann
 ## Testing and Accesibility
   
 The app was tested using emulators specific to apple and android devices. Also there was a test audience before the app was released.
+The test audience found numerous errors such as app crashing when trying to upload images or submitting updates. These were due to errors in the functions i created to send data to the firebase database. These were resolved.
 
 ### Manual testing
 
-- 
+- Every button , Screen , Form and Input was tested manually.
+
+- Through manual tests I realised logbook load times were too slow when including images, to solve this I compressed all images before they were sent to the backend.
+- I also found that utilising Async storage was necesarry when accessing the details page, this prevented an unecessary fetch request which took a long time.
 
 ### Deployment
 
