@@ -3,6 +3,7 @@
 ![amiresponsive](assets/base-app.png)
 
 [Apple app store](https://apps.apple.com/us/app/base-map/id6470670905)
+
 [Google play store](https://play.google.com/store/apps/details?id=com.jxkeorton.basemobileapp&hl=en-VN)
 
 ## TABLE OF CONTENT
@@ -74,7 +75,7 @@ Users can explore the site from the Home page where they are greeted with a bann
 
 - **Map:** 
 
-  ![map](assets/map.png)
+  ![map](assets/map.PNG)
 
 - **Infobox:** 
 
