@@ -54,9 +54,8 @@ Users can explore the site from the Home page where they are greeted with a bann
 ### Colours used
 
 - **Background colours:**
-  - `white`
-  - `#f4f4f4`
-  - `#f6f6f6`
+  - `white`, `#f6f6f6`, `#f4f4f4` (profile, logbook tabs)
+  - `black` (auth screens)
 
 - **Button colours:**
   - **Primary:** `#00ABF0`
