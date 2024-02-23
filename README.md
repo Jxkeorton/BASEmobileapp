@@ -10,7 +10,7 @@
 
 - [Project Overview](#project-overview)
 - [User Experience (UX)](#user-experience-ux)
-  - [Goals of app owner](#goals-of-app-owner)
+  - [Goals of the app owner](#goals-of-the-app-owner)
 - [Design](#design)
   - [Colours Used](#colours-used)
   - [Typography](#typography)
