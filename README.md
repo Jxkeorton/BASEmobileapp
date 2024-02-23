@@ -40,7 +40,7 @@ The "BASE map" app delivers a seamless and efficient user experience for base ju
 
 Users can explore the site from the Home page where they are greeted with a banner of a popular product. After scrolling down all the unfiltered products are revealed in a easy to view grid like fashion. 
 
-### Goals of the app owner
+## Goals of the app owner
 
 - Allow users to easily navigate Base jumping locations
 - There will be an optional subscription but the free version is also valuable
