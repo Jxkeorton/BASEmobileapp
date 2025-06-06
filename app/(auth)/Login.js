@@ -50,7 +50,7 @@ const Login = () => {
                   if (resp?.user) {
                     router.replace("/(tabs)/map");
                   } else {
-                    console.log(resp.error);
+                    console.log("Sign in error", resp.error);
                     const errorCode = resp.error?.code;
                     if (errorCode === 'auth/invalid-email') {
                       Alert.alert('Invalid Email', 'Please enter a valid email address.');

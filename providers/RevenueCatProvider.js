@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import Purchases, { LOG_LEVEL } from 'react-native-purchases'
 import { Platform } from 'react-native';
 
+const DEV_MODE = __DEV__;
+
 // Revenue cat api key
 const APIKeys = {
     apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
@@ -17,12 +19,22 @@ export const useRevenueCat = () => {
 
 // Revenue cat functions 
 export const RevenueCatProvider = ({children}) => {
-    const [user, setUser] = useState({pro: false});
+    const [user, setUser] = useState({pro: DEV_MODE});
     const [packages, setPackages] = useState([]);
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
         const init = async () => {
+
+            if (DEV_MODE) {
+                // Skip RevenueCat entirely in dev mode
+                setPackages([
+                    { product: { identifier: 'monthly', priceString: '$4.99' }},
+                    { product: { identifier: 'yearly', priceString: '$39.99' }}
+                ]);
+                setIsReady(true);
+                return;
+            }
            
             if (Platform.OS === 'android') {
 				Purchases.configure({ apiKey: APIKeys.google });
@@ -60,6 +72,10 @@ export const RevenueCatProvider = ({children}) => {
 
     //Purchase a package
     const purchasePackage = async (pack) => {
+        if (DEV_MODE) {
+            setUser({...user, pro: true});
+            return;
+        }
         try{
             await Purchases.purchasePackage(pack);
 

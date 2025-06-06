@@ -46,8 +46,6 @@ const jumpDetails = () => {
 
     const handleDeleteJump = async () => {
       try {
-        // You should have access to jump ID or some unique identifier
-        // for the jump you want to delete. Replace 'jump.id' with the actual ID.
         const jumpId = jump.id;
     
         // Call the deleteJumpHandler with the jump ID
@@ -56,9 +54,8 @@ const jumpDetails = () => {
 
         router.back('Logbook');
 
-        // Show a toast notification to inform the user
         Toast.show({
-          type: 'info', // You can customize the type (success, info, error, etc.)
+          type: 'info', 
           text1: 'Jump deleted',
           position: 'top',
         });
@@ -73,7 +70,6 @@ const jumpDetails = () => {
       // Calculate the progress as a percentage
       const progress = (loaded / total) * 100;
   
-      // Update the loading state for this image
       setImageLoadStates((prevStates) => {
         const newState = [...prevStates];
         newState[index] = progress < 100;
