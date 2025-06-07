@@ -33,7 +33,7 @@ export default function CustomCallout({info}) {
       }
     } else {
       // Redirect to the SubscriptionScreen if the user is not subscribed
-      router.push('/SubscriptionsPage'); // Adjust the path as needed
+      router.navigate('/SubscriptionsPage'); // Adjust the path as needed
       Toast.show({
         type: 'info', // You can customize the type (success, info, error, etc.)
         text1: 'Subscribe for this feature !',
@@ -92,7 +92,7 @@ export default function CustomCallout({info}) {
 
   // function to direct to the locations details page
   const onDetailsPress = () => {
-    router.push(`/(tabs)/map/${info.id}`)
+    router.navigate(`/(tabs)/map/${info.id}`)
   }
 
   // for directing to maps app button 

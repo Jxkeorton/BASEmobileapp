@@ -30,7 +30,7 @@ const Settings = () => {
     switch (key) {
       case 'contactUs':
         // Handle 'Contact Us' press
-        router.push('/profile/settings/Contact')
+        router.navigate('/profile/settings/Contact')
         break;
       case 'logout':
         // Handle 'Logout' press
@@ -38,15 +38,15 @@ const Settings = () => {
         break;
       case 'deleteAccount':
         // Handle 'Delete Account' press
-        router.push('/profile/settings/DeleteAccount')
+        router.navigate('/profile/settings/DeleteAccount')
         break;
       case 'privacypolicy':
         // Handle 'policies' press
-        router.push('/profile/settings/PrivacyPolicy')
+        router.navigate('/profile/settings/PrivacyPolicy')
         break;
       case 'terms':
           // Handle 'policies' press
-          router.push('/profile/settings/Terms')
+          router.navigate('/profile/settings/Terms')
           break;
       default:
         

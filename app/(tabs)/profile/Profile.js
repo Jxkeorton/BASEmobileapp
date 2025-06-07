@@ -189,7 +189,7 @@ const Profile = () => {
         </View>
 
       <View style={styles.menuWrapper}>
-        <TouchableRipple onPress={() => router.push('/(tabs)/profile/EditProfile')}>
+        <TouchableRipple onPress={() => router.navigate('/(tabs)/profile/EditProfile')}>
           <View style={styles.menuItem}>
             <Icon name="account-check-outline" color="#777777" size={25}/>
             <Text style={styles.menuItemText}>Edit Profile</Text>
@@ -201,7 +201,7 @@ const Profile = () => {
             <Text style={styles.menuItemText}>Tell Your Friends</Text>
           </View>
         </TouchableRipple>
-        <TouchableRipple onPress={() => router.push('/(tabs)/profile/SubmitLocation')}>
+        <TouchableRipple onPress={() => router.navigate('/(tabs)/profile/SubmitLocation')}>
           <View style={styles.menuItem}>
             <Icon name="map-marker-radius" color="#777777" size={25}/>
             <Text style={styles.menuItemText}>Submit A Location</Text>

@@ -18,7 +18,7 @@ export default () => {
                     <Button 
                         mode='contained-tonal' 
                         buttonColor="white" 
-                        onPress={() => router.push('/profile/settings')} 
+                        onPress={() => router.navigate('/profile/settings')} 
                         title="Settings" >
                             <Icon name="cog" size={20} color="#000" />
                     </Button>
@@ -34,7 +34,7 @@ export default () => {
                     <Button
                       mode="contained-tonal"
                       buttonColor="white"
-                      onPress={() => router.push('/profile/Profile')}
+                      onPress={() => router.navigate('/profile/Profile')}
                     >
                       Cancel
                     </Button>
@@ -49,7 +49,7 @@ export default () => {
                     <Button
                       mode="contained-tonal"
                       buttonColor="white"
-                      onPress={() => router.push('/profile/Profile')}
+                      onPress={() => router.navigate('/profile/Profile')}
                     >
                       Cancel
                     </Button>

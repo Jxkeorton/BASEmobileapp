@@ -16,7 +16,7 @@ const PackageList = () => {
       await purchasePackage(pkg);
 
       if (user.pro) {
-        router.push('/(tabs)/map/Map')
+        router.navigate('/(tabs)/map/Map')
       }
       
     } catch (error) {
@@ -119,7 +119,7 @@ const PackageList = () => {
       ) : (
         <TouchableOpacity 
         style={styles.backToMapButton}
-        onPress={() => router.push('/(tabs)/map/Map')}
+        onPress={() => router.navigate('/(tabs)/map/Map')}
       >
         <Text style={styles.backToMapButtonText}>Back to Map</Text>
       </TouchableOpacity>
