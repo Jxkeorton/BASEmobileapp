@@ -27,20 +27,91 @@ import { Alert } from 'react-native';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 
+// LOGIN screen BYPASS
+// const DEV_BYPASS_LOGIN = __DEV__ && true;  // Enable bypass
+// const DEV_BYPASS_LOGIN = __DEV__ && false; // Disable bypass (test login)
+export const DEV_BYPASS_LOGIN = __DEV__ && true;
+
+const getCurrentUser = () => {
+  if (DEV_BYPASS_LOGIN) {
+    // Return fake user for dev mode
+    return {
+      uid: 'dev-user-123',
+      email: 'dev@basemap.com',
+      displayName: 'Dev User'
+    };
+  }
+  return FIREBASE_AUTH.currentUser;
+};
+
 export const AuthStore = new Store({
-    isLoggedIn: false,
+    isLoggedIn: DEV_BYPASS_LOGIN,
     initialized: false,
-    user: null,
+    user: DEV_BYPASS_LOGIN ? { 
+      uid: 'dev-user', 
+      email: 'dev@example.com', 
+      displayName: 'Dev User' 
+    } : null,
 });
 
-const unsub = onAuthStateChanged(FIREBASE_AUTH, (user) => {
-  
-    AuthStore.update((store) => {
-        store.user = user;
-        store.isLoggedIn = user ? true : false;
-        store.initialized = true;
-    });
-});
+const unsub = onAuthStateChanged(
+  FIREBASE_AUTH,
+  (user) => {
+      console.log('🔐 Auth state changed:', user?.email || 'No user');
+      
+      // DEV MODE
+      if (DEV_BYPASS_LOGIN) {
+          console.log('🔧 DEV MODE: Auth bypass enabled');
+          AuthStore.update((store) => {
+              store.user = user || {
+                  uid: 'dev-user-123',
+                  email: 'dev@basemap.com',
+                  displayName: 'Dev User'
+              };
+              store.isLoggedIn = true;  // Always logged in during dev
+              store.initialized = true;
+          });
+
+          console.log('🔧 DEV: Updated store state:', {
+            user: AuthStore.getRawState().user?.email,
+            isLoggedIn: AuthStore.getRawState().isLoggedIn,
+            initialized: AuthStore.getRawState().initialized
+          });
+          return;
+      }
+
+      // PRODUCTION MODE: Firebase auth flow
+      AuthStore.update((store) => {
+          store.user = user;
+          store.isLoggedIn = !!user;
+          store.initialized = true;
+      });
+  },
+  (error) => {
+      console.error('🚨 Auth error:', error);
+      
+      if (DEV_BYPASS_LOGIN) {
+          console.log('🔧 DEV MODE: Ignoring auth error, staying logged in');
+          AuthStore.update((store) => {
+              store.user = store.user || {
+                  uid: 'dev-user-123',
+                  email: 'dev@basemap.com',
+                  displayName: 'Dev User'
+              };
+              store.isLoggedIn = true;
+              store.initialized = true;
+          });
+          return;
+      }
+
+      // Production error handling
+      AuthStore.update((store) => {
+          store.user = null;
+          store.isLoggedIn = false;
+          store.initialized = true; // Prevent app hanging
+      });
+  }
+);
 
 export const appSignIn = async (email, password) => {
     try {
@@ -486,7 +557,36 @@ export const takeawayJumpNumber = async () => {
 
     export const getLoggedJumps = async () => {
         try {
-          const user = FIREBASE_AUTH.currentUser;
+          const currentUser = getCurrentUser();
+          if (!currentUser) {
+            console.log('No authenticated user found');
+            return []; // Return empty array
+          }
+
+          if (DEV_BYPASS_LOGIN && currentUser.uid === 'dev-user-123') {
+            console.log('🔧 DEV MODE: Returning mock jumps');
+            return [
+              {
+                id: 'dev-jump-1',
+                location: 'Dev Mountain',
+                exitType: 'Wingsuit',
+                delay: '3',
+                details: 'Amazing dev jump!',
+                date: '2024-01-01',
+                imageURLs: []
+              },
+              {
+                id: 'dev-jump-2', 
+                location: 'Dev Cliff',
+                exitType: 'Freefall',
+                delay: '5',
+                details: 'Another great dev jump!',
+                date: '2024-01-02',
+                imageURLs: []
+              }
+            ];
+          }
+          
           const userId = user.uid;
       
           const logbookRef = doc(FIREBASE_DB, 'logbook', userId);
@@ -509,11 +609,17 @@ export const takeawayJumpNumber = async () => {
       };
 
       export const getJumpnumber = async () => {
-            const currentUser = FIREBASE_AUTH.currentUser;
+            const currentUser = getCurrentUser();
             if (!currentUser) {
             Alert.alert('No authenticated user found');
             return;
             }
+
+            if (DEV_BYPASS_LOGIN && currentUser.uid === 'dev-user-123') {
+              console.log('🔧 DEV MODE: Returning mock jump number');
+              return 42; 
+            }
+
             const userId = currentUser.uid;
   
             const userDocRef = doc(FIREBASE_DB, 'users', userId);
@@ -589,12 +695,18 @@ export const takeawayJumpNumber = async () => {
         }
 
         try {
-          const currentUser = FIREBASE_AUTH.currentUser;
+          const currentUser = getCurrentUser();
           if (!currentUser) {
             console.error('No authenticated user found');
             return;
           }
           const userId = currentUser.uid;
+
+          if (DEV_BYPASS_LOGIN && currentUser.uid === 'dev-user-123') {
+            console.log('🔧 DEV MODE: Skipping Firebase save operation');
+            // Return mock response
+            return Math.random() > 0.5; // Random true/false for testing
+          }
 
           const userDocRef = doc(FIREBASE_DB, 'users', userId);
           const userDocSnap = await getDoc(userDocRef);
