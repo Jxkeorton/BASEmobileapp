@@ -1,13 +1,15 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, Image } from 'react-native';
 import React, {useState} from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
-import { appResetPassword } from '../../store';
+import { useUser } from '../../providers/UserProvider';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
 const Reset = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const { resetPassword } = useUser();
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -28,26 +30,26 @@ const Reset = () => {
               ></TextInput>
     
               {loading ? (
-                <ActivityIndicator size="small" color="#007AFF" /> // Use blue color for the loading indicator
+                <ActivityIndicator size="small" color="#007AFF" />
               ) : (
                 <>
                   <Button
                     title="Send reset link"
                     mode="contained"
-                    style={styles.sendResetButton} // Add custom styles for the send reset button
+                    style={styles.sendResetButton}
                     onPress={async () => {
                       setLoading(true);
-                      const resp = await appResetPassword(email);
-                      if (resp?.success) {
+                      const resp = await resetPassword(email);
+                      if (resp?.success) { 
                         router.replace("/(auth)/Login");
                         Toast.show({
-                          type: 'success', // You can customize the type (success, info, error, etc.)
+                          type: 'success',
                           text1: 'Reset password email sent',
                           position: 'top',
                         });
                       } else {
-                        if (resp.error) { // Check if error object exists
-                          console.log("Firebase Error Details:", resp.error); // Log the error details
+                        if (resp.error) {
+                          console.log("Firebase Error Details:", resp.error);
                           const errorCode = resp.error.code;
                   
                           if (errorCode === 'auth/invalid-email') {
@@ -58,10 +60,9 @@ const Reset = () => {
                             Alert.alert('Error', `Error Code: ${errorCode}`);
                           }
                         } else {
-                          console.log("Unknown Error Details:", resp); // Log unknown error details
+                          console.log("Unknown Error Details:", resp);
                           Alert.alert('Error', 'An unknown error occurred');
                         }
-                  
                         setLoading(false);
                       }
                     }}
@@ -96,10 +97,10 @@ const Reset = () => {
         height: 200,
       },
       textInput: {
-        marginVertical: 10, // Increase vertical margin for text input
+        marginVertical: 10,
         height: 40,
-        backgroundColor: 'white', // Use white background for text input
-        borderRadius: 8, // Increase border radius
+        backgroundColor: 'white',
+        borderRadius: 8,
         padding: 10,
         marginBottom: 20,
       },
@@ -108,10 +109,10 @@ const Reset = () => {
         marginVertical: 10, 
       },
       button: {
-        backgroundColor: 'transparent', // Make the background transparent
+        backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: '#007AFF', // Use blue color for button border
-        marginVertical: 10, // Add vertical margin
+        borderColor: '#007AFF',
+        marginVertical: 10,
       },
     });
     
