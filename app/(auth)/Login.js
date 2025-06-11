@@ -80,7 +80,7 @@ const Login = () => {
             textColor='#007AFF' // Use blue color for the privacy policy link
             style={styles.privacyPolicyLink}
             onPress={() => {
-              router.push('/AuthPrivacyPolicy');
+              router.navigate('/AuthPrivacyPolicy');
             }}
           >
             Privacy Policy

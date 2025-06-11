@@ -20,6 +20,9 @@
       "runtimeVersion": "1.0.4",
       "config": {
         "googleMapsApiKey": "AIzaSyCDawNNe_LbbPfKYwP3OyMLZ-AWIJ97IZo"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -35,7 +38,7 @@
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAB-T7J31Ln4kTXkJTYCjoPguJIUNPChJY"
-        } 
+        }
       }
     },
     "web": {

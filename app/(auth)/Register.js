@@ -61,7 +61,7 @@ const Register = () => {
                     color="white"
                   />
                 </View>
-                <Button textColor='black' onPress={() => router.push('/AuthTerms')}>
+                <Button textColor='black' onPress={() => router.navigate('/AuthTerms')}>
                  <Text style={styles.packageText}>I agree to the Terms and Conditions</Text> 
                 </Button>
               </View>
@@ -117,7 +117,7 @@ const Register = () => {
                 textColor='#007AFF'
                 style={styles.privacyPolicyLink}
                 onPress={() => {
-                  router.push('/AuthPrivacyPolicy');
+                  router.navigate('/AuthPrivacyPolicy');
                 }}
               >
                 Privacy Policy

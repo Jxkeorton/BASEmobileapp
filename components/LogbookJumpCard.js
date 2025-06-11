@@ -60,7 +60,7 @@ const LogbookJumpCard = () => {
 
     // function to direct to the locations details page
     const onCardPress = (index, jump) => {
-      router.push({pathname: `/(tabs)/logbook/${index}`, params: {jumpNumber: jump.jumpNumber}})
+      router.navigate({pathname: `/(tabs)/logbook/${index}`, params: {jumpNumber: jump.jumpNumber}})
     }
 
     const filteredJumps = jumps.filter((jump) =>

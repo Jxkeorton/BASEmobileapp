@@ -21,9 +21,9 @@ const SavedLocationsCard = ({ data, onDelete }) => {
     // function to direct to the locations details page
    const onDetailsPress = (itemId) => {
     if (isProUser) {
-      router.push(`/(tabs)/map/${itemId}`)
+      router.navigate(`/(tabs)/map/${itemId}`)
     } else {
-      router.push('/SubscriptionsPage')
+      router.navigate('/SubscriptionsPage')
     }
     
     };

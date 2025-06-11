@@ -6,7 +6,7 @@ import {
   ImageBackground,
   TextInput,
   StyleSheet,
-  Alert
+  Platform
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
