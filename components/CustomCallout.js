@@ -3,7 +3,7 @@ import React, { useState }from 'react'
 import {Callout} from 'react-native-maps';
 import { router, useFocusEffect} from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { useUser } from '../providers/UserProvider';  // NEW
+import { useUser } from '../providers/UserProvider'; 
 
 import { useUnitSystem } from '../context/UnitSystemContext';
 
