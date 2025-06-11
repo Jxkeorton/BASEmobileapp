@@ -3,7 +3,7 @@ import {
   router,
   useSegments,
 } from "expo-router";
-import { useUser } from "../providers/UserProvider";  // NEW: Single hook
+import { useUser } from "../providers/UserProvider";
 import { useEffect } from "react";
 import { ActivityIndicator, MD2Colors} from "react-native-paper";
 import { View, StyleSheet } from "react-native";
