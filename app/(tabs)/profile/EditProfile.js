@@ -6,25 +6,21 @@ import {
   ImageBackground,
   TextInput,
   StyleSheet,
-  Platform
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Modal, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import { uploadImageToProfile, updateProfileDetails } from '../../../store';
-import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { useUser } from '../../../providers/UserProvider';  // NEW
 import Toast from 'react-native-toast-message';
-
 
 const EditProfile = () => {
   const [visible, setVisible] = useState(false);
   const [image, setImage] = useState('');
   const [permission, requestPermission] = ImagePicker.useCameraPermissions();
-  const [name, setName] = useState(false);
-  const [email, setEmail] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [jumpNumber, setJumpNumber] = useState(null);
 
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -34,45 +30,18 @@ const EditProfile = () => {
   const hideModal = () => setVisible(false);
   const containerStyle = {backgroundColor: 'white', padding: 20};
 
-  // getting user information 
+  const { profile, uploadProfileImage, updateProfileDetails, loading } = useUser();
 
   useFocusEffect(
     React.useCallback(() => {
-      const getUserInformation = async () => {
-          try {
-            // fetching users saved location ID's
-            const currentUser = FIREBASE_AUTH.currentUser;
-            if (!currentUser) {
-              Toast.show({
-                type: 'error', // You can customize the type (success, info, error, etc.)
-                text1: 'No Authenticated user found',
-                position: 'top',
-              });
-            return;
-            }
-            const userId = currentUser.uid;
-
-            const userDocRef = doc(FIREBASE_DB, 'users', userId);
-            const userDocSnap = await getDoc(userDocRef);
-            const userDocData = userDocSnap.data();
-
-            if (userDocData) {
-              const { profileImage, name} = userDocData;
-              if (profileImage) {
-                setImage(profileImage);
-              }
-              setName(name);
-            } else {
-              return
-            }
-          } catch (e) {
-            console.error(e);  
-          }
-        }
-        getUserInformation();
-    }, [])
+      if (profile) {
+        setImage(profile.profileImage || '');
+        setName(profile.name || '');
+        setEmail(profile.email || '');
+        setJumpNumber(profile.jumpNumber || 0);
+      }
+    }, [profile])
   );
-
 
   // if choosing new image from camera roll this function opens album 
   const pickImage = async () => {
@@ -88,22 +57,19 @@ const EditProfile = () => {
     if (!result.canceled) {
       const { uri } = result.assets[0];
       const fileName = uri.split('/').pop();
-      const uploadResp = await uploadImageToProfile(
-        uri,
-        fileName
-      );
+      const uploadResp = await uploadProfileImage(uri, fileName);
       console.log(uploadResp);
       setImage(uri)
       hideModal();
       Toast.show({
-        type: 'success', // You can customize the type (success, info, error, etc.)
+        type: 'success',
         text1: 'New Profile image set',
         position: 'top',
       });
     }
   } catch (e) {
     Toast.show({
-      type: 'error', // You can customize the type (success, info, error, etc.)
+      type: 'error',
       text1: 'Error uploading image',
       position: 'top',
     });
@@ -124,21 +90,18 @@ const EditProfile = () => {
     if(!result.canceled) {
       const { uri } = result.assets[0];
       const fileName = uri.split('/').pop();
-      const uploadResp = await uploadImageToProfile(
-        uri,
-        fileName
-      );
+      const uploadResp = await uploadProfileImage(uri, fileName);
       setImage(uri)
       hideModal();
       Toast.show({
-        type: 'Success', // You can customize the type (success, info, error, etc.)
+        type: 'Success',
         text1: 'New Profile image set',
         position: 'top',
       });
     }
     } catch (e) {
       Toast.show({
-        type: 'error', // You can customize the type (success, info, error, etc.)
+        type: 'error',
         text1: 'Error uploading image',
         position: 'top',
       });
@@ -148,7 +111,6 @@ const EditProfile = () => {
   };
 
   // when edit image button clicked in editprofile screen
-  // checks/asks for permission before opening the modal to change the image
   const editProfileImage = async () => {
     if (permission?.status !== ImagePicker.PermissionStatus.GRANTED) {
       requestPermission();
@@ -240,6 +202,7 @@ const EditProfile = () => {
                         placeholder="Name"
                         placeholderTextColor="#666666"
                         autoCorrect={false}
+                        value={name}
                         style={[
                         styles.textInput
                         ]}
@@ -253,6 +216,7 @@ const EditProfile = () => {
                     placeholderTextColor="#666666"
                     keyboardType="email-address"
                     autoCorrect={false}
+                    value={email}
                     style={[
                       styles.textInput,
                     ]}
@@ -265,6 +229,7 @@ const EditProfile = () => {
                         placeholder="Total BASE jumps"
                         placeholderTextColor="#666666"
                         autoCorrect={false}
+                        value={jumpNumber?.toString()}
                         style={[
                         styles.textInput
                         ]}
@@ -272,7 +237,7 @@ const EditProfile = () => {
                         onChangeText={(text) => setJumpNumber(text)}
                     />
                 </View>
-                {submitLoading ? ( <ActivityIndicator /> 
+                {submitLoading || loading.action ? ( <ActivityIndicator /> 
                 ) : (
                   <TouchableOpacity 
                     style={styles.commandButton} 
