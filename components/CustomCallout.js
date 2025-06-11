@@ -1,28 +1,20 @@
 import { StyleSheet, View, Text, TouchableOpacity, Linking, Platform} from 'react-native'
-import { doc, getDoc } from 'firebase/firestore';
 import React, { useState }from 'react'
 import {Callout} from 'react-native-maps';
 import { router, useFocusEffect} from 'expo-router';
-import { FIREBASE_AUTH, FIREBASE_DB } from '../firebaseConfig';
-import { onSaveToggle } from '../store';
 import Toast from 'react-native-toast-message';
-import { useRevenueCat } from '../providers/RevenueCatProvider';
+import { useUser } from '../providers/UserProvider';  // NEW
 
-// unit state 
 import { useUnitSystem } from '../context/UnitSystemContext';
 
 export default function CustomCallout({info}) {
   const [Saved, setSaved] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { isMetric } = useUnitSystem();
 
-   // Check user's pro subscription status  
-   const { user } = useRevenueCat();
-   const isProUser = user && user.pro;
+  const { isLoggedIn, isProUser, profile, toggleLocationSave } = useUser();
 
-   // Function to handle button press, checking subscription status
+  // Function to handle button press, checking subscription status
   const handleButtonPress = (action) => {
-    console.log(action);
     if (isProUser) {
       if (action === 'save') {
         onSave();
@@ -33,66 +25,63 @@ export default function CustomCallout({info}) {
       }
     } else {
       // Redirect to the SubscriptionScreen if the user is not subscribed
-      router.navigate('/SubscriptionsPage'); // Adjust the path as needed
+      router.navigate('/SubscriptionsPage');
       Toast.show({
-        type: 'info', // You can customize the type (success, info, error, etc.)
+        type: 'info',
         text1: 'Subscribe for this feature !',
         position: 'top',
       });
     }
   };
 
-  // checking if user is logged in and if location is saved 
   useFocusEffect(
     React.useCallback(() => {
-    const checkLocationSaved = async () => {
-      try {
-        const currentUser = FIREBASE_AUTH.currentUser;
-        if (!currentUser) {
-          console.error('No authenticated user found');
-          return;
-        }
-        const userId = currentUser.uid;
-
-        const userDocRef = doc(FIREBASE_DB, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        const userDocData = userDocSnap.data();
-        const { locationIds = [] } = userDocData || {};
-
-        setSaved(locationIds.includes(parseInt(info.id)));
-        setIsLoggedIn(currentUser !== null);
-      } catch (error) {
-        console.error('Error checking if location saved:', error);
+      if (isLoggedIn && profile.locationIds) {
+        const locationId = parseInt(info.id);
+        setSaved(profile.locationIds.includes(locationId));
       }
-    };
+    }, [isLoggedIn, profile.locationIds, info.id])
+  );
 
-    checkLocationSaved();
-
-  }, [info]));
-
-  // toggle save when save button pressed 
   const onSave = async () => {
-    const updatedSaved = await onSaveToggle(info.id, isLoggedIn);
-    setSaved(updatedSaved);
-    if (updatedSaved) {
+    if (!isLoggedIn) {
       Toast.show({
-        type: 'success',
-        text1: 'Location saved to profile',
+        type: 'error',
+        text1: 'Please log in to save locations',
         position: 'top',
       });
+      return;
+    }
+
+    const result = await toggleLocationSave(info.id);
+    
+    if (result !== null) {
+      setSaved(result);
+      if (result) {
+        Toast.show({
+          type: 'success',
+          text1: 'Location saved to profile',
+          position: 'top',
+        });
+      } else {
+        Toast.show({
+          type: 'info',
+          text1: 'Location unsaved from profile',
+          position: 'top',
+        });
+      }
     } else {
       Toast.show({
-        type: 'info',
-        text1: 'Location unsaved from profile',
+        type: 'error',
+        text1: 'Failed to update location',
         position: 'top',
       });
     }
   };
 
-
   // function to direct to the locations details page
   const onDetailsPress = () => {
-    router.navigate(`/(tabs)/map/${info.id}`)
+    router.push(`/(tabs)/map/${info.id}`)
   }
 
   // for directing to maps app button 
