@@ -22,7 +22,6 @@ const withAuthErrorHandling = (fn) => async (...args) => {
     }
 };
 
-// Pure functions for auth operations
 const performSignIn = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
     return userCredential.user;
@@ -53,7 +52,7 @@ const performAccountDeletion = async () => {
     return true;
 };
 
-// Exported auth service functions
+// Exported auth service functions - ONLY Firebase Auth operations
 export const signIn = withAuthErrorHandling(performSignIn);
 export const signUp = withAuthErrorHandling(performSignUp);
 export const signOutUser = withAuthErrorHandling(performSignOut);
@@ -65,7 +64,7 @@ export const onAuthStateChange = (callback) => onAuthStateChanged(FIREBASE_AUTH,
 export const getCurrentUser = () => FIREBASE_AUTH.currentUser;
 export const isAuthenticated = () => !!FIREBASE_AUTH.currentUser;
 
-// Utility functions
+// Utility functions for auth state
 export const getUserId = () => getCurrentUser()?.uid || null;
 export const requireAuth = (fn) => (...args) => {
     if (!isAuthenticated()) {
@@ -74,7 +73,7 @@ export const requireAuth = (fn) => (...args) => {
     return fn(...args);
 };
 
-// Composed functions
+// Simple convenience functions
 export const signInAndGetUser = async (email, password) => {
     const result = await signIn(email, password);
     return result.success ? { ...result, userId: result.data.uid } : result;

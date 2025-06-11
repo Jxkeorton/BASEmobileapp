@@ -3,38 +3,36 @@ import { Platform } from 'react-native';
 import Purchases, { LOG_LEVEL } from 'react-native-purchases';
 import { router } from 'expo-router';
 
-// Clean functional imports
 import {
+    // Auth functions
     onAuthStateChange,
     signIn,
-    signUp,
     signOutUser,
     resetPassword,
     deleteAccount,
     getCurrentUser,
+    
+    // Composed functions from services/index.js
     createCompleteUser,
-    deleteCompleteUser
-} from '../services/authService';
-
-import {
+    deleteCompleteUser,
+    
+    // User functions
     getUserProfile,
     updateUserProfile,
     uploadProfileImage,
     toggleLocationSave,
     incrementJumpNumber,
-    decrementJumpNumber
-} from '../services/userService';
-
-import {
+    decrementJumpNumber,
+    
+    // Logbook functions
     addJump,
     getLogbook,
-    deleteJump
-} from '../services/logbookService';
-
-import {
+    deleteJump,
+    
+    // Submission functions
     submitLocation,
     submitDetailUpdate
-} from '../services/submissionService';
+} from '../services';
 
 const DEV_MODE = __DEV__;
 
@@ -101,7 +99,7 @@ export const UserProvider = ({ children }) => {
         }));
     }, []);
 
-    // Load user profile - much simpler with functional service
+    // Load user profile
     const loadUserProfile = useCallback(async (userId) => {
         updateNestedState('loading', { profile: true });
         updateNestedState('errors', { profile: null });
@@ -208,7 +206,7 @@ export const UserProvider = ({ children }) => {
         return unsubscribe;
     }, [loadUserProfile, initializeRevenueCat, updateState, updateNestedState]);
 
-    // Auth actions - much cleaner with functional services
+    // Auth actions
     const handleSignIn = useCallback(async (email, password) => {
         updateNestedState('loading', { auth: true });
         updateNestedState('errors', { auth: null });
@@ -245,17 +243,26 @@ export const UserProvider = ({ children }) => {
         return result;
     }, []);
 
-    // Profile actions - much simpler
-    const handleUpdateProfile = useCallback(async (updates) => {
+    // Profile actions
+    const handleUpdateProfile = useCallback(async (name, email, jumpNumber) => {
         const currentUser = getCurrentUser();
-        if (!currentUser) return { error: 'No authenticated user' };
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
 
         updateNestedState('loading', { action: true });
         
+        // Prepare updates object
+        const updates = {};
+        if (name && name.trim()) updates.name = name.trim();
+        if (email && email.trim()) updates.email = email.trim();
+        if (jumpNumber !== undefined && jumpNumber !== null && !isNaN(Number(jumpNumber))) {
+            updates.jumpNumber = Number(jumpNumber);
+        }
+
         const result = await updateUserProfile(currentUser.uid, updates);
         
         if (result.success) {
             updateNestedState('profile', updates);
+            router.replace('/(tabs)/profile/Profile');
         } else {
             updateNestedState('errors', { action: result.error.message });
         }
@@ -266,7 +273,7 @@ export const UserProvider = ({ children }) => {
 
     const handleUploadProfileImage = useCallback(async (uri, fileName, onProgress) => {
         const currentUser = getCurrentUser();
-        if (!currentUser) return { error: 'No authenticated user' };
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
 
         updateNestedState('loading', { action: true });
         
@@ -304,10 +311,10 @@ export const UserProvider = ({ children }) => {
         return null;
     }, [state.profile.locationIds, updateNestedState]);
 
-    // Jump management - clean and simple
+    // Jump management
     const handleAddJumpNumber = useCallback(async () => {
         const currentUser = getCurrentUser();
-        if (!currentUser) return { error: 'No authenticated user' };
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
 
         const result = await incrementJumpNumber(currentUser.uid);
         
@@ -318,9 +325,22 @@ export const UserProvider = ({ children }) => {
         return result;
     }, [updateNestedState]);
 
+    const handleDecrementJumpNumber = useCallback(async () => {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
+
+        const result = await decrementJumpNumber(currentUser.uid);
+        
+        if (result.success) {
+            updateNestedState('profile', { jumpNumber: result.data });
+        }
+        
+        return result;
+    }, [updateNestedState]);
+
     const handleSubmitJump = useCallback(async (formData) => {
         const currentUser = getCurrentUser();
-        if (!currentUser) return { error: 'No authenticated user' };
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
 
         updateNestedState('loading', { action: true });
         
@@ -336,6 +356,24 @@ export const UserProvider = ({ children }) => {
         return result;
     }, [handleAddJumpNumber, updateNestedState]);
 
+    const handleDeleteJump = useCallback(async (jumpId) => {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
+
+        updateNestedState('loading', { action: true });
+        
+        const result = await deleteJump(currentUser.uid, jumpId);
+        
+        if (result.success) {
+            await handleDecrementJumpNumber();
+        } else {
+            updateNestedState('errors', { action: result.error.message });
+        }
+        
+        updateNestedState('loading', { action: false });
+        return result;
+    }, [handleDecrementJumpNumber, updateNestedState]);
+
     const handleGetLoggedJumps = useCallback(async () => {
         const currentUser = getCurrentUser();
         if (!currentUser) return [];
@@ -343,6 +381,39 @@ export const UserProvider = ({ children }) => {
         const result = await getLogbook(currentUser.uid);
         return result.success ? result.data : [];
     }, []);
+
+    // Submission actions
+    const handleSubmitLocation = useCallback(async (formData) => {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
+
+        updateNestedState('loading', { action: true });
+        
+        const result = await submitLocation(currentUser.uid, formData);
+        
+        if (!result.success) {
+            updateNestedState('errors', { action: result.error.message });
+        }
+        
+        updateNestedState('loading', { action: false });
+        return result;
+    }, [updateNestedState]);
+
+    const handleSubmitDetailUpdate = useCallback(async (formData) => {
+        const currentUser = getCurrentUser();
+        if (!currentUser) return { success: false, error: 'No authenticated user' };
+
+        updateNestedState('loading', { action: true });
+        
+        const result = await submitDetailUpdate(currentUser.uid, formData);
+        
+        if (!result.success) {
+            updateNestedState('errors', { action: result.error.message });
+        }
+        
+        updateNestedState('loading', { action: false });
+        return result;
+    }, [updateNestedState]);
 
     // Subscription actions
     const handlePurchasePackage = useCallback(async (pack) => {
@@ -363,7 +434,7 @@ export const UserProvider = ({ children }) => {
 
             return { success: true };
         } catch (error) {
-            return { error: error.message };
+            return { success: false, error: error.message };
         } finally {
             updateNestedState('loading', { action: false });
         }
@@ -384,17 +455,24 @@ export const UserProvider = ({ children }) => {
         signUp: handleSignUp,
         signOut: handleSignOut,
         resetPassword,
+        deleteAccount: deleteCompleteUser,
         
         // Profile Actions
-        updateProfile: handleUpdateProfile,
+        updateProfile: handleUpdateProfile, // FIXED: Added missing function
+        updateProfileDetails: handleUpdateProfile, // Legacy compatibility
         uploadProfileImage: handleUploadProfileImage,
         toggleLocationSave: handleToggleLocationSave,
-        deleteAccount: deleteCompleteUser,
         
         // Jump Management
         addJumpNumber: handleAddJumpNumber,
+        decrementJumpNumber: handleDecrementJumpNumber, // ADDED: Missing function
         submitJump: handleSubmitJump,
+        deleteJump: handleDeleteJump, // ADDED: Missing function
         getLoggedJumps: handleGetLoggedJumps,
+        
+        // Submission Actions
+        submitLocation: handleSubmitLocation, // ADDED: Missing function
+        submitDetailUpdate: handleSubmitDetailUpdate, // ADDED: Missing function
         
         // Subscription Actions
         purchasePackage: handlePurchasePackage,
