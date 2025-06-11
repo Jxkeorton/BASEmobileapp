@@ -458,21 +458,21 @@ export const UserProvider = ({ children }) => {
         deleteAccount: deleteCompleteUser,
         
         // Profile Actions
-        updateProfile: handleUpdateProfile, // FIXED: Added missing function
-        updateProfileDetails: handleUpdateProfile, // Legacy compatibility
+        updateProfile: handleUpdateProfile,
+        updateProfileDetails: handleUpdateProfile,
         uploadProfileImage: handleUploadProfileImage,
         toggleLocationSave: handleToggleLocationSave,
         
         // Jump Management
         addJumpNumber: handleAddJumpNumber,
-        decrementJumpNumber: handleDecrementJumpNumber, // ADDED: Missing function
+        decrementJumpNumber: handleDecrementJumpNumber,
         submitJump: handleSubmitJump,
-        deleteJump: handleDeleteJump, // ADDED: Missing function
+        deleteJump: handleDeleteJump,
         getLoggedJumps: handleGetLoggedJumps,
         
         // Submission Actions
-        submitLocation: handleSubmitLocation, // ADDED: Missing function
-        submitDetailUpdate: handleSubmitDetailUpdate, // ADDED: Missing function
+        submitLocation: handleSubmitLocation,
+        submitDetailUpdate: handleSubmitDetailUpdate,
         
         // Subscription Actions
         purchasePackage: handlePurchasePackage,
