@@ -3,52 +3,50 @@ import {
   router,
   useSegments,
 } from "expo-router";
-import { AuthStore } from "../store";
+import { useUser } from "../providers/UserProvider";  // NEW: Single hook
 import { useEffect } from "react";
 import { ActivityIndicator, MD2Colors} from "react-native-paper";
-import { DEV_BYPASS_LOGIN } from "../store";
+import { View, StyleSheet } from "react-native";
 
 const Index = () => {
   const segments = useSegments();
   const navigationState = useRootNavigationState();
-  const { initialized, isLoggedIn, user } = AuthStore.useState();
-
-  console.log('📱 Index render:', {
-    segments: segments.join('/'),
-    initialized,
-    isLoggedIn,
-    user: user?.email || 'No user',
-    navigationKey: navigationState?.key
-  });
+  
+  const { isLoggedIn, isReady, loading } = useUser(); 
 
   useEffect(() => {
-    if (!navigationState?.key || !initialized) return;
-  
-    console.log('Navigation check:', { isLoggedIn, segments: segments.join('/') || 'ROOT' });
-  
-    // If logged in and on root page, go to main app
-    if (isLoggedIn && segments.length === 0) {
-      console.log('🔄 Going to map');
-      router.replace("/(tabs)/map");
-      return;
-    }
-  
-    // If not logged in and not in auth, go to login
+    if (!navigationState?.key || !isReady) return;
+
     const inAuthGroup = segments[0] === "(auth)";
+
     if (!isLoggedIn && !inAuthGroup) {
-      console.log('🔄 Going to login');
+      // redirect to login page if not logged in
       router.replace("/(auth)/Login");
+    } else if (isLoggedIn) {
+      // redirect to tabs page if logged in 
+      router.replace("/(tabs)/map");
     }
-  }, [segments, navigationState?.key, initialized, isLoggedIn]);
-  
-  return (
-      <>
-          {!navigationState?.key ? <ActivityIndicator animating={true} color={MD2Colors.red800}/> 
-          :
-          <></>
-          }
-      </> 
-  )
+  }, [segments, navigationState?.key, isLoggedIn, isReady]);
+
+  // Show loading while initializing
+  if (!navigationState?.key || !isReady || loading.auth) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator animating={true} color={MD2Colors.red800} size="large" />
+      </View>
+    );
+  }
+
+  return null;
 };
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+});
 
 export default Index;
