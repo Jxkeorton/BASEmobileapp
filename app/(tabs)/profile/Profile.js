@@ -1,17 +1,8 @@
 import React, { useState, useEffect} from 'react';
 import { useFocusEffect, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
-
-// firebase imports for fetching user data
-import { FIREBASE_AUTH, FIREBASE_DB} from '../../../firebaseConfig';
-import { 
-  doc, 
-  getDoc,
-  updateDoc,
-  arrayRemove
-} from 'firebase/firestore';
-
-// Ui elements
+import { useUser } from '../../../providers/UserProvider'; 
+// UI elements
 import {
   Avatar,
   Title,
@@ -26,78 +17,53 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Profile = () => {
   const [ filteredLocations, setFilteredLocations ] = useState([]);
-  const [ name, setName ] = useState('');
-  const [ profileImage, setProfileImage ] = useState('');
-  const [ username, setUsername ] = useState('');
-  const [ jumpNumber, setJumpNumber ] = useState('');
 
-  // this hook ensures new saved locations are fetched on screen focus
+  const { profile, loading, toggleLocationSave } = useUser();
+
   useFocusEffect(
     React.useCallback(() => {
       const getLocations = async () => {
         try {
-            // fetching users saved location ID's
-            const currentUser = FIREBASE_AUTH.currentUser;
-            if (!currentUser) {
-            Alert.alert('No authenticated user found');
-            return;
-            }
-            const userId = currentUser.uid;
-  
-            const userDocRef = doc(FIREBASE_DB, 'users', userId);
-            const userDocSnap = await getDoc(userDocRef);
-            const userDocData = userDocSnap.data();
-            const locationIds = userDocData?.locationIds || [];
+          const locationIds = profile.locationIds || [];
 
-            if (userDocData) {
-              const { name, username, jumpNumber, profileImage } = userDocData;
-              if (profileImage) {
-                setProfileImage(profileImage);
-              }
-              if (jumpNumber) {
-                setJumpNumber(jumpNumber);
-              }
-              setName(name);
-              setUsername(username);
-            } else {
-              return
-            }
-  
-            // get filtered locations using apiUrl 
-             // Fetch data from the API
-            fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json')
-            .then((response) => response.json())
-            .then((data) => {
-              // Filter locations based on matching IDs
-              const filteredData = data.locations.filter((location) =>
-                locationIds.includes(location.id)
-              );
-  
-              // Update the state with filtered data
-              setFilteredLocations(filteredData);
-              
-            })
-            .catch((error) => {
-              console.error('Error fetching data from API:', error);
+          // get filtered locations using apiUrl 
+          fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json')
+          .then((response) => response.json())
+          .then((data) => {
+            // Filter locations based on matching IDs
+            const filteredData = data.locations.filter((location) =>
+              locationIds.includes(location.id)
+            );
+
+            // Update the state with filtered data
+            setFilteredLocations(filteredData);
+            
+          })
+          .catch((error) => {
+            console.error('Error fetching data from API:', error);
+            Toast.show({
+              type: 'error',
+              text1: 'Error fetching saved locations',
+              position: 'top',
             });
+          });
 
         } catch (error) {
           Toast.show({
-            type: 'error', // You can customize the type (success, info, error, etc.)
+            type: 'error',
             text1: 'Error fetching saved locations',
             position: 'top',
           });
         }
       };
-  
-      getLocations();
-  
-      
-    }, [])
+
+      if (profile.locationIds) {
+        getLocations();
+      }
+    }, [profile.locationIds]) 
   );
   
   useEffect(() => {
-    // This effect will run whenever filteredLocations changes
     const saveFilteredLocationsToAsyncStorage = async () => {
       try {
         await AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations));
@@ -110,29 +76,29 @@ const Profile = () => {
     saveFilteredLocationsToAsyncStorage();
   }, [filteredLocations]);
 
-
-  // When saved location is deleted/unsaved 
   const onDelete = async (locationId) => {
-    
     try {
+      const result = await toggleLocationSave(locationId);
       
-      const currentUser = FIREBASE_AUTH.currentUser;
-      if (!currentUser) {
-        Alert.alert('No authenticated user found');
-        return;
+      if (result === false) {  // Location was unsaved
+        setFilteredLocations(filteredLocations.filter((location) => location.id !== locationId));
+        
+        Toast.show({
+          type: 'info',
+          text1: 'Location unsaved from profile',
+          position: 'top',
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Error could not delete location',
+          position: 'top',
+        });
       }
-      const userId = currentUser.uid;
-      const userDocRef = doc(FIREBASE_DB, 'users', userId);
-      await updateDoc(userDocRef, {
-        locationIds: arrayRemove(locationId)
-      });
-  
-      // Update the filteredLocations state by removing the deleted location
-      setFilteredLocations(filteredLocations.filter((location) => location.id !== locationId));
     } catch (error) {
       console.error(error);
       Toast.show({
-        type: 'error', // You can customize the type (success, info, error, etc.)
+        type: 'error',
         text1: 'Error could not delete location',
         position: 'top',
       });
@@ -149,7 +115,15 @@ const Profile = () => {
     } catch (error) {
         alert(error.message);
     }
-};
+  };
+
+  if (loading.profile) {
+    return (
+      <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Loading profile...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -157,19 +131,19 @@ const Profile = () => {
       <View style={styles.userInfoSection}>
         <View style={{flexDirection: 'row', marginTop: 15,}}>
           <Avatar.Image 
-          source={profileImage 
-            ? {uri: profileImage }
+          source={profile.profileImage 
+            ? {uri: profile.profileImage }
             : require('../../../assets/empty-profile-picture.png')
           }
           size = {80}
           backgroundColor = {'white'}
           />
           <View style={{marginLeft: 20}}>
-            <Title style={[styles.title, {
+            <Text variant="titleLarge" style={[styles.title, {
               marginTop: 15,
               marginBottom: 5,
-            }]}>{name}</Title>
-            <Caption style={styles.caption}>@{username}</Caption>
+            }]}>{profile.name || 'No name set'}</Text>
+            <Text variant="bodySmall" style={styles.caption}>@{profile.username || 'No username'}</Text>
           </View>
         </View>
 
@@ -180,8 +154,8 @@ const Profile = () => {
             borderRightColor: '#dddddd',
             borderRightWidth: 1
           }]}>
-            <Title>{jumpNumber ? jumpNumber : '0'}</Title>
-            <Caption>Total Base Jumps</Caption>
+            <Text variant="titleLarge" >{profile.jumpNumber || 0}</Text>
+            <Text variant="bodySmall">Total Base Jumps</Text>
           </View>
           <View style={styles.infoBox}>
 
@@ -189,7 +163,7 @@ const Profile = () => {
         </View>
 
       <View style={styles.menuWrapper}>
-        <TouchableRipple onPress={() => router.navigate('/(tabs)/profile/EditProfile')}>
+        <TouchableRipple onPress={() => router.push('/(tabs)/profile/EditProfile')}>
           <View style={styles.menuItem}>
             <Icon name="account-check-outline" color="#777777" size={25}/>
             <Text style={styles.menuItemText}>Edit Profile</Text>
@@ -201,7 +175,7 @@ const Profile = () => {
             <Text style={styles.menuItemText}>Tell Your Friends</Text>
           </View>
         </TouchableRipple>
-        <TouchableRipple onPress={() => router.navigate('/(tabs)/profile/SubmitLocation')}>
+        <TouchableRipple onPress={() => router.push('/(tabs)/profile/SubmitLocation')}>
           <View style={styles.menuItem}>
             <Icon name="map-marker-radius" color="#777777" size={25}/>
             <Text style={styles.menuItemText}>Submit A Location</Text>
@@ -218,7 +192,6 @@ const Profile = () => {
 }
 
 export default Profile;
-
 
 const styles = StyleSheet.create({
     container: {
