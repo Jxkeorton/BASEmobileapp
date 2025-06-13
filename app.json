@@ -19,7 +19,7 @@
       "bundleIdentifier": "com.jxkeorton.basemobileapp",
       "runtimeVersion": "1.0.4",
       "config": {
-        "googleMapsApiKey": "AIzaSyCDawNNe_LbbPfKYwP3OyMLZ-AWIJ97IZo"
+        "googleMapsApiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_IOS_KEY"
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -37,7 +37,7 @@
       "versionCode": 5,
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyAB-T7J31Ln4kTXkJTYCjoPguJIUNPChJY"
+          "apiKey": "$EXPO_PUBLIC_GOOGLE_MAPS_ANDROID_KEY"
         }
       }
     },
