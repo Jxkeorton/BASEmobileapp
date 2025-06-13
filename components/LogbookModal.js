@@ -12,12 +12,11 @@ import {
 } from 'react-native';
 import React, {useState} from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { submitJumpHandler } from '../store';
+import { useUser } from '../providers/UserProvider';
 import { ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import Toast from 'react-native-toast-message';
-
 
 const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [location, setLocation] = useState('');
@@ -27,8 +26,9 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
     const [date, setDate] = useState('');
     const [images, setImage] = useState([]);
 
-    const [Loading, setLoading] = useState(false);
     const [imageLoading, setImageLoading] = useState(false);
+
+    const { submitJump, loading } = useUser();
 
     const pickImage = async () => {
       setImageLoading(true);
@@ -36,7 +36,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         const result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           allowsEditing: false,
-          quality: 1, // Set the quality to 1 (no compression)
+          quality: 1,
           selectionLimit: 4,
           allowsMultipleSelection: true,
         });
@@ -44,7 +44,6 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         if (!result.canceled) {
           const newImages = [];
           for (const asset of result.assets) {
-            // Manipulate the image to save as PNG with the correct file type
             const newImage = await manipulateAsync(asset.uri, [], {
               compress: 0.1,
               format: SaveFormat.PNG,
@@ -55,7 +54,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
         }
       } catch (e) {
         Toast.show({
-          type: 'error', // You can customize the type (success, info, error, etc.)
+          type: 'error',
           text1: 'Error uploading image',
           position: 'top',
         });
@@ -64,9 +63,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
       }
     };
 
-    // add state to users logbook document on firebase
-    // when form submitted
-    const formData ={
+    const formData = {
         location,
         exitType,
         delay,
@@ -76,58 +73,62 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
     };
 
     const handleSubmit = async () => {
-        setLoading(true);
         try {
-            // create function within firebase functions file
-            // update jumpnumber +1 for user 
-          await submitJumpHandler({ formData });
-          //hidemodal
-          onClose()
-          router.replace('/(tabs)/logbook/LogBook')
+          const result = await submitJump(formData);
+          
+          if (result.success) {
+            onClose();
+            router.replace('/(tabs)/logbook/LogBook');
 
-          Toast.show({
-            type: 'success', // You can customize the type (success, info, error, etc.)
-            text1: 'New jump Logged',
-            position: 'top',
-          });
+            Toast.show({
+              type: 'success',
+              text1: 'New jump logged',
+              position: 'top',
+            });
 
-           // Clear the form fields by resetting state to initial values
+            // Clear the form fields
             setLocation('');
             setExitType('');
             setDelay('');
             setDetails('');
             setDate('');
             setImage([]);
+          } else {
+            Toast.show({
+              type: 'error',
+              text1: 'Error trying to submit jump',
+              text2: result.error,
+              position: 'top',
+            });
+          }
         } catch (error) {
-          Alert.alert('Error', 'An error occurred while submitting the location.');
+          Toast.show({
+            type: 'error',
+            text1: 'Error trying to submit jump',
+            position: 'top',
+          });
           console.error(error);
-        } finally {
-          setLoading(false);
         }
-      };
+    };
 
-
-      const handleCancel = () => {
-
-        // close modal
+    const handleCancel = () => {
         onClose();
 
         Toast.show({
-          type: 'info', // You can customize the type (success, info, error, etc.)
+          type: 'info',
           text1: 'Logging jump cancelled',
           position: 'top',
         });
-        // clear state 
+        
+        // Clear state 
         setLocation('');
         setExitType('');
         setDelay('');
         setDetails('');
         setDate('');
         setImage([]);
-      };
-   
+    };
 
-   
     return (
       <Modal visible={visible} transparent={true}>
           <View style={styles.modalContainer}>
@@ -174,7 +175,6 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                 autoCapitalize="none"
                 />
 
-
                 <Text style={styles.panelSubtitle}>Details</Text>
                 <TextInput
                 style={[styles.input, { height: 100 }]} 
@@ -182,7 +182,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                 onChangeText={setDetails}
                 autoCorrect={false}
                 autoCapitalize="none"
-                multiline={true} // Enable multiline mode
+                multiline={true}
                 numberOfLines={4}
                 />
 
@@ -196,8 +196,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                   <Text style={styles.imageCountText}> {images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
                 )}
                 
-
-                {isLoading || Loading ? (
+                {isLoading || loading.action ? (
                   <ActivityIndicator animating={true} color="#00ABF0" />
                 ) : (
                   <>
@@ -231,7 +230,6 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
       alignItems: 'center',
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
-    // modal styles 
     panelTitle: {
       fontSize: 27,
       height: 35,
@@ -274,11 +272,11 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
     borderButton: {
       padding:13,
       borderRadius: 10,
-      borderWidth: 1,            // Add a border width
-      borderColor: 'black',    // Specify the border color
+      borderWidth: 1,
+      borderColor: 'black',
       alignItems: 'center',
       marginVertical: 7,
-      backgroundColor: 'transparent', // Make the background transparent
+      backgroundColor: 'transparent',
     },
     imageButtonTitle: {
       fontSize: 17,

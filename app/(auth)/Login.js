@@ -1,14 +1,15 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Image, Alert, TextInput } from 'react-native';
 import React, {useState} from 'react';
 import { ActivityIndicator, Button } from 'react-native-paper';
-import { appSignIn } from '../../store';
+import { useUser } from '../../providers/UserProvider';
 import { router } from 'expo-router';
-
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const { signIn } = useUser();
 
     return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -46,8 +47,8 @@ const Login = () => {
                 style={styles.loginButton} 
                 onPress={async () => {
                   setLoading(true);
-                  const resp = await appSignIn(email, password);
-                  if (resp?.user) {
+                  const resp = await signIn(email, password);
+                  if (resp?.success) { 
                     router.replace("/(tabs)/map");
                   } else {
                     console.log("Sign in error", resp.error);
@@ -75,9 +76,8 @@ const Login = () => {
               </Button>
             </>
           )}
-          {/* Privacy Policy Link */}
           <Button
-            textColor='#007AFF' // Use blue color for the privacy policy link
+            textColor='#007AFF'
             style={styles.privacyPolicyLink}
             onPress={() => {
               router.navigate('/AuthPrivacyPolicy');

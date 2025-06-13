@@ -7,10 +7,7 @@ import { Button, Text, Divider, IconButton } from 'react-native-paper';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 
-//firebase
-import { onSaveToggle } from '../../../store';
-import { FIREBASE_AUTH, FIREBASE_DB } from '../../../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { useUser } from '../../../providers/UserProvider';
 
 // async storage 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,10 +23,16 @@ import { useUnitSystem } from '../../../context/UnitSystemContext';
 function Location() {
   const [location , setLocation] = useState(null)
   const [isSaved , setSaved] = useState(false)
-  const [isLoggedIn , setIsLoggedIn] = useState(false)
   const [isCopied, setIsCopied] = useState(false);
   const { id } = useLocalSearchParams();
   const { isMetric } = useUnitSystem();
+
+  const { 
+    isLoggedIn, 
+    profile, 
+    toggleLocationSave, 
+    loading 
+  } = useUser();
 
    //Modal
    const [visible, setVisible] = useState(false);
@@ -82,24 +85,11 @@ function Location() {
   useFocusEffect(
     React.useCallback(() => {
 
-    const checkLocationSaved = async () => {
-      try {
-        const currentUser = FIREBASE_AUTH.currentUser;
-        if (!currentUser) {
-          console.error('No authenticated user found');
-          return;
-        }
-        const userId = currentUser.uid;
-
-        const userDocRef = doc(FIREBASE_DB, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        const userDocData = userDocSnap.data();
-        const { locationIds = [] } = userDocData || {};
-
-        setSaved(locationIds.includes(parseInt(id)));
-        setIsLoggedIn(currentUser !== null);
-      } catch (error) {
-        console.error('Error checking if location saved:', error);
+    const checkLocationSaved = () => {
+      if (isLoggedIn && profile.locationIds) {
+        setSaved(profile.locationIds.includes(parseInt(id)));
+      } else {
+        setSaved(false);
       }
     };
 
@@ -117,20 +107,36 @@ function Location() {
 
     fetchEvent();
 
-  }, [id])
+  }, [id, isLoggedIn, profile.locationIds])
   );
 
-  // toggle save when save button pressed 
   const onSave = async () => {
-    const updatedSaved = await onSaveToggle(id, isLoggedIn);
-    setSaved(updatedSaved);
+    if (!isLoggedIn) {
+      Toast.show({
+        type: 'error',
+        text1: 'Please log in to save locations',
+        position: 'top',
+      });
+      return;
+    }
 
-    // Show a toast notification to inform the user
-    Toast.show({
-      type: 'success', // You can customize the type (success, info, error, etc.)
-      text1: 'Location saved',
-      position: 'top',
-    });
+    const savedState = await toggleLocationSave(id);
+    
+    if (savedState !== null) {
+      setSaved(savedState);
+      
+      Toast.show({
+        type: 'success',
+        text1: savedState ? 'Location saved' : 'Location unsaved',
+        position: 'top',
+      });
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Failed to save location',
+        position: 'top',
+      });
+    }
   };
 
   // for directing to maps app button 
@@ -160,7 +166,7 @@ function Location() {
           <SubmitDetailsModal
             visible={visible}
             onClose={hideModal}
-            info={location}
+            location={location}
           />
         </Portal>
         
@@ -184,8 +190,9 @@ function Location() {
               ]}
               mode="contained" 
               onPress={onSave}
+              disabled={loading.action}
              >
-              {isSaved ? 'Unsave' : 'Save'}
+              {loading.action ? 'Saving...' : (isSaved ? 'Unsave' : 'Save')}
             </Button>
           </View>
         </View>

@@ -1,9 +1,11 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { appSignOut } from '../../../../store';
+import { useUser } from '../../../../providers/UserProvider';
 import { router } from 'expo-router';
 
 const Settings = () => {
+
+  const { signOut } = useUser();
 
   // Define list items
   const settingsItems = [
@@ -26,30 +28,23 @@ const Settings = () => {
 
   // Function to handle item presses
   const handlePress = (key) => {
-    // Implement your logic for handling item presses here
     switch (key) {
       case 'contactUs':
-        // Handle 'Contact Us' press
         router.navigate('/profile/settings/Contact')
         break;
       case 'logout':
-        // Handle 'Logout' press
-        appSignOut();
+        signOut();
         break;
       case 'deleteAccount':
-        // Handle 'Delete Account' press
         router.navigate('/profile/settings/DeleteAccount')
         break;
       case 'privacypolicy':
-        // Handle 'policies' press
         router.navigate('/profile/settings/PrivacyPolicy')
         break;
       case 'terms':
-          // Handle 'policies' press
           router.navigate('/profile/settings/Terms')
           break;
       default:
-        
         break;
     }
   };

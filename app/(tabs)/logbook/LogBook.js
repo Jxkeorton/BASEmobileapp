@@ -6,15 +6,13 @@ import { FontAwesome } from '@expo/vector-icons';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 
-import { useRevenueCat } from '../../../providers/RevenueCatProvider';
+import { useUser } from '../../../providers/UserProvider';  // NEW
 
 //Modal imports 
-import { Portal, PaperProvider, Title, Caption } from 'react-native-paper'
+import { Portal, PaperProvider, Text, Caption, Title} from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
-import { getJumpnumber } from '../../../store';
 
 const LogBook = () => {
-  const [ jumpNumber, setJumpNumber ] = useState('');
   const [isLoading, setLoading] = useState(true);
 
   //Modal
@@ -22,41 +20,31 @@ const LogBook = () => {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  // checks subscriptions 
-  const { user } = useRevenueCat();
+  const { isProUser, profile, loading } = useUser();
 
   useEffect(() => {
-    if (!user.pro) {
+    if (!isProUser) {
       router.replace('/SubscriptionsPage');
     }
-  }, [user.pro]);
+  }, [isProUser]);
 
-   // this hook ensures new saved locations are fetched on screen focus
-   useFocusEffect(
+  useFocusEffect(
     React.useCallback(() => {
-      const getUserDetails = async () => {
-        try {
-            // fetching users saved location ID's
-              const jumps = await getJumpnumber()
-              setJumpNumber(jumps);
-              setLoading(false);
-          } catch (error) {
-            console.error('Error getting jumps:', error);
-            Toast.show({
-              type: 'error', // You can customize the type (success, info, error, etc.)
-              text1: 'Error fetching Jumps',
-              position: 'top',
-            });
-            setLoading(false);
-          }
-        };
-    
-        getUserDetails();
-      }, [])
+      if (profile) {
+        setLoading(false);
+      }
+    }, [profile])
+  );
+
+  if (loading.profile || isLoading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size='large' />
+      </View>
     );
+  }
 
   return (
-    
     <PaperProvider>
     <ScrollView style={styles.container}>
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -66,7 +54,7 @@ const LogBook = () => {
         <LogbookModal
           visible={visible}
           onClose={hideModal}
-          isLoading={isLoading}
+          isLoading={loading.action} 
         />
       </Portal>
       
@@ -76,25 +64,23 @@ const LogBook = () => {
             borderRightColor: '#dddddd',
             borderRightWidth: 1
           }]}>
-            <Title>{jumpNumber ? jumpNumber : '0'}</Title>
-            <Caption>Total Base Jumps</Caption>
+            {/* CHANGED: Get jump number from profile */}
+            <Text variant='titleLarge'>{profile.jumpNumber || 0}</Text>
+            <Text variant="bodySmall" >Total Base Jumps</Text>
           </View>
           <View style={styles.infoBox}>
             <TouchableHighlight
               onPress={showModal}
               underlayColor="#DDDDDD" 
               style={styles.filterButton}
+              disabled={loading.action}
             >
-                <FontAwesome name="plus" size={30} color="#000" />
+                <FontAwesome name="plus" size={30} color={loading.action ? "#ccc" : "#000"} />
             </TouchableHighlight>
           </View>
       </View>
 
-      {isLoading ? (
-        <ActivityIndicator size='large' style={{alignItems:'center', justifyContent:'center'}} />
-      ) : (
-        <LogbookJumpCard jumpNumber={jumpNumber}/>
-      )}
+      <LogbookJumpCard jumpNumber={profile.jumpNumber || 0}/>
     </View>
     </TouchableWithoutFeedback>
     </ScrollView>
@@ -128,4 +114,3 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
 });
-

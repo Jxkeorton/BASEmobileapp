@@ -1,32 +1,26 @@
 import React from 'react';
-import { Button, Card, Title, Paragraph } from 'react-native-paper';
+import { Button, Card, Text as Text2 } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
 import { router } from 'expo-router';
-
-import { useRevenueCat } from '../providers/RevenueCatProvider';
+import { useUser } from '../providers/UserProvider';
 
 // unit state 
 import { useUnitSystem } from '../context/UnitSystemContext';
-
 
 const SavedLocationsCard = ({ data, onDelete }) => {
 
   const { isMetric } = useUnitSystem();
 
-  // Check user's pro subscription status
-  const { user } = useRevenueCat();
-  const isProUser = user && user.pro;
+  const { isProUser } = useUser();
 
-
-    // function to direct to the locations details page
+  // function to direct to the locations details page
    const onDetailsPress = (itemId) => {
     if (isProUser) {
       router.navigate(`/(tabs)/map/${itemId}`)
     } else {
       router.navigate('/SubscriptionsPage')
     }
-    
-    };
+   };
 
     // Function to convert feet to meters when isMetric is true
     const convertToMeters = (value) => {
@@ -45,16 +39,14 @@ const SavedLocationsCard = ({ data, onDelete }) => {
       );
     }
 
-
     return (
-      
       <View style={styles.container}>
         <Text style={styles.title}>Saved Locations</Text>
         {data.map((item) => (
           <View key={item.id} style={styles.card}>
             <Card>
               <Card.Content>
-                <Title>{item.name}</Title>
+                <Text2 variant='titleLarge'>{item.name}</Text2>
                 <Text style={styles.calloutCoordinates}>
                   Rock Drop: {isMetric ? convertToMeters(item.details.rockdrop) : (item.details.rockdrop ? `${item.details.rockdrop} ft` : '?')}
                 </Text>
@@ -103,5 +95,8 @@ const styles = StyleSheet.create({
     },
     buttonOutlined: {
         buttonColor: 'black',
-    }
+    },
+    calloutCoordinates: {
+      marginBottom: 5,
+    },
   });

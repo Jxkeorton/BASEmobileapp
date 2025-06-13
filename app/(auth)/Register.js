@@ -2,8 +2,7 @@ import { Button, ActivityIndicator, Checkbox , Text} from 'react-native-paper'
 import { useState } from 'react';
 import { router } from 'expo-router'
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Image } from 'react-native';
-import { appSignUp } from '../../store';
-
+import { useUser } from '../../providers/UserProvider';
 
 const Register = () => {
     const [email, setEmail] = useState('');
@@ -12,6 +11,8 @@ const Register = () => {
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [termsChecked, setTermsChecked] = useState(false);
+
+    const { signUp } = useUser();
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -73,15 +74,15 @@ const Register = () => {
                   <Button
                     title="Register"
                     mode="contained"
-                    style={styles.registerButton} // Add custom styles for the register button
+                    style={styles.registerButton}
                     onPress={async () => {
                       if (!termsChecked) {
                         Alert.alert('Terms and Conditions', 'You must agree to the Terms and Conditions to register.');
                         return;
                       }
                       setLoading(true);
-                      const resp = await appSignUp(email, password, displayName, username);
-                      if (resp?.user) {
+                      const resp = await signUp(email, password, displayName, username);
+                      if (resp?.success) {
                         router.replace("/(tabs)/profile/Profile");
                       } else {
                         console.log(resp.error);
@@ -112,7 +113,6 @@ const Register = () => {
                 </>
               )}
     
-              {/* Privacy Policy Link */}
               <Button
                 textColor='#007AFF'
                 style={styles.privacyPolicyLink}
@@ -132,8 +132,8 @@ const Register = () => {
       container: {
         flex: 1,
         justifyContent: 'center',
-        backgroundColor: 'black', // Add a black background color
-        padding: 20, // Add padding for the container
+        backgroundColor: 'black',
+        padding: 20,
       },
       imageContainer: {
         alignItems: 'center', 
@@ -145,10 +145,10 @@ const Register = () => {
         height: 100,
       },
       textInput: {
-        marginVertical: 10, // Increase vertical margin for text inputs
+        marginVertical: 10,
         height: 50,
-        backgroundColor: 'white', // Use white background for text inputs
-        borderRadius: 8, // Increase border radius
+        backgroundColor: 'white',
+        borderRadius: 8,
         padding: 10,
       },
       registerButton: {
@@ -156,10 +156,10 @@ const Register = () => {
         marginVertical: 10,
       },
       button: {
-        backgroundColor: 'transparent', // Make the background transparent
+        backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: '#007AFF', // Use blue color for button border
-        marginVertical: 10, // Add vertical margin
+        borderColor: '#007AFF',
+        marginVertical: 10,
       },
       privacyPolicyLink: {
         textAlign: 'center',
@@ -187,12 +187,6 @@ const Register = () => {
         textShadowColor: 'black',
         textShadowOffset: { width: -1, height: 1 },
         textShadowRadius: 2,
-      },
-      button: {
-        backgroundColor: 'transparent', 
-        borderWidth: 1,
-        borderColor: '#007AFF', 
-        marginVertical: 10, 
       },
     });
     
