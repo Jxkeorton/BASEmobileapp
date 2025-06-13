@@ -33,7 +33,7 @@ import {
     useSubmitDetailUpdateMutation
 } from '../hooks/useSubmissionQuery';
 
-const DEV_MODE = false;
+const DEV_MODE = __DEV__;
 
 const REVENUECAT_API_KEYS = {
     apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
@@ -41,14 +41,14 @@ const REVENUECAT_API_KEYS = {
 };
 
 const initialState = {
-    isLoggedIn: false, // Always start as false in production
+    isLoggedIn: false,
     initialized: false,
     user: null,
     subscription: {
         isPro: DEV_MODE,
         packages: [],
         entitlements: null,
-        isReady: false, // Start as false, will be set to true after initialization
+        isReady: false,
     },
     loading: {
         auth: false,
