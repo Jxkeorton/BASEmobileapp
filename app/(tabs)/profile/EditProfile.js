@@ -6,13 +6,14 @@ import {
   ImageBackground,
   TextInput,
   StyleSheet,
+  Platform
 } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { Modal, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import { useUser } from '../../../providers/UserProvider';  // NEW
+import { useUser } from '../../../providers/UserProvider'; 
 import Toast from 'react-native-toast-message';
 
 const EditProfile = () => {

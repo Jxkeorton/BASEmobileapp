@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Card, Text } from 'react-native-paper';
+import { Button, Card, Text as Text2 } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
 import { router } from 'expo-router';
 import { useUser } from '../providers/UserProvider';
@@ -46,7 +46,7 @@ const SavedLocationsCard = ({ data, onDelete }) => {
           <View key={item.id} style={styles.card}>
             <Card>
               <Card.Content>
-                <Text variant='titleLarge'>{item.name}</Text>
+                <Text2 variant='titleLarge'>{item.name}</Text2>
                 <Text style={styles.calloutCoordinates}>
                   Rock Drop: {isMetric ? convertToMeters(item.details.rockdrop) : (item.details.rockdrop ? `${item.details.rockdrop} ft` : '?')}
                 </Text>

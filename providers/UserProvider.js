@@ -36,6 +36,22 @@ import {
 
 const DEV_MODE = __DEV__;
 
+// DEV_MODE mock user data
+const DEV_USER = {
+    uid: 'dev-user-123',
+    email: 'dev@example.com',
+    displayName: 'Dev User',
+};
+
+const DEV_PROFILE = {
+    name: 'Dev User',
+    email: 'dev@example.com',
+    username: 'devuser',
+    jumpNumber: 50,
+    profileImage: '',
+    locationIds: [1, 2, 3],
+};
+
 const REVENUECAT_API_KEYS = {
     apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
     google: 'goog_TwvdVGeikOQFmRxsiZkqbWOpChv'
@@ -43,10 +59,10 @@ const REVENUECAT_API_KEYS = {
 
 // Simplified initial state
 const initialState = {
-    isLoggedIn: false,
+    isLoggedIn: DEV_MODE,
     initialized: false,
-    user: null,
-    profile: {
+    user: DEV_MODE ? DEV_USER : null,
+    profile: DEV_MODE ? DEV_PROFILE : {
         name: '',
         email: '',
         username: '',
@@ -56,9 +72,12 @@ const initialState = {
     },
     subscription: {
         isPro: DEV_MODE,
-        packages: [],
+        packages: DEV_MODE ? [
+            { product: { identifier: 'monthly', priceString: '$4.99' }},
+            { product: { identifier: 'yearly', priceString: '$39.99' }}
+        ] : [],
         entitlements: null,
-        isReady: false,
+        isReady: DEV_MODE,
     },
     loading: {
         auth: false,
@@ -101,6 +120,11 @@ export const UserProvider = ({ children }) => {
 
     // Load user profile
     const loadUserProfile = useCallback(async (userId) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Skipping profile load, using mock data');
+            return;
+        }
+
         updateNestedState('loading', { profile: true });
         updateNestedState('errors', { profile: null });
         
@@ -125,14 +149,7 @@ export const UserProvider = ({ children }) => {
     // Initialize RevenueCat
     const initializeRevenueCat = useCallback(async () => {
         if (DEV_MODE) {
-            updateNestedState('subscription', {
-                isReady: true,
-                isPro: true,
-                packages: [
-                    { product: { identifier: 'monthly', priceString: '$4.99' }},
-                    { product: { identifier: 'yearly', priceString: '$39.99' }}
-                ]
-            });
+            console.log('DEV_MODE: Skipping RevenueCat initialization, using mock data');
             return;
         }
 
@@ -177,6 +194,12 @@ export const UserProvider = ({ children }) => {
 
     // Auth listener
     useEffect(() => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Bypassing Firebase auth, setting up dev state');
+            updateState({ initialized: true });
+            return;
+        }
+
         const unsubscribe = onAuthStateChange(async (firebaseUser) => {
             updateNestedState('loading', { auth: true });
 
@@ -195,7 +218,7 @@ export const UserProvider = ({ children }) => {
                     user: null,
                     isLoggedIn: false,
                     profile: initialState.profile,
-                    subscription: { ...initialState.subscription, isReady: DEV_MODE },
+                    subscription: { ...initialState.subscription, isReady: false },
                 });
             }
 
@@ -208,6 +231,11 @@ export const UserProvider = ({ children }) => {
 
     // Auth actions
     const handleSignIn = useCallback(async (email, password) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock sign in successful');
+            return { success: true };
+        }
+
         updateNestedState('loading', { auth: true });
         updateNestedState('errors', { auth: null });
         
@@ -222,6 +250,11 @@ export const UserProvider = ({ children }) => {
     }, [updateNestedState]);
 
     const handleSignUp = useCallback(async (email, password, displayName, username) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock sign up successful');
+            return { success: true };
+        }
+
         updateNestedState('loading', { auth: true });
         updateNestedState('errors', { auth: null });
 
@@ -236,6 +269,12 @@ export const UserProvider = ({ children }) => {
     }, [updateNestedState]);
 
     const handleSignOut = useCallback(async () => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock sign out');
+            router.replace("/(auth)/Login");
+            return { success: true };
+        }
+
         const result = await signOutUser();
         if (result.success) {
             router.replace("/(auth)/Login");
@@ -243,14 +282,26 @@ export const UserProvider = ({ children }) => {
         return result;
     }, []);
 
-    // Profile actions
+    // Profile actions with DEV mode handling
     const handleUpdateProfile = useCallback(async (name, email, jumpNumber) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock profile update');
+            const updates = {};
+            if (name && name.trim()) updates.name = name.trim();
+            if (email && email.trim()) updates.email = email.trim();
+            if (jumpNumber !== undefined && jumpNumber !== null && !isNaN(Number(jumpNumber))) {
+                updates.jumpNumber = Number(jumpNumber);
+            }
+            updateNestedState('profile', updates);
+            router.replace('/(tabs)/profile/Profile');
+            return { success: true };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
         updateNestedState('loading', { action: true });
         
-        // Prepare updates object
         const updates = {};
         if (name && name.trim()) updates.name = name.trim();
         if (email && email.trim()) updates.email = email.trim();
@@ -272,6 +323,12 @@ export const UserProvider = ({ children }) => {
     }, [updateNestedState]);
 
     const handleUploadProfileImage = useCallback(async (uri, fileName, onProgress) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock image upload');
+            updateNestedState('profile', { profileImage: uri });
+            return { success: true, data: { downloadURL: uri } };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -290,6 +347,21 @@ export const UserProvider = ({ children }) => {
     }, [updateNestedState]);
 
     const handleToggleLocationSave = useCallback(async (locationId) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock location toggle');
+            const currentIds = state.profile.locationIds;
+            const numericId = typeof locationId === 'string' ? parseInt(locationId) : locationId;
+            const isCurrentlySaved = currentIds.includes(numericId);
+            
+            updateNestedState('profile', {
+                locationIds: isCurrentlySaved 
+                    ? currentIds.filter(id => id !== numericId)
+                    : [...currentIds, numericId]
+            });
+            
+            return !isCurrentlySaved;
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return null;
 
@@ -311,8 +383,15 @@ export const UserProvider = ({ children }) => {
         return null;
     }, [state.profile.locationIds, updateNestedState]);
 
-    // Jump management
+    // Jump management with DEV mode
     const handleAddJumpNumber = useCallback(async () => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock increment jump number');
+            const newCount = (state.profile.jumpNumber || 0) + 1;
+            updateNestedState('profile', { jumpNumber: newCount });
+            return { success: true, data: newCount };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -323,9 +402,16 @@ export const UserProvider = ({ children }) => {
         }
         
         return result;
-    }, [updateNestedState]);
+    }, [state.profile.jumpNumber, updateNestedState]);
 
     const handleDecrementJumpNumber = useCallback(async () => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock decrement jump number');
+            const newCount = Math.max(0, (state.profile.jumpNumber || 0) - 1);
+            updateNestedState('profile', { jumpNumber: newCount });
+            return { success: true, data: newCount };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -336,9 +422,15 @@ export const UserProvider = ({ children }) => {
         }
         
         return result;
-    }, [updateNestedState]);
+    }, [state.profile.jumpNumber, updateNestedState]);
 
     const handleSubmitJump = useCallback(async (formData) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock submit jump');
+            await handleAddJumpNumber();
+            return { success: true, data: { id: Date.now().toString(), ...formData } };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -357,6 +449,12 @@ export const UserProvider = ({ children }) => {
     }, [handleAddJumpNumber, updateNestedState]);
 
     const handleDeleteJump = useCallback(async (jumpId) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock delete jump');
+            await handleDecrementJumpNumber();
+            return { success: true };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -375,6 +473,30 @@ export const UserProvider = ({ children }) => {
     }, [handleDecrementJumpNumber, updateNestedState]);
 
     const handleGetLoggedJumps = useCallback(async () => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Returning mock jumps');
+            return [
+                {
+                    id: '1',
+                    location: 'Mock Location 1',
+                    exitType: 'Building',
+                    delay: '3',
+                    details: 'Mock jump details',
+                    date: '2024-01-01',
+                    imageURLs: []
+                },
+                {
+                    id: '2',
+                    location: 'Mock Location 2',
+                    exitType: 'Antenna',
+                    delay: '5',
+                    details: 'Another mock jump',
+                    date: '2024-01-02',
+                    imageURLs: []
+                }
+            ];
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return [];
 
@@ -382,8 +504,13 @@ export const UserProvider = ({ children }) => {
         return result.success ? result.data : [];
     }, []);
 
-    // Submission actions
+    // Submission actions with DEV mode
     const handleSubmitLocation = useCallback(async (formData) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock location submission');
+            return { success: true };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -400,6 +527,11 @@ export const UserProvider = ({ children }) => {
     }, [updateNestedState]);
 
     const handleSubmitDetailUpdate = useCallback(async (formData) => {
+        if (DEV_MODE) {
+            console.log('DEV_MODE: Mock detail update submission');
+            return { success: true };
+        }
+
         const currentUser = getCurrentUser();
         if (!currentUser) return { success: false, error: 'No authenticated user' };
 
@@ -418,7 +550,7 @@ export const UserProvider = ({ children }) => {
     // Subscription actions
     const handlePurchasePackage = useCallback(async (pack) => {
         if (DEV_MODE) {
-            updateNestedState('subscription', { isPro: true });
+            console.log('DEV_MODE: Mock purchase successful');
             return { success: true };
         }
 
