@@ -2,7 +2,7 @@ import React, { useState, useEffect} from 'react';
 import { useFocusEffect, router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useUser } from '../../../providers/UserProvider'; 
-// UI elements
+import { useSavedLocationsQuery } from '../../../hooks/useLocationsQuery';
 import {
   Avatar,
   Title,
@@ -16,73 +16,28 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Profile = () => {
-  const [ filteredLocations, setFilteredLocations ] = useState([]);
-
-  const { profile, loading, toggleLocationSave } = useUser();
-
-  useFocusEffect(
-    React.useCallback(() => {
-      const getLocations = async () => {
-        try {
-          const locationIds = profile.locationIds || [];
-
-          // get filtered locations using apiUrl 
-          fetch('https://raw.githubusercontent.com/Jxkeorton/APIs/main/worldlocations.json')
-          .then((response) => response.json())
-          .then((data) => {
-            // Filter locations based on matching IDs
-            const filteredData = data.locations.filter((location) =>
-              locationIds.includes(location.id)
-            );
-
-            // Update the state with filtered data
-            setFilteredLocations(filteredData);
-            
-          })
-          .catch((error) => {
-            console.error('Error fetching data from API:', error);
-            Toast.show({
-              type: 'error',
-              text1: 'Error fetching saved locations',
-              position: 'top',
-            });
-          });
-
-        } catch (error) {
-          Toast.show({
-            type: 'error',
-            text1: 'Error fetching saved locations',
-            position: 'top',
-          });
-        }
-      };
-
-      if (profile.locationIds) {
-        getLocations();
-      }
-    }, [profile.locationIds]) 
-  );
+  const { profile, loading, toggleLocationSave, user } = useUser();
   
-  useEffect(() => {
-    const saveFilteredLocationsToAsyncStorage = async () => {
-      try {
-        await AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations));
-       
-      } catch (error) {
-        console.error('Error saving filtered locations to AsyncStorage:', error);
-      }
-    };
+  // Use TanStack Query for saved locations
+  const { 
+    data: filteredLocations = [], 
+    isLoading: locationsLoading,
+    error: locationsError 
+  } = useSavedLocationsQuery(user?.uid, profile?.locationIds);
 
-    saveFilteredLocationsToAsyncStorage();
+  // Save to AsyncStorage when locations change
+  useEffect(() => {
+    if (filteredLocations.length > 0) {
+      AsyncStorage.setItem('filteredLocations', JSON.stringify(filteredLocations))
+        .catch(error => console.error('Error saving to AsyncStorage:', error));
+    }
   }, [filteredLocations]);
 
   const onDelete = async (locationId) => {
     try {
       const result = await toggleLocationSave(locationId);
       
-      if (result === false) {  // Location was unsaved
-        setFilteredLocations(filteredLocations.filter((location) => location.id !== locationId));
-        
+      if (result === false) {
         Toast.show({
           type: 'info',
           text1: 'Location unsaved from profile',
@@ -105,15 +60,13 @@ const Profile = () => {
     }
   };
 
-  // for app sharing button 
   const myCustomShare = async () => {
     try {
-        await Share.share({
-            message:
-                'BASE world map, virtual logbook and more !',
-        });
+      await Share.share({
+        message: 'BASE world map, virtual logbook and more !',
+      });
     } catch (error) {
-        alert(error.message);
+      alert(error.message);
     }
   };
 
@@ -128,68 +81,76 @@ const Profile = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
-      <View style={styles.userInfoSection}>
-        <View style={{flexDirection: 'row', marginTop: 15,}}>
-          <Avatar.Image 
-          source={profile.profileImage 
-            ? {uri: profile.profileImage }
-            : require('../../../assets/empty-profile-picture.png')
-          }
-          size = {80}
-          backgroundColor = {'white'}
+        <View style={styles.userInfoSection}>
+          <View style={{flexDirection: 'row', marginTop: 15}}>
+            <Avatar.Image 
+              source={profile.profileImage 
+                ? {uri: profile.profileImage }
+                : require('../../../assets/empty-profile-picture.png')
+              }
+              size={80}
+              backgroundColor={'white'}
+            />
+            <View style={{marginLeft: 20}}>
+              <Text variant="titleLarge" style={[styles.title, {
+                marginTop: 15,
+                marginBottom: 5,
+              }]}>{profile.name || 'No name set'}</Text>
+              <Text variant="bodySmall" style={styles.caption}>@{profile.username || 'No username'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.userInfoSection} />
+
+          <View style={styles.infoBoxWrapper}>
+            <View style={[styles.infoBox, {
+              borderRightColor: '#dddddd',
+              borderRightWidth: 1
+            }]}>
+              <Text variant="titleLarge">{profile.jumpNumber || 0}</Text>
+              <Text variant="bodySmall">Total Base Jumps</Text>
+            </View>
+            <View style={styles.infoBox}>
+            </View>
+          </View>
+
+          <View style={styles.menuWrapper}>
+            <TouchableRipple onPress={() => router.push('/(tabs)/profile/EditProfile')}>
+              <View style={styles.menuItem}>
+                <Icon name="account-check-outline" color="#777777" size={25}/>
+                <Text style={styles.menuItemText}>Edit Profile</Text>
+              </View>
+            </TouchableRipple>
+            <TouchableRipple onPress={myCustomShare}>
+              <View style={styles.menuItem}>
+                <Icon name="share-outline" color="#777777" size={25}/>
+                <Text style={styles.menuItemText}>Tell Your Friends</Text>
+              </View>
+            </TouchableRipple>
+            <TouchableRipple onPress={() => router.push('/(tabs)/profile/SubmitLocation')}>
+              <View style={styles.menuItem}>
+                <Icon name="map-marker-radius" color="#777777" size={25}/>
+                <Text style={styles.menuItemText}>Submit A Location</Text>
+              </View>
+            </TouchableRipple>
+          </View>
+        </View>
+
+        {locationsError ? (
+          <View style={styles.errorContainer}>
+            <Text>Error loading saved locations</Text>
+          </View>
+        ) : (
+          <SavedLocationsCard 
+            data={filteredLocations} 
+            onDelete={onDelete}
+            isLoading={locationsLoading}
           />
-          <View style={{marginLeft: 20}}>
-            <Text variant="titleLarge" style={[styles.title, {
-              marginTop: 15,
-              marginBottom: 5,
-            }]}>{profile.name || 'No name set'}</Text>
-            <Text variant="bodySmall" style={styles.caption}>@{profile.username || 'No username'}</Text>
-          </View>
-        </View>
-
-        <View style={styles.userInfoSection} />
-
-        <View style={styles.infoBoxWrapper}>
-          <View style={[styles.infoBox, {
-            borderRightColor: '#dddddd',
-            borderRightWidth: 1
-          }]}>
-            <Text variant="titleLarge" >{profile.jumpNumber || 0}</Text>
-            <Text variant="bodySmall">Total Base Jumps</Text>
-          </View>
-          <View style={styles.infoBox}>
-
-          </View>
-        </View>
-
-      <View style={styles.menuWrapper}>
-        <TouchableRipple onPress={() => router.push('/(tabs)/profile/EditProfile')}>
-          <View style={styles.menuItem}>
-            <Icon name="account-check-outline" color="#777777" size={25}/>
-            <Text style={styles.menuItemText}>Edit Profile</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple onPress={myCustomShare}>
-          <View style={styles.menuItem}>
-            <Icon name="share-outline" color="#777777" size={25}/>
-            <Text style={styles.menuItemText}>Tell Your Friends</Text>
-          </View>
-        </TouchableRipple>
-        <TouchableRipple onPress={() => router.push('/(tabs)/profile/SubmitLocation')}>
-          <View style={styles.menuItem}>
-            <Icon name="map-marker-radius" color="#777777" size={25}/>
-            <Text style={styles.menuItemText}>Submit A Location</Text>
-          </View>
-        </TouchableRipple>
-      </View>
-  
-      </View>
-
-      <SavedLocationsCard data={filteredLocations} onDelete={onDelete} />
+        )}
       </ScrollView>
     </SafeAreaView>
-  )
-}
+  );
+};
 
 export default Profile;
 

@@ -9,6 +9,14 @@ import {
 } from 'firebase/auth';
 import { FIREBASE_AUTH } from '../firebaseConfig';
 
+// Add this check at the top of your auth functions
+const checkFirebaseAuth = () => {
+    if (!FIREBASE_AUTH) {
+        throw new Error('Firebase Auth not initialized. Check your firebaseConfig.js');
+    }
+    return true;
+};
+
 // Result wrapper for consistent return types
 const createResult = (data = null, error = null) => ({ data, error, success: !error });
 
@@ -60,7 +68,22 @@ export const resetPassword = withAuthErrorHandling(performPasswordReset);
 export const deleteAccount = withAuthErrorHandling(performAccountDeletion);
 
 // Auth state functions
-export const onAuthStateChange = (callback) => onAuthStateChanged(FIREBASE_AUTH, callback);
+// Updated onAuthStateChange with error handling
+export const onAuthStateChange = (callback) => {
+    try {
+        checkFirebaseAuth();
+        return onAuthStateChanged(FIREBASE_AUTH, (user) => {
+            console.log('🔐 Firebase auth state change:', user ? 'authenticated' : 'not authenticated');
+            callback(user);
+        });
+    } catch (error) {
+        console.error('❌ Error setting up auth listener:', error);
+        // Call callback with null to indicate no user
+        callback(null);
+        // Return a no-op unsubscribe function
+        return () => {};
+    }
+};
 export const getCurrentUser = () => FIREBASE_AUTH.currentUser;
 export const isAuthenticated = () => !!FIREBASE_AUTH.currentUser;
 
