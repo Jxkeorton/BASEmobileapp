@@ -2,16 +2,18 @@ import React from "react";
 import { View, StyleSheet, Alert, Text} from "react-native";
 import { Button } from "react-native-paper";
 import { router } from "expo-router";
-import { deleteUserAccount } from "../../../../store";
+import { useUser } from "../../../../providers/UserProvider";
 
 const DeleteAccount = () => {
+    const { deleteAccount } = useUser();
+
     const handleDeleteAccount = async () => {
-        const result = await deleteUserAccount();
+        const result = await deleteAccount();
         if (result.success) {
-            // Account has been deleted successfully, you can navigate to another screen or show a success message here.
+            // Account has been deleted successfully
             router.replace('/(auth)/Register')
         } else {
-            // Handle the error here, you can display an error message.
+            // Handle the error
             console.error(result.error);
             Alert.alert('failed to delete account', 'please try again or contact us')
         }

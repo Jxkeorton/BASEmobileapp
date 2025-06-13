@@ -1,28 +1,35 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import { useRevenueCat } from '../providers/RevenueCatProvider';
+import { useUser } from '../providers/UserProvider';  // NEW
 import LinearGradient from 'react-native-linear-gradient';
 import {router} from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 
 const PackageList = () => {
-  const { user, packages, purchasePackage } = useRevenueCat();
+  const { user, packages, purchasePackage, loading, isProUser } = useUser();
   const [isLoading, setIsLoading ] = useState(false);
 
   const handlePurchase = async (pkg) => {
     setIsLoading(true);
     try {
-      await purchasePackage(pkg);
+      const result = await purchasePackage(pkg);
 
-      if (user.pro) {
-        router.navigate('/(tabs)/map/Map')
+      if (result.success && isProUser) { 
+        router.push('/(tabs)/map/Map')
+      } else if (result.error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to purchase package',
+          text2: result.error,
+          position: 'top',
+        });
       }
       
     } catch (error) {
       console.error('Failed to purchase package:', error);
       Toast.show({
-        type: 'error', // You can customize the type (success, info, error, etc.)
+        type: 'error',
         text1: 'Failed to purchase package',
         position: 'top',
       });
@@ -31,27 +38,48 @@ const PackageList = () => {
     }
   };
 
-  // Check if the user already has access to a specific package
   const userHasAccessToPackage = (pkg) => {
-    if (user.pro) {
-      return true; // User is a pro
+    if (isProUser) {
+      return true;
     }
   
-    if (user.entitlements && user.entitlements.active) {
+    if (user?.entitlements?.active) {
       return user.entitlements.active[pkg.product.identifier] !== undefined;
     }
   
-    return false; // If entitlements are not available, assume user doesn't have access
+    return false;
   };
 
-  // Assuming you have two packages
+  if (loading.subscription) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.title}>Loading packages...</Text>
+      </View>
+    );
+  }
+
   const package1 = packages[0];
   const package2 = packages[1];
+
+  if (!package1 || !package2) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <Text style={styles.title}>No packages available</Text>
+        <TouchableOpacity 
+          style={styles.backToMapButton}
+          onPress={() => router.push('/(tabs)/map/Map')}
+        >
+          <Text style={styles.backToMapButtonText}>Back to Map</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/bitmap.png')} // Provide the path to your image
+        source={require('../assets/bitmap.png')}
         style={styles.image}
       />
       <Text style={styles.title}>Unlock Pro Features</Text>
@@ -70,8 +98,8 @@ const PackageList = () => {
           <Text style={styles.packageText}>
             {package1.product.priceString}
           </Text>
-          {isLoading ? ( // Check if isLoading is true
-            <ActivityIndicator color="white" size="small" /> // Show ActivityIndicator
+          {isLoading || loading.action ? (
+            <ActivityIndicator color="white" size="small" />
           ) : userHasAccessToPackage(package1) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
           ) : (
@@ -92,7 +120,7 @@ const PackageList = () => {
           <Text style={styles.packageText}>
             {package2.product.priceString}
           </Text>
-          {isLoading ? ( // Check if isLoading is true
+          {isLoading || loading.action ? (
             <ActivityIndicator color="white" size="small" /> 
           ) : userHasAccessToPackage(package2) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
@@ -108,18 +136,18 @@ const PackageList = () => {
       </View>
       
       {/* 7-day Trial Button with LinearGradient Effect */}
-      {isLoading ? null : ( 
+      {!(isLoading || loading.action) && (
       <View style={styles.trialContainer}>
         <Text style={styles.trialText}>A 7 Day Free trial will be applied if it is your first time subscribing</Text>
       </View> )}
 
       {/* Back to Map Button */}
-      {isLoading ? ( // Check if isLoading is true
+      {isLoading || loading.action ? (
        <Text style={styles.backToMapButtonText}>Please wait...</Text>
       ) : (
         <TouchableOpacity 
         style={styles.backToMapButton}
-        onPress={() => router.navigate('/(tabs)/map/Map')}
+        onPress={() => router.push('/(tabs)/map/Map')}
       >
         <Text style={styles.backToMapButtonText}>Back to Map</Text>
       </TouchableOpacity>
@@ -129,6 +157,7 @@ const PackageList = () => {
   );
 };
 
+// Styles remain the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -197,7 +226,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   backToMapButton: {
-    backgroundColor: 'black', // Background color
+    backgroundColor: 'black',
     padding: 10,
     borderRadius: 8,
     marginTop: 30,

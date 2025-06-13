@@ -4,7 +4,7 @@ import { Switch, Portal, Modal, PaperProvider, ActivityIndicator } from "react-n
 import * as ImagePicker from 'expo-image-picker';
 import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
-import { submitLocationsHandler } from "../../../store";
+import { useUser } from "../../../providers/UserProvider";
 
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
@@ -23,7 +23,6 @@ const SubmitLocation = () => {
     const [images, setImage] = useState([]);
     const [selectedUnit, setSelectedUnit] = useState('Meters'); // Default to meters
 
-
     const [visible, setVisible] = useState(false);
     const [permission, requestPermission] = ImagePicker.useCameraPermissions();
 
@@ -33,6 +32,7 @@ const SubmitLocation = () => {
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
     const containerStyle = {backgroundColor: 'white', padding: 20};
+    const { submitLocation, loading: userLoading } = useUser();
 
     const formData = {
       exitName, 
@@ -54,18 +54,26 @@ const SubmitLocation = () => {
     const handleSubmit = async () => {
       setLoading(true);
       try {
-        await submitLocationsHandler({ formData });
-        router.replace('/(tabs)/profile/Profile')
-        Toast.show({
-          type: 'success', // You can customize the type (success, info, error, etc.)
-          text1: 'Successfully sent submission',
-          position: 'top',
-        });
-        // Optionally, you can navigate to another screen or display a success message here.
+        const result = await submitLocation(formData);
+        if (result.success) {
+          router.replace('/(tabs)/profile/Profile')
+          Toast.show({
+            type: 'success',
+            text1: 'Successfully sent submission',
+            position: 'top',
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Error trying to send submission',
+            text2: result.error,
+            position: 'top',
+          });
+        }
       } catch (error) {
         Toast.show({
-          type: 'error', // You can customize the type (success, info, error, etc.)
-          text1: 'Error Trying to send submission',
+          type: 'error',
+          text1: 'Error trying to send submission',
           position: 'top',
         });
         console.error(error);
@@ -74,8 +82,6 @@ const SubmitLocation = () => {
       }
     };
 
-    // when edit image button clicked in editprofile screen
-    // checks/asks for permission before opening the modal to change the image
     const uploadImage = async () => {
         if (permission?.status !== ImagePicker.PermissionStatus.GRANTED) {
             requestPermission();
@@ -85,68 +91,65 @@ const SubmitLocation = () => {
         }
     };
 
-// if choosing new image from camera roll this function opens album 
-  const pickImage = async () => {
-    setImageLoading(true);
-    try {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-      selectionLimit: 4,
-      allowsMultipleSelection: true,
-    });
-
-    if (!result.canceled) {
-      const newImages = [];
-      for (const asset of result.assets) {
-        // Manipulate the image to save as PNG with the correct file type
-        const newImage = await manipulateAsync(asset.uri, [], {
-          compress: 0.1,
-          format: SaveFormat.PNG,
+    const pickImage = async () => {
+        setImageLoading(true);
+        try {
+        let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: false,
+          quality: 1,
+          selectionLimit: 4,
+          allowsMultipleSelection: true,
         });
-        newImages.push(newImage.uri);
+
+        if (!result.canceled) {
+          const newImages = [];
+          for (const asset of result.assets) {
+            const newImage = await manipulateAsync(asset.uri, [], {
+              compress: 0.1,
+              format: SaveFormat.PNG,
+            });
+            newImages.push(newImage.uri);
+          }
+          hideModal();
+          setImage(newImages);
+        }
+      } catch (e) {
+        Toast.show({
+          type: 'error',
+          text1: 'Error uploading image',
+          position: 'top',
+        });
+      } finally {
+        setImageLoading(false);
       }
-      hideModal();
-      setImage(newImages);
-    }
-  } catch (e) {
-    Toast.show({
-      type: 'error', // You can customize the type (success, info, error, etc.)
-      text1: 'Error uploading image',
-      position: 'top',
-    });
-  } finally {
-    setImageLoading(false);
-  }
-  };
+    };
 
-  // if taking image this function opens the camera 
-  const takePhoto = async () => {
-    setImageLoading(true);
-    try {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 1,
-      allowsMultipleSelection: false,
-    });
+    const takePhoto = async () => {
+        setImageLoading(true);
+        try {
+        const result = await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 1,
+          allowsMultipleSelection: false,
+        });
 
-    if(!result.canceled) {
-      const { uri } = result.assets[0];
-      setImage((prevImages) => [...prevImages, uri]); 
-      hideModal();
-    }
-    } catch (e) {
-      Toast.show({
-        type: 'error', // You can customize the type (success, info, error, etc.)
-        text1: 'Error uploading image',
-        position: 'top',
-      });
-    } finally {
-      setImageLoading(false);
-    }
-  };
+        if(!result.canceled) {
+          const { uri } = result.assets[0];
+          setImage((prevImages) => [...prevImages, uri]); 
+          hideModal();
+        }
+        } catch (e) {
+          Toast.show({
+            type: 'error',
+            text1: 'Error uploading image',
+            position: 'top',
+          });
+        } finally {
+          setImageLoading(false);
+        }
+    };
 
     const RenderInner = () => (
         <View style={styles.panel}>
@@ -216,7 +219,7 @@ const SubmitLocation = () => {
                         <></>
                       )}
 
-                      {loading ? (
+                      {loading || userLoading.action ? (
                         <ActivityIndicator size="small" color="#0000ff" />
                       ) : (
                         <TouchableOpacity onPress={handleSubmit} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Submit</Text></TouchableOpacity>
@@ -289,14 +292,14 @@ const styles = StyleSheet.create({
     },
     borderButton: {
       borderRadius: 10,
-      borderWidth: 1,            // Add a border width
-      borderColor: 'black',    // Specify the border color
+      borderWidth: 1,            
+      borderColor: 'black',    
       alignItems: 'center',
       justifyContent: 'center',
       marginVertical: 10,
       width: '100%',
       height: 40,
-      backgroundColor: 'transparent', // Make the background transparent
+      backgroundColor: 'transparent',
     },
     imageButtonTitle: {
       fontSize: 17,
