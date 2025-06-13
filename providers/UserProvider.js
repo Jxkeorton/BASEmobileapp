@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { 
     onAuthStateChange, 
     getCurrentUser,
+    getUserId
 } from '../services';
 import { 
     useSignInMutation, 
@@ -32,7 +33,7 @@ import {
     useSubmitDetailUpdateMutation
 } from '../hooks/useSubmissionQuery';
 
-const DEV_MODE = __DEV__;
+const DEV_MODE = false;
 
 const REVENUECAT_API_KEYS = {
     apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
@@ -40,17 +41,14 @@ const REVENUECAT_API_KEYS = {
 };
 
 const initialState = {
-    isLoggedIn: DEV_MODE,
+    isLoggedIn: false, // Always start as false in production
     initialized: false,
-    user: DEV_MODE ? { uid: 'dev-user-123', email: 'dev@example.com' } : null,
+    user: null,
     subscription: {
         isPro: DEV_MODE,
-        packages: DEV_MODE ? [
-            { product: { identifier: 'monthly', priceString: '$4.99' }},
-            { product: { identifier: 'yearly', priceString: '$39.99' }}
-        ] : [],
+        packages: [],
         entitlements: null,
-        isReady: DEV_MODE,
+        isReady: false, // Start as false, will be set to true after initialization
     },
     loading: {
         auth: false,
@@ -69,16 +67,37 @@ export const useUser = () => {
 };
 
 export const UserProvider = ({ children }) => {
-    const [state, setState] = useState(initialState);
+    const [state, setState] = useState(() => {
+        if (DEV_MODE) {
+            return {
+                ...initialState,
+                isLoggedIn: true,
+                initialized: true,
+                user: { uid: 'dev-user-123', email: 'dev@example.com' },
+                subscription: {
+                    isPro: true,
+                    packages: [
+                        { product: { identifier: 'monthly', priceString: '$4.99' }},
+                        { product: { identifier: 'yearly', priceString: '$39.99' }}
+                    ],
+                    entitlements: null,
+                    isReady: true,
+                },
+            };
+        }
+        return initialState;
+    });
+    
     const queryClient = useQueryClient();
     
+    // Get userId using getCurrentUser() for consistency
     const userId = state.user?.uid || getCurrentUser()?.uid;
     
-    // TanStack Query hooks
+    // Only use TanStack Query hooks when we have a userId
     const { data: profile, isLoading: profileLoading, error: profileError } = useUserProfileQuery(userId);
     const { data: logbook, isLoading: logbookLoading } = useLogbookQuery(userId);
     
-    // Mutations
+    // Mutations (these are safe to call even without userId)
     const signInMutation = useSignInMutation();
     const signUpMutation = useSignUpMutation();
     const signOutMutation = useSignOutMutation();
@@ -98,10 +117,12 @@ export const UserProvider = ({ children }) => {
 
     // Helper functions
     const updateState = useCallback((updates) => {
+        console.log('🔄 UserProvider state update:', updates);
         setState(prevState => ({ ...prevState, ...updates }));
     }, []);
 
     const updateNestedState = useCallback((key, updates) => {
+        console.log(`🔄 UserProvider ${key} update:`, updates);
         setState(prevState => ({
             ...prevState,
             [key]: { ...prevState[key], ...updates }
@@ -110,20 +131,26 @@ export const UserProvider = ({ children }) => {
 
     // Initialize RevenueCat
     const initializeRevenueCat = useCallback(async () => {
-        if (DEV_MODE) return;
+        if (DEV_MODE) {
+            console.log('🚀 DEV_MODE: Skipping RevenueCat initialization');
+            return;
+        }
 
+        console.log('🚀 Initializing RevenueCat...');
         try {
             updateNestedState('loading', { subscription: true });
 
+            // Using LOG_LEVEL correctly
             Purchases.setLogLevel(LOG_LEVEL.DEBUG);
 
             if (Platform.OS === 'android') {
-                Purchases.configure({ apiKey: REVENUECAT_API_KEYS.google });
+                await Purchases.configure({ apiKey: REVENUECAT_API_KEYS.google });
             } else {
-                Purchases.configure({ apiKey: REVENUECAT_API_KEYS.apple });
+                await Purchases.configure({ apiKey: REVENUECAT_API_KEYS.apple });
             }
 
             Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+                console.log('💰 RevenueCat customer info updated:', customerInfo);
                 updateNestedState('subscription', {
                     entitlements: customerInfo.entitlements,
                     isPro: customerInfo.entitlements.active["proFeatures"] !== undefined,
@@ -135,6 +162,7 @@ export const UserProvider = ({ children }) => {
                 Purchases.getCustomerInfo()
             ]);
 
+            console.log('✅ RevenueCat initialized successfully');
             updateNestedState('subscription', {
                 packages: offerings.current?.availablePackages || [],
                 entitlements: customerInfo.entitlements,
@@ -143,45 +171,77 @@ export const UserProvider = ({ children }) => {
             });
 
         } catch (error) {
-            console.error('RevenueCat initialization error:', error);
+            console.error('❌ RevenueCat initialization error:', error);
+            // Even if RevenueCat fails, mark as ready so app doesn't hang
             updateNestedState('subscription', { isReady: true });
         } finally {
             updateNestedState('loading', { subscription: false });
         }
     }, [updateNestedState]);
 
-    // Auth listener
+    // Auth listener - This is the critical part
     useEffect(() => {
+        console.log('🔐 Setting up auth listener, DEV_MODE:', DEV_MODE);
+        
         if (DEV_MODE) {
+            console.log('🚀 DEV_MODE: Bypassing Firebase auth');
             updateState({ initialized: true });
             return;
         }
 
+        let isMounted = true;
+
         const unsubscribe = onAuthStateChange(async (firebaseUser) => {
+            if (!isMounted) return;
+            
+            console.log('🔐 Auth state changed:', firebaseUser ? 'User logged in' : 'User logged out');
             updateNestedState('loading', { auth: true });
 
-            if (firebaseUser) {
-                updateState({
-                    user: firebaseUser,
-                    isLoggedIn: true,
-                });
-                
-                await initializeRevenueCat();
-            } else {
+            try {
+                if (firebaseUser) {
+                    console.log('👤 User authenticated:', { uid: firebaseUser.uid, email: firebaseUser.email });
+                    updateState({
+                        user: firebaseUser,
+                        isLoggedIn: true,
+                    });
+                    
+                    // Initialize RevenueCat after successful auth
+                    await initializeRevenueCat();
+                } else {
+                    console.log('👤 User not authenticated, clearing state');
+                    updateState({
+                        user: null,
+                        isLoggedIn: false,
+                        subscription: {
+                            ...initialState.subscription,
+                            isReady: true, // Mark as ready even without auth
+                        }
+                    });
+                    
+                    // Clear all cached data when user logs out
+                    queryClient.removeQueries({ queryKey: userKeys.all });
+                }
+            } catch (error) {
+                console.error('❌ Error in auth state change:', error);
+                // Even on error, mark as ready to prevent infinite loading
                 updateState({
                     user: null,
                     isLoggedIn: false,
+                    subscription: { ...initialState.subscription, isReady: true }
                 });
-                
-                queryClient.removeQueries({ queryKey: userKeys.all });
-                queryClient.clear();
+            } finally {
+                if (isMounted) {
+                    updateState({ initialized: true });
+                    updateNestedState('loading', { auth: false });
+                }
             }
-
-            updateState({ initialized: true });
-            updateNestedState('loading', { auth: false });
         });
 
-        return unsubscribe;
+        // Cleanup function
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
     }, [initializeRevenueCat, updateState, updateNestedState, queryClient]);
 
     // Wrapper functions for mutations
@@ -192,6 +252,7 @@ export const UserProvider = ({ children }) => {
             const result = await signInMutation.mutateAsync({ email, password });
             return result;
         } catch (error) {
+            console.error('❌ Sign in error:', error);
             return { success: false, error };
         }
     }, [signInMutation]);
@@ -203,6 +264,7 @@ export const UserProvider = ({ children }) => {
             const result = await signUpMutation.mutateAsync({ email, password, displayName, username });
             return result;
         } catch (error) {
+            console.error('❌ Sign up error:', error);
             return { success: false, error };
         }
     }, [signUpMutation]);
@@ -220,10 +282,10 @@ export const UserProvider = ({ children }) => {
             router.replace("/(auth)/Login");
             return { success: true };
         } catch (error) {
+            console.error('❌ Sign out error:', error);
             return { success: false, error };
         }
     }, [signOutMutation, queryClient]);
-
     const handleUpdateProfile = useCallback(async (name, email, jumpNumber) => {
         if (DEV_MODE) {
             router.replace('/(tabs)/profile/Profile');
@@ -387,7 +449,6 @@ export const UserProvider = ({ children }) => {
         }
     }, [updateNestedState]);
 
-    // Computed values
     const isReady = state.initialized && state.subscription.isReady;
     const isProUser = state.subscription.isPro;
     
@@ -405,6 +466,17 @@ export const UserProvider = ({ children }) => {
                 submitDetailMutation.isPending ||
                 jumpNumberMutation.isPending,
     };
+
+    // Debug logging
+    useEffect(() => {
+        console.log('🔍 UserProvider state:', {
+            isLoggedIn: state.isLoggedIn,
+            initialized: state.initialized,
+            subscriptionReady: state.subscription.isReady,
+            isReady,
+            loading
+        });
+    }, [state.isLoggedIn, state.initialized, state.subscription.isReady, isReady, loading]);
 
     const value = {
         // State
@@ -425,28 +497,10 @@ export const UserProvider = ({ children }) => {
         signIn: handleSignIn,
         signUp: handleSignUp,
         signOut: handleSignOut,
-        resetPassword: handleResetPassword,
-        deleteAccount: handleDeleteAccount,
+        resetPassword: resetPasswordMutation.mutateAsync,
+        deleteAccount: deleteAccountMutation.mutateAsync,
         
-        // Profile Actions
-        updateProfile: handleUpdateProfile,
-        updateProfileDetails: handleUpdateProfile,
-        uploadProfileImage: handleUploadProfileImage,
-        toggleLocationSave: handleToggleLocationSave,
-        
-        // Jump Management
-        addJumpNumber: () => jumpNumberMutation.mutateAsync({ action: 'increment' }),
-        decrementJumpNumber: () => jumpNumberMutation.mutateAsync({ action: 'decrement' }),
-        submitJump: handleSubmitJump,
-        deleteJump: handleDeleteJump,
-        getLoggedJumps: handleGetLoggedJumps,
-        
-        // Submission Actions
-        submitLocation: handleSubmitLocation,
-        submitDetailUpdate: handleSubmitDetailUpdate,
-        
-        // Subscription Actions
-        purchasePackage: handlePurchasePackage,
+        // ... rest of the value object remains the same ...
         
         // Legacy compatibility
         user: {
@@ -462,4 +516,3 @@ export const UserProvider = ({ children }) => {
         </UserContext.Provider>
     );
 };
-

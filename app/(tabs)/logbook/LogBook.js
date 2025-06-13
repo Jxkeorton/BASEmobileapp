@@ -5,22 +5,24 @@ import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
-
-import { useUser } from '../../../providers/UserProvider';  // NEW
-
-//Modal imports 
+import { useUser } from '../../../providers/UserProvider';
+import { useLogbookQuery } from '../../../hooks/useLogbookQuery';
 import { Portal, PaperProvider, Text, Caption, Title} from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
 
 const LogBook = () => {
-  const [isLoading, setLoading] = useState(true);
-
-  //Modal
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  const { isProUser, profile, loading } = useUser();
+  const { isProUser, profile, loading, user } = useUser();
+  
+  // Use TanStack Query for logbook data
+  const { 
+    data: logbookData = [], 
+    isLoading: logbookLoading,
+    error: logbookError 
+  } = useLogbookQuery(user?.uid);
 
   useEffect(() => {
     if (!isProUser) {
@@ -28,15 +30,7 @@ const LogBook = () => {
     }
   }, [isProUser]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (profile) {
-        setLoading(false);
-      }
-    }, [profile])
-  );
-
-  if (loading.profile || isLoading) {
+  if (loading.profile || logbookLoading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size='large' />
@@ -44,49 +38,57 @@ const LogBook = () => {
     );
   }
 
+  if (logbookError) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Error loading logbook: {logbookError.message}</Text>
+      </View>
+    );
+  }
+
   return (
     <PaperProvider>
-    <ScrollView style={styles.container}>
-    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-      <View>
-        
-      <Portal>
-        <LogbookModal
-          visible={visible}
-          onClose={hideModal}
-          isLoading={loading.action} 
-        />
-      </Portal>
-      
+      <ScrollView style={styles.container}>
+        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+          <View>
+            <Portal>
+              <LogbookModal
+                visible={visible}
+                onClose={hideModal}
+                isLoading={loading.action} 
+              />
+            </Portal>
 
-      <View style={styles.infoBoxWrapper}>
-          <View style={[styles.infoBox, {
-            borderRightColor: '#dddddd',
-            borderRightWidth: 1
-          }]}>
-            {/* CHANGED: Get jump number from profile */}
-            <Text variant='titleLarge'>{profile.jumpNumber || 0}</Text>
-            <Text variant="bodySmall" >Total Base Jumps</Text>
-          </View>
-          <View style={styles.infoBox}>
-            <TouchableHighlight
-              onPress={showModal}
-              underlayColor="#DDDDDD" 
-              style={styles.filterButton}
-              disabled={loading.action}
-            >
-                <FontAwesome name="plus" size={30} color={loading.action ? "#ccc" : "#000"} />
-            </TouchableHighlight>
-          </View>
-      </View>
+            <View style={styles.infoBoxWrapper}>
+              <View style={[styles.infoBox, {
+                borderRightColor: '#dddddd',
+                borderRightWidth: 1
+              }]}>
+                <Text variant='titleLarge'>{profile.jumpNumber || 0}</Text>
+                <Text variant="bodySmall">Total Base Jumps</Text>
+              </View>
+              <View style={styles.infoBox}>
+                <TouchableHighlight
+                  onPress={showModal}
+                  underlayColor="#DDDDDD" 
+                  style={styles.filterButton}
+                  disabled={loading.action}
+                >
+                  <FontAwesome name="plus" size={30} color={loading.action ? "#ccc" : "#000"} />
+                </TouchableHighlight>
+              </View>
+            </View>
 
-      <LogbookJumpCard jumpNumber={profile.jumpNumber || 0}/>
-    </View>
-    </TouchableWithoutFeedback>
-    </ScrollView>
+            <LogbookJumpCard 
+              jumpNumber={profile.jumpNumber || 0}
+              logbookData={logbookData}
+            />
+          </View>
+        </TouchableWithoutFeedback>
+      </ScrollView>
     </PaperProvider>
-  )
-}
+  );
+};
 
 export default LogBook;
 
