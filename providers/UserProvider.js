@@ -36,8 +36,8 @@ import {
 const DEV_MODE = __DEV__;
 
 const REVENUECAT_API_KEYS = {
-    apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
-    google: 'goog_TwvdVGeikOQFmRxsiZkqbWOpChv'
+    apple: process.env.EXPO_PUBLIC_REVENUECAT_APPLE_KEY,
+    google: process.env.EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY
 };
 
 const initialState = {
@@ -133,6 +133,12 @@ export const UserProvider = ({ children }) => {
     const initializeRevenueCat = useCallback(async () => {
         if (DEV_MODE) {
             console.log('🚀 DEV_MODE: Skipping RevenueCat initialization');
+            return;
+        }
+
+        if (!REVENUECAT_API_KEYS.apple || !REVENUECAT_API_KEYS.google) {
+            console.error('❌ RevenueCat API keys not found in environment variables');
+            updateNestedState('subscription', { isReady: true });
             return;
         }
 
