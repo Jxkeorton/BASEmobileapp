@@ -33,7 +33,7 @@ import {
     useSubmitDetailUpdateMutation
 } from '../hooks/useSubmissionQuery';
 
-const DEV_MODE = __DEV__;
+const DEV_MODE = false;
 
 const REVENUECAT_API_KEYS = {
     apple: process.env.EXPO_PUBLIC_REVENUECAT_APPLE_KEY,

@@ -1,13 +1,12 @@
 import { View, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import React, {useState, useEffect} from 'react'
-import { useFocusEffect , router} from 'expo-router';
+import {useState, useEffect} from 'react'
+import {  router} from 'expo-router';
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
 import { useUser } from '../../../providers/UserProvider';
 import { useLogbookQuery } from '../../../hooks/useLogbookQuery';
-import { Portal, PaperProvider, Text, Caption, Title} from 'react-native-paper'
+import { Portal, PaperProvider, Text} from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
 
 const LogBook = () => {
