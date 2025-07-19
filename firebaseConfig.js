@@ -2,30 +2,38 @@ import { getFirestore } from 'firebase/firestore';
 import { initializeApp } from "firebase/app";
 import { getStorage } from 'firebase/storage';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getReactNativePersistence, initializeAuth, } from "firebase/auth";
+import { getReactNativePersistence, initializeAuth } from "firebase/auth";
 import 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC2Y25PYBRR0m6p7ekOmuLoYLLnXiS9mJM",
-  authDomain: "uk-base-map.firebaseapp.com",
-  databaseURL: "https://uk-base-map-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "uk-base-map",
-  storageBucket: "uk-base-map.appspot.com",
-  messagingSenderId: "899524901759",
-  appId: "1:899524901759:web:4d8d337a395ee41b5ef84a"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID
 };
 
+// Validate required environment variables
+const requiredEnvVars = [
+  'EXPO_PUBLIC_FIREBASE_API_KEY',
+  'EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'EXPO_PUBLIC_FIREBASE_PROJECT_ID'
+];
+
+requiredEnvVars.forEach(envVar => {
+  if (!process.env[envVar]) {
+    throw new Error(`Missing required environment variable: ${envVar}`);
+  }
+});
 
 // Initialize Firebase
 const FIREBASE_APP = initializeApp(firebaseConfig);
 const FIREBASE_DB = getFirestore(FIREBASE_APP);
 const FIREBASE_STORAGE = getStorage(FIREBASE_APP);
 const FIREBASE_AUTH = initializeAuth(FIREBASE_APP, {
-  persistence : getReactNativePersistence(AsyncStorage)
+  persistence: getReactNativePersistence(AsyncStorage)
 });
 
 export { FIREBASE_APP, FIREBASE_DB, FIREBASE_STORAGE, FIREBASE_AUTH };
-
-// for google auth at a later date
-// ios : 899524901759-hm1ombkd3uf9osvq5dosb5jfad9gl8ai.apps.googleusercontent.com
-// android : 899524901759-g7hmsmsk749u9fkp3l40il18cg7139uq.apps.googleusercontent.com
