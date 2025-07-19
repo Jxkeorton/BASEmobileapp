@@ -107,10 +107,10 @@ const convertToMeters = (value) => {
         <View style={styles.calloutContainer}>
           <Text style={styles.calloutTitle}>{info.name.toUpperCase()}</Text>
           <Text style={styles.calloutCoordinates}>
-            Rock Drop: {isMetric ? convertToMeters(info.details.rockdrop) : (info.details.rockdrop ? `${info.details.rockdrop} ft` : '?')}
+            Rock Drop: {isMetric ? convertToMeters(info.rock_drop_ft) : (info.rock_drop_ft ? `${info.rock_drop_ft} ft` : '?')}
           </Text>
           <Text style={styles.calloutCoordinates}>
-            Total: {isMetric ? convertToMeters(info.details.total) : (info.details.total ? `${info.details.total} ft` : '?')}
+            Total: {isMetric ? convertToMeters(info.total_height_ft) : (info.total_height_ft ? `${info.total_height_ft} ft` : '?')}
           </Text>
           {Platform.OS === 'ios' && (
             <TouchableOpacity

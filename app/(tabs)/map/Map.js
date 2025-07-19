@@ -1,6 +1,6 @@
 import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Text, TouchableHighlight} from 'react-native'
 import { Switch, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper'
-import React, { useState } from 'react'
+import { useState, useMemo } from 'react'
 import MapView from 'react-native-map-clustering';
 import {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import CustomCallout from '../../../components/CustomCallout';
@@ -9,7 +9,8 @@ import { FontAwesome } from '@expo/vector-icons';
 import ModalContent from '../../../components/ModalContent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUnitSystem } from '../../../context/UnitSystemContext';
-import { useLocationsQuery } from '../../../hooks/useLocationsQuery';
+import { useQuery } from '@tanstack/react-query';
+import { kyInstance } from '../../../services/open-api/kyClient';
 
 const saveEventToStorage = async (event) => {
   try {
@@ -38,9 +39,6 @@ const saveEventToStorage = async (event) => {
 };
 
 export default function Map() {
-  // Use TanStack Query for locations data
-  const { data: eventData = [], isLoading: loadingMap, error } = useLocationsQuery();
-  
   const [searchTerm, setSearchTerm] = useState('');
   const [satelliteActive, setSatelliteActive] = useState(false);
   
@@ -59,40 +57,68 @@ export default function Map() {
 
   const { isMetric } = useUnitSystem();
 
+  // Build API filters based on current search and filters
+  const apiFilters = useMemo(() => {
+    const filters = {};
+    
+    if (searchTerm.trim()) {
+      filters.search = searchTerm.trim();
+    }
+    
+    // Convert height filters to API format (assuming your API uses total_height_ft)
+    if (minRockDrop !== '') {
+      const minHeightFt = isMetric ? parseFloat(minRockDrop) / 0.3048 : parseFloat(minRockDrop);
+      filters.min_height = Math.round(minHeightFt);
+    }
+    
+    if (maxRockDrop !== '') {
+      const maxHeightFt = isMetric ? parseFloat(maxRockDrop) / 0.3048 : parseFloat(maxRockDrop);
+      filters.max_height = Math.round(maxHeightFt);
+    }
+    
+    return filters;
+  }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
+
+  // TanStack Query 
+  const { data: locationsResponse, isLoading: loadingMap, error } = useQuery({
+    queryKey: ['locations', apiFilters],
+    queryFn: async () => {
+      const searchParams = new URLSearchParams();
+      Object.entries(apiFilters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          searchParams.append(key, value);
+        }
+      });
+      
+      const endpoint = searchParams.toString() 
+        ? `locations?${searchParams.toString()}` 
+        : 'locations';
+        
+      const response = await kyInstance.get(endpoint).json();
+      return response.data || response; 
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    retry: 3,
+  });
+  
   const filterEventsByRockDrop = (event) => {
-    const rockdropString = event.details.rockdrop;
-  
-    if (unknownRockdrop && (rockdropString === '' || rockdropString.includes('?'))) {
-      return false;
+    if (unknownRockdrop) {
+      const hasUnknownHeight = !event.total_height_ft || 
+                               event.total_height_ft === 0 || 
+                               ( event.rock_drop_ft && 
+                                (event.rock_drop_ft === '' || event.rock_drop_ft.includes('?')));
+      return !hasUnknownHeight;
     }
-  
-    const numericRockdrop = parseFloat(rockdropString.match(/\d+/));
-  
-    if (isMetric) {
-      const numericRockdropMeters = numericRockdrop * 0.3048;
-      if (minRockDrop !== '' && numericRockdropMeters < parseFloat(minRockDrop)) {
-        return false;
-      }
-      if (maxRockDrop !== '' && numericRockdropMeters > parseFloat(maxRockDrop)) {
-        return false;
-      }
-    } else {
-      if (minRockDrop !== '' && numericRockdrop < parseFloat(minRockDrop)) {
-        return false;
-      }
-      if (maxRockDrop !== '' && numericRockdrop > parseFloat(maxRockDrop)) {
-        return false;
-      }
-    }
-  
+    
     return true;
   };
 
   // Handle loading and error states
   if (error) {
+    console.error('Locations API Error:', error);
     return (
       <View style={styles.loadingContainer}>
-        <Text>Error loading locations: {error.message}</Text>
+        <Text style={styles.errorText}>Error loading locations: {error.message}</Text>
       </View>
     );
   }
@@ -118,6 +144,7 @@ export default function Map() {
           {loadingMap ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#00ABF0" />
+              <Text style={styles.loadingText}>Loading locations...</Text>
             </View>
           ) : (
             <MapView 
@@ -134,24 +161,30 @@ export default function Map() {
               clusteringEnabled={true}
               provider={PROVIDER_GOOGLE}
             >
-              {eventData
-                .filter((event) =>
-                  event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  event.country.toLowerCase().includes(searchTerm.toLowerCase())
-                )
+              {locationsResponse
                 .filter(event => filterEventsByRockDrop(event))
-                .map((event, index) => (
-                  <Marker
-                    key={index}
-                    coordinate={{ latitude: event.coordinates[0], longitude: event.coordinates[1] }}
-                    title={event.name || 'Unknown Name'}
-                    description={event.openedBy && event.openedBy.name ? event.openedBy.name : ''}
-                    pinColor='red'
-                    onPress={() => saveEventToStorage(event)}
-                  >
-                    <CustomCallout info={event} />
-                  </Marker>
-                ))}
+                .map((event, index) => {
+                  const latitude = event.latitude;
+                  const longitude = event.longitude;
+                  
+                  if (!latitude || !longitude) {
+                    console.warn('Invalid coordinates for event:', event);
+                    return null;
+                  }
+                  
+                  return (
+                    <Marker
+                      key={event.id || index}
+                      coordinate={{ latitude, longitude }}
+                      title={event.name || 'Unknown Name'}
+                      description={event.opened_by_name || event.country || ''}
+                      pinColor='red'
+                      onPress={() => saveEventToStorage(event)}
+                    >
+                      <CustomCallout info={event} />
+                    </Marker>
+                  );
+                })}
             </MapView>
           )}
           
@@ -211,6 +244,15 @@ export default function Map() {
               <Text style={styles.switchLabel}>Metric</Text>
             </View>
           </View>
+          
+          {/* Show results count */}
+          {!loadingMap && (
+            <View style={styles.resultsContainer}>
+              <Text style={styles.resultsText}>
+                {locationsResponse.length} location{locationsResponse.length !== 1 ? 's' : ''} found
+              </Text>
+            </View>
+          )}
         </View>
       </TouchableWithoutFeedback>
     </PaperProvider>
@@ -359,5 +401,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-})
-
+  loadingText: {
+    marginTop: 10,
+    color: '#666',
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginHorizontal: 20,
+  },
+  resultsContainer: {
+    position: 'absolute',
+    bottom: 50,
+    alignSelf: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  resultsText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+});
