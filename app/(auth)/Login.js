@@ -1,10 +1,11 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Image, Alert, TextInput } from 'react-native';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { useAuth } from '../../providers/AuthProvider';
 import { kyInstance } from '../../services/open-api/kyClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -13,24 +14,19 @@ const Login = () => {
 
     const { updateUser } = useAuth();
 
-    const handleSignIn = async () => {
-        if (!email || !password) {
-            Alert.alert('Error', 'Please fill in all fields');
-            return;
-        }
-
-        setLoading(true);
-        try {
-            // Direct API call using Ky
-            const response = await kyInstance.post('auth/signin', {
+    const signInMutation = useMutation({
+        mutationFn: async ({ email, password }) => {
+            return kyInstance.post('auth/signin', {
                 json: { email, password }
             }).json();
-
+        },
+        onSuccess: async (response) => {
             if (response.success) {
-                // Store token and user data
+                // Store token and user data using simple storage
                 await AsyncStorage.setItem('auth_token', response.data.session.access_token);
                 await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
                 
+                console.log('user', response)
                 // Update auth context
                 updateUser(response.data.user);
                 
@@ -39,7 +35,8 @@ const Login = () => {
             } else {
                 Alert.alert('Login Error', response.error || 'Invalid email or password. Please try again.');
             }
-        } catch (error) {
+        },
+        onError: (error) => {
             console.error('Sign in error:', error);
             
             // Handle different error types
@@ -50,9 +47,16 @@ const Login = () => {
             } else {
                 Alert.alert('Network Error', 'Please check your connection and try again.');
             }
-        } finally {
-            setLoading(false);
         }
+    });
+
+    const handleSignIn = async () => {
+        if (!email || !password) {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+
+        signInMutation.mutate({ email, password });
     };
 
     return (

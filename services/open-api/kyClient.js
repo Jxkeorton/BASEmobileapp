@@ -1,4 +1,5 @@
 import ky from 'ky';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Create Ky instance with base configuration
 export const kyInstance = ky.create({

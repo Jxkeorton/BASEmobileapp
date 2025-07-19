@@ -14,8 +14,10 @@ export default function Layout(){
                 <PaperProvider>
                     <UnitSystemProvider>
                         <AuthProvider>
+                            <UserProvider>
                                 <Slot/>
                                 <Toast/>
+                            </UserProvider>
                         </AuthProvider>
                     </UnitSystemProvider>
                 </PaperProvider>
