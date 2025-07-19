@@ -14,10 +14,13 @@ export const kyInstance = ky.create({
     },
     hooks: {
         beforeRequest: [
-            (request) => {
-                console.log(`🌐 API Request: ${request.method} ${request.url}`);
+        async (request) => {
+            const token = await AsyncStorage.getItem('auth_token');
+            if (token) {
+                request.headers.set('Authorization', `Bearer ${token}`);
             }
-        ],
+        }
+    ]
     }
 });
 

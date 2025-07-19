@@ -33,7 +33,7 @@ import {
     useSubmitDetailUpdateMutation
 } from '../hooks/useSubmissionQuery';
 
-const DEV_MODE = __DEV__;
+const DEV_MODE = false;
 
 const REVENUECAT_API_KEYS = {
     apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
@@ -500,9 +500,7 @@ export const UserProvider = ({ children }) => {
         resetPassword: resetPasswordMutation.mutateAsync,
         deleteAccount: deleteAccountMutation.mutateAsync,
         
-        // ... rest of the value object remains the same ...
         
-        // Legacy compatibility
         user: {
             ...state.user,
             pro: state.subscription.isPro,

@@ -4,6 +4,7 @@ import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { UserProvider } from "../providers/UserProvider";
 import { QueryProvider } from "../providers/QueryProvider";
+import { AuthProvider } from "../providers/AuthProvider";
 import Toast from 'react-native-toast-message';
 
 export default function Layout(){
@@ -12,10 +13,10 @@ export default function Layout(){
             <QueryProvider>
                 <PaperProvider>
                     <UnitSystemProvider>
-                        <UserProvider>
-                            <Slot/>
-                            <Toast/>
-                        </UserProvider>
+                        <AuthProvider>
+                                <Slot/>
+                                <Toast/>
+                        </AuthProvider>
                     </UnitSystemProvider>
                 </PaperProvider>
             </QueryProvider>
