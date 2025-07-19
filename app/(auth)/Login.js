@@ -14,9 +14,14 @@ const Login = () => {
 
     const { updateUser } = useAuth();
 
+    console.log('Debug - API Key:', process.env.EXPO_PUBLIC_API_KEY);
+    console.log('Debug - API Base URL:', process.env.EXPO_PUBLIC_API_BASE_URL);
+
+    console.log(kyInstance)
+
     const signInMutation = useMutation({
         mutationFn: async ({ email, password }) => {
-            return kyInstance.post('auth/signin', {
+            return kyInstance.post('signin', {
                 json: { email, password }
             }).json();
         },

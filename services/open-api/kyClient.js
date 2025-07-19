@@ -17,6 +17,9 @@ export const kyInstance = ky.create({
         beforeRequest: [
         async (request) => {
             const token = await AsyncStorage.getItem('auth_token');
+            for (const [key, value] of request.headers.entries()) {
+                console.log(`    ${key}: ${value}`);
+            }
             if (token) {
                 request.headers.set('Authorization', `Bearer ${token}`);
             }
