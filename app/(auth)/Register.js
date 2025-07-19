@@ -1,18 +1,120 @@
-import { Button, ActivityIndicator, Checkbox , Text} from 'react-native-paper'
+import { Button, ActivityIndicator, Checkbox, Text } from 'react-native-paper'
 import { useState } from 'react';
 import { router } from 'expo-router'
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Image } from 'react-native';
-import { useUser } from '../../providers/UserProvider';
+import { useAuth } from '../../providers/AuthProvider';
+import { kyInstance } from '../../services/open-api/kyClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMutation } from '@tanstack/react-query';
 
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [displayName, setDisplayName] = useState('');
-    const [username, setUsername] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [name, setDisplayName] = useState('');
     const [termsChecked, setTermsChecked] = useState(false);
 
-    const { signUp } = useUser();
+    const { updateUser } = useAuth();
+
+    const signUpMutation = useMutation({
+        mutationFn: async ({ email, password, name }) => {
+            return kyInstance.post('signup', {
+                json: { email, password, name }
+            }).json();
+        },
+        onSuccess: async (response) => {
+            if (response.success) {
+                // Store token and user data if provided
+                if (response.data.session) {
+                    await AsyncStorage.setItem('auth_token', response.data.session.access_token);
+                    await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
+                }
+                
+                console.log('Registration successful:', response);
+                
+                // Update auth context
+                updateUser(response.data.user);
+                
+                // Show success message
+                Alert.alert(
+                    'Registration Successful', 
+                    response.data.message || 'Account created successfully!',
+                    [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                // Navigate to main app or login based on email confirmation requirement
+                                if (response.data.session) {
+                                    router.replace("/(tabs)/map");
+                                } else {
+                                    router.replace("/(auth)/Login");
+                                }
+                            }
+                        }
+                    ]
+                );
+            } else {
+                Alert.alert('Registration Error', response.error || 'Registration failed. Please try again.');
+            }
+        },
+        onError: (error) => {
+            console.error('Sign up error:', error);
+            
+            // Handle different error types
+            if (error.response?.status === 400) {
+                // Parse the error response for specific validation errors
+                error.response.json().then(errorData => {
+                    if (errorData.details) {
+                        // Handle Zod validation errors
+                        const validationErrors = errorData.details;
+                        let errorMessage = 'Please check your input:\n';
+                        validationErrors.forEach(err => {
+                            errorMessage += `• ${err.message}\n`;
+                        });
+                        Alert.alert('Invalid Input', errorMessage);
+                    } else {
+                        Alert.alert('Registration Error', errorData.error || 'Please check your input and try again.');
+                    }
+                }).catch(() => {
+                    Alert.alert('Registration Error', 'Please check your input and try again.');
+                });
+            } else if (error.response?.status === 409) {
+                Alert.alert('Registration Error', 'Email already exists. Please use a different email or try logging in.');
+            } else if (error.response?.status === 403) {
+                Alert.alert('API Error', 'Invalid API key. Please contact support.');
+            } else {
+                Alert.alert('Network Error', 'Please check your connection and try again.');
+            }
+        }
+    });
+
+    const handleSignUp = async () => {
+        // Validation
+        if (!email || !password || !name) {
+            Alert.alert('Error', 'Please fill in all required fields');
+            return;
+        }
+
+        if (!termsChecked) {
+            Alert.alert('Terms and Conditions', 'You must agree to the Terms and Conditions to register.');
+            return;
+        }
+
+        // Basic email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            Alert.alert('Invalid Email', 'Please enter a valid email address');
+            return;
+        }
+
+        // Basic password validation
+        if (password.length < 6) {
+            Alert.alert('Invalid Password', 'Password must be at least 6 characters');
+            return;
+        }
+
+        // Note: Username will need to be set later via profile update
+        signUpMutation.mutate({ email, password, name: name });
+    };
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -25,26 +127,20 @@ const Register = () => {
                 />
             </View>
               <TextInput
-                value={displayName}
+                value={name}
                 style={styles.textInput}
                 placeholder='Name'
-                autoCapitalize='none'
-                onChangeText={(text) => setDisplayName(text)}
-              ></TextInput>
-              <TextInput
-                value={username}
-                style={styles.textInput}
-                placeholder='Username'
-                autoCapitalize='none'
-                onChangeText={(text) => setUsername(text)}
-              ></TextInput>
+                autoCapitalize='words'
+                onChangeText={(text) => setDisplayName(text.trim())}
+              />
               <TextInput
                 value={email}
                 style={styles.textInput}
                 placeholder='Email'
                 autoCapitalize='none'
-                onChangeText={(text) => setEmail(text)}
-              ></TextInput>
+                keyboardType='email-address'
+                onChangeText={(text) => setEmail(text.trim().toLowerCase())}
+              />
               <TextInput
                 secureTextEntry={true}
                 value={password}
@@ -52,7 +148,7 @@ const Register = () => {
                 placeholder='Password'
                 autoCapitalize='none'
                 onChangeText={(text) => setPassword(text)}
-              ></TextInput>
+              />
     
               <View style={styles.checkboxContainer}>
                 <View style={styles.checkbox}>
@@ -67,7 +163,7 @@ const Register = () => {
                 </Button>
               </View>
     
-              {loading ? (
+              {signUpMutation.isPending ? (
                 <ActivityIndicator size="small" color="#007AFF" />
               ) : (
                 <>
@@ -75,39 +171,16 @@ const Register = () => {
                     title="Register"
                     mode="contained"
                     style={styles.registerButton}
-                    onPress={async () => {
-                      if (!termsChecked) {
-                        Alert.alert('Terms and Conditions', 'You must agree to the Terms and Conditions to register.');
-                        return;
-                      }
-                      setLoading(true);
-                      const resp = await signUp(email, password, displayName, username);
-                      if (resp?.success) {
-                        router.replace("/(tabs)/profile/Profile");
-                      } else {
-                        console.log(resp.error);
-                        const errorCode = resp.error?.code;
-                        if (errorCode === 'auth/email-already-in-use') {
-                          Alert.alert('Invalid Email', 'Email already exists');
-                        } else if (errorCode === 'auth/invalid-display-name') {
-                          Alert.alert('Invalid Name', 'Please enter a username');
-                        } else if (errorCode === 'auth/invalid-email') {
-                          Alert.alert('Invalid Email', 'Please enter a valid email');
-                        } else if (errorCode === 'auth/invalid-password') {
-                          Alert.alert('Invalid Password', 'Must be at least 6 characters');
-                        } else if (errorCode === 'auth/username-taken') {
-                          Alert.alert('Username Taken', 'The username you entered is already in use. Please choose a different username.');
-                        } else {
-                          Alert.alert('Registration Error', 'Please try again.');
-                        }
-                      }
-                      setLoading(false);
-                    }}
+                    onPress={handleSignUp}
                   >
                     Register
                   </Button>
     
-                  <Button onPress={() => router.replace("/Login")} textColor='#007AFF' style={styles.button}> 
+                  <Button 
+                    onPress={() => router.replace("/(auth)/Login")} 
+                    textColor='#007AFF' 
+                    style={styles.button}
+                  > 
                     Already have an account?
                   </Button>
                 </>
@@ -125,61 +198,61 @@ const Register = () => {
             </KeyboardAvoidingView>
           </View>
         </TouchableWithoutFeedback>
-      );
-    };
+    );
+};
     
-    const styles = StyleSheet.create({
-      container: {
+const styles = StyleSheet.create({
+    container: {
         flex: 1,
         justifyContent: 'center',
         backgroundColor: 'black',
         padding: 20,
-      },
-      imageContainer: {
+    },
+    imageContainer: {
         alignItems: 'center', 
         justifyContent: 'center', 
         marginBottom: 20,
-      },
-      image: {
+    },
+    image: {
         width: 100,
         height: 100,
-      },
-      textInput: {
+    },
+    textInput: {
         marginVertical: 10,
         height: 50,
         backgroundColor: 'white',
         borderRadius: 8,
         padding: 10,
-      },
-      registerButton: {
+    },
+    registerButton: {
         backgroundColor: '#007AFF', 
         marginVertical: 10,
-      },
-      button: {
+    },
+    button: {
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: '#007AFF',
         marginVertical: 10,
-      },
-      privacyPolicyLink: {
+    },
+    privacyPolicyLink: {
         textAlign: 'center',
         color: '#00ABF0',
         textDecorationLine: 'underline',
         marginTop: 20,
-      },
-      checkboxContainer: {
+    },
+    checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 10,
-      },
-      checkbox: {
+    },
+    checkbox: {
         borderColor: 'white', 
         borderWidth: 2,
         borderRadius: 4, 
         padding: 1,
         marginRight: 10, 
-      },
-      packageText: {
+    },
+    packageText: {
         fontSize: 14,
         marginBottom: 5,
         color: 'white',
@@ -187,7 +260,7 @@ const Register = () => {
         textShadowColor: 'black',
         textShadowOffset: { width: -1, height: 1 },
         textShadowRadius: 2,
-      },
-    });
+    },
+});
     
-    export default Register;
+export default Register;
