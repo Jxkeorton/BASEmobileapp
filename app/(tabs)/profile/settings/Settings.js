@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
-import { useUser } from '../../../../providers/UserProvider';
+import { useAuth } from '../../../../providers/AuthProvider';
 import { router } from 'expo-router';
 
 const Settings = () => {
 
-  const { signOut } = useUser();
+  const { signOut } = useAuth();
 
   // Define list items
   const settingsItems = [
@@ -34,6 +34,7 @@ const Settings = () => {
         break;
       case 'logout':
         signOut();
+        router.replace('/(auth)/Login')
         break;
       case 'deleteAccount':
         router.navigate('/profile/settings/DeleteAccount')
