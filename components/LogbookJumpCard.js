@@ -131,3 +131,97 @@ const LogbookJumpCard = ({ jumpNumber }) => {
         </ScrollView>
     );
 };
+
+const styles = StyleSheet.create({
+    container: {
+        flexGrow: 1,
+        paddingBottom: 20,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: 50,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#666',
+    },
+    searchBox: {
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: '#f6f6f6',
+    },
+    textInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: '#ddd',
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: '#333',
+    },
+    jumpCard: {
+        marginHorizontal: 20,
+        marginVertical: 8,
+        borderRadius: 12,
+        overflow: 'hidden',
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    backgroundImage: {
+        height: 120,
+        justifyContent: 'flex-end',
+    },
+    blackBackground: {
+        backgroundColor: '#333',
+    },
+    darkOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    },
+    jumpCardContent: {
+        padding: 15,
+        zIndex: 1,
+    },
+    contentText: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#fff',
+        marginBottom: 4,
+    },
+    locationText: {
+        fontSize: 16,
+        color: '#fff',
+        opacity: 0.9,
+    },
+    locationTextWhite: {
+        fontSize: 16,
+        color: '#fff',
+    },
+    emptyMessage: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+        paddingTop: 60,
+    },
+    emptyMessageText: {
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+        lineHeight: 24,
+    },
+});
+
+export default LogbookJumpCard;

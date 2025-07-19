@@ -7,10 +7,9 @@ import {
     StyleSheet, 
     ScrollView, 
     TouchableWithoutFeedback, 
-    Keyboard,
-    Alert
+    Keyboard
 } from 'react-native';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { useUser } from '../providers/UserProvider';
 import { ActivityIndicator } from 'react-native-paper';
