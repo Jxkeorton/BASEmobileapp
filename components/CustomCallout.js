@@ -7,8 +7,11 @@ import { useUnitSystem } from '../context/UnitSystemContext';
 export default function CustomCallout({info}) {
   const { isMetric } = useUnitSystem();
 
+  console.log('Location info',info)
+
   // function to direct to the locations details page
   const onDetailsPress = () => {
+    console.log(info.id)
     router.push(`/(tabs)/map/${info.id}`)
   }
 

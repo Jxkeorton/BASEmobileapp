@@ -112,12 +112,10 @@ export const UserProvider = ({ children }) => {
 
     // Helper functions
     const updateState = useCallback((updates) => {
-        console.log('🔄 UserProvider state update:', updates);
         setState(prevState => ({ ...prevState, ...updates }));
     }, []);
 
     const updateNestedState = useCallback((key, updates) => {
-        console.log(`🔄 UserProvider ${key} update:`, updates);
         setState(prevState => ({
             ...prevState,
             [key]: { ...prevState[key], ...updates }
@@ -127,7 +125,6 @@ export const UserProvider = ({ children }) => {
     // Initialize RevenueCat
     const initializeRevenueCat = useCallback(async () => {
         if (DEV_MODE) {
-            console.log('🚀 DEV_MODE: Skipping RevenueCat initialization');
             return;
         }
 
@@ -176,8 +173,6 @@ export const UserProvider = ({ children }) => {
 
     // Auth listener - This is the critical part
     useEffect(() => {
-        console.log('🔐 Setting up auth listener, DEV_MODE:', DEV_MODE);
-        
         if (DEV_MODE) {
             console.log('🚀 DEV_MODE: Bypassing Firebase auth');
             updateState({ initialized: true });
