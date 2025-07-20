@@ -26,18 +26,10 @@ const Index = () => {
     }
 
     const inAuthGroup = segments[0] === "(auth)";
-    console.log('🚦 Navigation Decision:', { 
-      isAuthenticated, 
-      inAuthGroup, 
-      segments,
-      user: user?.email || 'none'
-    });
 
     if (!isAuthenticated && !inAuthGroup) {
-      console.log('➡️ Redirecting to login');
       router.replace("/(auth)/Login");
     } else if (isAuthenticated) {
-      console.log('➡️ Redirecting to tabs');
       router.replace("/(tabs)/map");
     }
   }, [segments, navigationState?.key, isAuthenticated, loading, user]);

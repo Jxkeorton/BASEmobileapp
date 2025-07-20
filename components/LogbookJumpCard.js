@@ -1,22 +1,36 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, ScrollView, ImageBackground, TouchableOpacity, TextInput} from 'react-native';
-import { useFocusEffect, router } from 'expo-router';
+import { useState, useMemo } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput} from 'react-native';
+import {  router } from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import Toast from 'react-native-toast-message';
-import { useUser } from '../providers/UserProvider';
-import { useLogbookQuery } from '../hooks/useLogbookQuery';
+import { useQuery } from '@tanstack/react-query';
+import { kyInstance } from '../services/open-api/kyClient';
+import { useAuth } from '../providers/AuthProvider';
 
 const LogbookJumpCard = ({ jumpNumber }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const { user } = useUser();
+    const { user } = useAuth();
     
-    // Use TanStack Query for logbook data
+    // TanStack Query for logbook data
     const { 
-        data: jumps = [], 
+        data: logbookResponse, 
         isLoading,
         error 
-    } = useLogbookQuery(user?.uid);
+    } = useQuery({
+        queryKey: ['logbook', user?.id],
+        queryFn: async () => {
+            console.log('Logbook query running')
+            const response = await kyInstance.get('logbook').json();
+            return response;
+        },
+        enabled: !!user?.id,
+        staleTime: 2 * 60 * 1000, // 2 minutes
+        retry: 3,
+    });
+
+
+    const jumps = logbookResponse?.success ? logbookResponse.data.entries : [];
+    console.log('logbookData', jumps)
+    console.log('Response', logbookResponse)
 
     // Memoized processed jumps data
     const processedJumps = useMemo(() => {
@@ -37,7 +51,7 @@ const LogbookJumpCard = ({ jumpNumber }) => {
         const searchLower = searchTerm.toLowerCase();
         return processedJumps.filter((jump) => {
             const jumpNumberMatch = jump.jumpNumber?.toString().includes(searchTerm);
-            const locationMatch = jump.location?.toLowerCase().includes(searchLower);
+            const locationMatch = jump.location_name?.toLowerCase().includes(searchLower);
             return jumpNumberMatch || locationMatch;
         });
     }, [processedJumps, searchTerm]);
@@ -78,7 +92,6 @@ const LogbookJumpCard = ({ jumpNumber }) => {
                         onChangeText={text => setSearchTerm(text)}
                         value={searchTerm}
                     />
-                    <Ionicons name='ios-search' size={20} color='#666' />
                 </View>
             </View>
 
@@ -89,25 +102,12 @@ const LogbookJumpCard = ({ jumpNumber }) => {
                         style={styles.jumpCard} 
                         onPress={() => onCardPress(index, jump)}
                     >
-                        {jump.imageURLs && jump.imageURLs.length > 0 ? (
-                            <ImageBackground 
-                                source={{ uri: jump.imageURLs[0] }} 
-                                style={styles.backgroundImage}
-                            >
-                                <View style={styles.darkOverlay}></View>
-                                <View style={styles.jumpCardContent}>
-                                    <Text style={styles.contentText}>{jump.jumpNumber}</Text>
-                                    <Text style={styles.locationText}>{jump.location}</Text>
-                                </View>
-                            </ImageBackground>
-                        ) : (
-                            <View style={[styles.backgroundImage, styles.blackBackground]}>
-                                <View style={styles.jumpCardContent}>
-                                    <Text style={styles.contentText}>{jump.jumpNumber}</Text>
-                                    <Text style={styles.locationTextWhite}>{jump.location}</Text>
-                                </View>
+                        <View style={[styles.backgroundImage, styles.blackBackground]}>
+                            <View style={styles.jumpCardContent}>
+                                <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                                <Text style={styles.locationTextWhite}>{jump.location_name}</Text>
                             </View>
-                        )}
+                        </View>
                     </TouchableOpacity>
                 ))
             ) : (
@@ -186,10 +186,6 @@ const styles = StyleSheet.create({
     blackBackground: {
         backgroundColor: '#333',
     },
-    darkOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    },
     jumpCardContent: {
         padding: 15,
         zIndex: 1,
@@ -199,11 +195,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#fff',
         marginBottom: 4,
-    },
-    locationText: {
-        fontSize: 16,
-        color: '#fff',
-        opacity: 0.9,
     },
     locationTextWhite: {
         fontSize: 16,
