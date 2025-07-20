@@ -30,7 +30,7 @@ function Location() {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  // Get location data from TanStack Query cache (should be cached from map.js)
+  // TanStack Query cache (should be cached from map.js)
   const locationId = parseInt(id);
   const { 
     data: locationsResponse, 
