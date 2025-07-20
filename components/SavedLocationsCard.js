@@ -1,8 +1,6 @@
-import React from 'react';
 import { Button, Card, Text as Text2 } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
 import { router } from 'expo-router';
-import { useUser } from '../providers/UserProvider';
 
 // unit state 
 import { useUnitSystem } from '../context/UnitSystemContext';
@@ -10,16 +8,9 @@ import { useUnitSystem } from '../context/UnitSystemContext';
 const SavedLocationsCard = ({ data, onDelete }) => {
 
   const { isMetric } = useUnitSystem();
-
-  const { isProUser } = useUser();
-
   // function to direct to the locations details page
    const onDetailsPress = (itemId) => {
-    if (isProUser) {
       router.navigate(`/(tabs)/map/${itemId}`)
-    } else {
-      router.navigate('/SubscriptionsPage')
-    }
    };
 
     // Function to convert feet to meters when isMetric is true
