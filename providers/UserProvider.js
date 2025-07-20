@@ -35,11 +35,6 @@ import {
 
 const DEV_MODE = false;
 
-const REVENUECAT_API_KEYS = {
-    apple: 'appl_oLqVDrPIayWzOFHVqVjutudHSZV',
-    google: 'goog_TwvdVGeikOQFmRxsiZkqbWOpChv'
-};
-
 const initialState = {
     isLoggedIn: false,
     initialized: false,

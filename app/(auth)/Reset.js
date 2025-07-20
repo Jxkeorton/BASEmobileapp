@@ -1,7 +1,6 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, Image } from 'react-native';
-import React, {useState} from 'react';
+import {useState} from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
-import { useUser } from '../../providers/UserProvider';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
@@ -9,7 +8,8 @@ const Reset = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { resetPassword } = useUser();
+    // TODO: replace reset password function with new supabase method
+    const resetPassword = () => {}
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
