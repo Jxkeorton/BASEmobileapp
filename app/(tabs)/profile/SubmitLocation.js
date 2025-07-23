@@ -1,12 +1,11 @@
-import React, { useState } from "react";
-import { View, TextInput,Text, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
-import { Switch, Portal, Modal, PaperProvider, ActivityIndicator } from "react-native-paper";
-import * as ImagePicker from 'expo-image-picker';
+import { useState } from "react";
+import { View, TextInput, Text, StyleSheet, TouchableWithoutFeedback, Keyboard, KeyboardAvoidingView, ScrollView, TouchableOpacity } from "react-native";
+import { Switch, PaperProvider, ActivityIndicator } from "react-native-paper";
 import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
-import { useUser } from "../../../providers/UserProvider";
-
-import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { kyInstance } from "../../../services/open-api/kyClient";
+import { useAuth } from "../../../providers/AuthProvider";
 
 const SubmitLocation = () => {
     const [exitName, setExitName] = useState('');
@@ -20,219 +19,333 @@ const SubmitLocation = () => {
     const [videoLink, setVideoLink] = useState('');
     const [openedBy, setOpenedBy] = useState('');
     const [openedDate, setOpenedDate] = useState('');
-    const [images, setImage] = useState([]);
-    const [selectedUnit, setSelectedUnit] = useState('Meters'); // Default to meters
+    const [country, setCountry] = useState('');
+    const [selectedUnit, setSelectedUnit] = useState('Meters');
 
-    const [visible, setVisible] = useState(false);
-    const [permission, requestPermission] = ImagePicker.useCameraPermissions();
+    const { isAuthenticated } = useAuth();
+    const queryClient = useQueryClient();
 
-    const [imageLoading, setImageLoading] = useState(false);
-    const [loading, setLoading] = useState(false);
+    // TODO: add user to submissions
 
-    const showModal = () => setVisible(true);
-    const hideModal = () => setVisible(false);
-    const containerStyle = {backgroundColor: 'white', padding: 20};
-    const { submitLocation, loading: userLoading } = useUser();
+    // Submit location mutation
+    const submitLocationMutation = useMutation({
+        mutationFn: async (locationData) => {
+            const response = await kyInstance.post('locations/submissions', {
+                json: locationData
+            }).json();
+            return response;
+        },
+        onSuccess: (response) => {
+            if (response.success) {
+                router.replace('/(tabs)/profile/Profile');
+                Toast.show({
+                    type: 'success',
+                    text1: 'Successfully sent submission',
+                    text2: 'Your submission is under review',
+                    position: 'top',
+                });
 
-    const formData = {
-      exitName, 
-      rockDrop,
-      total,
-      anchor,
-      access,
-      notes,
-      coordinates,
-      cliffAspect,
-      videoLink,
-      openedBy,
-      openedDate,
-      images,
-      selectedUnit,
-    };
+                // Clear form
+                clearForm();
+                
+                // Optionally invalidate related queries
+                queryClient.invalidateQueries({ queryKey: ['submissions'] });
+            } else {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error trying to send submission',
+                    text2: response.error || 'Unknown error occurred',
+                    position: 'top',
+                });
+            }
+        },
+        onError: (error) => {
+            console.error('Submit location error:', error);
+            
+            let errorMessage = 'Failed to submit location';
+            let errorDetails = '';
 
-    // when form submitted
-    const handleSubmit = async () => {
-      setLoading(true);
-      try {
-        const result = await submitLocation(formData);
-        if (result.success) {
-          router.replace('/(tabs)/profile/Profile')
-          Toast.show({
-            type: 'success',
-            text1: 'Successfully sent submission',
-            position: 'top',
-          });
-        } else {
-          Toast.show({
-            type: 'error',
-            text1: 'Error trying to send submission',
-            text2: result.error,
-            position: 'top',
-          });
-        }
-      } catch (error) {
-        Toast.show({
-          type: 'error',
-          text1: 'Error trying to send submission',
-          position: 'top',
-        });
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+            // Handle different types of errors
+            if (error.response) {
+                if (error.response.status === 400 && error.response.data?.validation) {
+                    errorMessage = 'Validation Error';
+                    errorDetails = error.response.data.validation.map(err => err.message).join(', ');
+                } else if (error.response.status === 429) {
+                    errorMessage = 'Submission Limit Reached';
+                    errorDetails = error.response.data?.error || 'Too many submissions today';
+                } else if (error.response.data?.error) {
+                    errorMessage = 'Submission Failed';
+                    errorDetails = error.response.data.error;
+                }
+            }
 
-    const uploadImage = async () => {
-        if (permission?.status !== ImagePicker.PermissionStatus.GRANTED) {
-            requestPermission();
-            showModal();
-        } else {
-            showModal();
-        }
-    };
-
-    const pickImage = async () => {
-        setImageLoading(true);
-        try {
-        let result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: false,
-          quality: 1,
-          selectionLimit: 4,
-          allowsMultipleSelection: true,
-        });
-
-        if (!result.canceled) {
-          const newImages = [];
-          for (const asset of result.assets) {
-            const newImage = await manipulateAsync(asset.uri, [], {
-              compress: 0.1,
-              format: SaveFormat.PNG,
+            Toast.show({
+                type: 'error',
+                text1: errorMessage,
+                text2: errorDetails,
+                position: 'top',
             });
-            newImages.push(newImage.uri);
-          }
-          hideModal();
-          setImage(newImages);
         }
-      } catch (e) {
-        Toast.show({
-          type: 'error',
-          text1: 'Error uploading image',
-          position: 'top',
-        });
-      } finally {
-        setImageLoading(false);
-      }
+    });
+
+    const clearForm = () => {
+        setExitName('');
+        setRockDrop('');
+        setTotal('');
+        setAnchor('');
+        setAccess('');
+        setNotes('');
+        setCoordinates('');
+        setCliffAspect('');
+        setVideoLink('');
+        setOpenedBy('');
+        setOpenedDate('');
+        setCountry('');
     };
 
-    const takePhoto = async () => {
-        setImageLoading(true);
+    // Parse coordinates string into latitude and longitude
+    const parseCoordinates = (coordsString) => {
+        if (!coordsString) return null;
+        
+        // Handle various coordinate formats
+        const coords = coordsString.replace(/[^\d.,-]/g, '').split(',');
+        if (coords.length !== 2) return null;
+        
+        const lat = parseFloat(coords[0].trim());
+        const lng = parseFloat(coords[1].trim());
+        
+        if (isNaN(lat) || isNaN(lng)) return null;
+        if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+        
+        return { latitude: lat, longitude: lng };
+    };
+
+    // Convert height to feet (API expects feet)
+    const convertToFeet = (value, unit) => {
+        if (!value || isNaN(parseFloat(value))) return null;
+        const numValue = parseFloat(value);
+        return unit === 'Meters' ? Math.round(numValue * 3.28084) : Math.round(numValue);
+    };
+
+    const handleSubmit = async () => {
+        if (!isAuthenticated) {
+            Toast.show({
+                type: 'error',
+                text1: 'Authentication required',
+                text2: 'Please log in to submit a location',
+                position: 'top',
+            });
+            return;
+        }
+
+        // Validation
+        if (!exitName.trim()) {
+            Toast.show({
+                type: 'error',
+                text1: 'Exit name is required',
+                position: 'top',
+            });
+            return;
+        }
+
+        if (!coordinates.trim()) {
+            Toast.show({
+                type: 'error',
+                text1: 'Coordinates are required',
+                position: 'top',
+            });
+            return;
+        }
+
+        const parsedCoords = parseCoordinates(coordinates);
+        if (!parsedCoords) {
+            Toast.show({
+                type: 'error',
+                text1: 'Invalid coordinates',
+                text2: 'Please use format: latitude, longitude (e.g., 60.140582, -2.111822)',
+                position: 'top',
+            });
+            return;
+        }
+
+        if (!rockDrop.trim()) {
+            Toast.show({
+                type: 'error',
+                text1: 'Rock drop height is required',
+                position: 'top',
+            });
+            return;
+        }
+
         try {
-        const result = await ImagePicker.launchCameraAsync({
-          allowsEditing: true,
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 1,
-          allowsMultipleSelection: false,
-        });
+            // Prepare submission data for the API
+            const locationData = {
+                submission_type: 'new',
+                name: exitName.trim(),
+                country: country.trim() || undefined,
+                latitude: parsedCoords.latitude,
+                longitude: parsedCoords.longitude,
+                rock_drop_ft: convertToFeet(rockDrop, selectedUnit),
+                // Only include optional fields if they have values
+                ...(total && { total_height_ft: convertToFeet(total, selectedUnit) }),
+                ...(cliffAspect && { cliff_aspect: cliffAspect.trim() }),
+                ...(anchor && { anchor_info: anchor.trim() }),
+                ...(access && { access_info: access.trim() }),
+                ...(notes && { notes: notes.trim() }),
+                ...(openedBy && { opened_by_name: openedBy.trim() }),
+                ...(openedDate && { opened_date: openedDate.trim() }),
+                ...(videoLink && { video_link: videoLink.trim() }),
+            };
 
-        if(!result.canceled) {
-          const { uri } = result.assets[0];
-          setImage((prevImages) => [...prevImages, uri]); 
-          hideModal();
-        }
-        } catch (e) {
-          Toast.show({
-            type: 'error',
-            text1: 'Error uploading image',
-            position: 'top',
-          });
-        } finally {
-          setImageLoading(false);
+            await submitLocationMutation.mutateAsync(locationData);
+        } catch (error) {
+            // Error handling is done in the mutation's onError callback
         }
     };
-
-    const RenderInner = () => (
-        <View style={styles.panel}>
-          <View style={{alignItems: 'center'}}>
-            <Text style={styles.panelTitle}>Upload Photo</Text>
-            <Text style={styles.panelSubtitle}>Choose Your Profile Picture</Text>
-          </View>
-          <TouchableOpacity style={styles.panelButton} onPress={takePhoto}>
-            <Text style={styles.panelButtonTitle}>Take Photo</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.panelButton} onPress={pickImage}>
-            <Text style={styles.panelButtonTitle}>Choose From Library</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.panelButton} onPress={hideModal}>
-            <Text style={styles.panelButtonTitle}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
-      );
 
     return (
         <PaperProvider>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView>
-            <View style={styles.container}>
-            <Portal>
-                <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={containerStyle}>
-                    <RenderInner />
-                </Modal>
-            </Portal>
-                <KeyboardAvoidingView behavior="padding" >
-                    <Text style={{alignItems: 'center', justifyContent: 'center' , marginVertical: 20,}}>Fields marked with * must be filled in </Text>
-                    <TextInput value={exitName} style={styles.textInput} placeholder='Exit Name *' autoCapitalize='none' onChangeText={(text) => setExitName(text)}></TextInput>
-                    <TextInput value={coordinates} style={styles.textInput} placeholder='Exact Coordinates *' autoCapitalize='none' onChangeText={(text) => setCoordinates(text)}></TextInput>
-                    <View style={styles.switchContainer}>
-                      <Text style={styles.switchText}><Text style={styles.bold}>Unit: </Text>{selectedUnit}</Text>
-                      <Switch
-                        value={selectedUnit === 'Feet'}
-                        onValueChange={() =>
-                          setSelectedUnit(selectedUnit === 'Meters' ? 'Feet' : 'Meters')
-                        }
-                      />
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ScrollView>
+                    <View style={styles.container}>
+                        <KeyboardAvoidingView behavior="padding">
+                            <Text style={styles.instructionText}>
+                                Fields marked with * must be filled in
+                            </Text>
+                            
+                            <TextInput 
+                                value={exitName} 
+                                style={styles.textInput} 
+                                placeholder='Exit Name *' 
+                                autoCapitalize='words' 
+                                onChangeText={setExitName}
+                            />
+                            
+                            <TextInput 
+                                value={country} 
+                                style={styles.textInput} 
+                                placeholder='Country' 
+                                autoCapitalize='words' 
+                                onChangeText={setCountry}
+                            />
+                            
+                            <TextInput 
+                                value={coordinates} 
+                                style={styles.textInput} 
+                                placeholder='Exact Coordinates * (lat, lng)' 
+                                autoCapitalize='none' 
+                                onChangeText={setCoordinates}
+                            />
+                            
+                            <View style={styles.switchContainer}>
+                                <Text style={styles.switchText}>
+                                    <Text style={styles.bold}>Unit: </Text>{selectedUnit}
+                                </Text>
+                                <Switch
+                                    value={selectedUnit === 'Feet'}
+                                    onValueChange={() =>
+                                        setSelectedUnit(selectedUnit === 'Meters' ? 'Feet' : 'Meters')
+                                    }
+                                />
+                            </View>
+                            
+                            <TextInput 
+                                value={rockDrop} 
+                                style={styles.textInput} 
+                                placeholder={`Rock Drop * (${selectedUnit})`} 
+                                keyboardType='numeric'
+                                onChangeText={setRockDrop}
+                            />
+                            
+                            <TextInput 
+                                value={total} 
+                                style={styles.textInput} 
+                                placeholder={`Total Height (${selectedUnit})`} 
+                                keyboardType='numeric'
+                                onChangeText={setTotal}
+                            />
+                            
+                            <TextInput 
+                                value={cliffAspect} 
+                                style={styles.textInput} 
+                                placeholder='Cliff Aspect (N, NE, E, SE, S, SW, W, NW)' 
+                                autoCapitalize='characters' 
+                                onChangeText={setCliffAspect}
+                            />
+                            
+                            <TextInput 
+                                value={anchor} 
+                                style={styles.textInput} 
+                                placeholder='Anchor Info' 
+                                autoCapitalize='sentences' 
+                                onChangeText={setAnchor}
+                            />
+                            
+                            <TextInput 
+                                value={access} 
+                                style={[styles.textInput, styles.multilineInput]} 
+                                placeholder='Access Information' 
+                                autoCapitalize='sentences' 
+                                multiline={true}
+                                numberOfLines={3}
+                                textAlignVertical="top"
+                                onChangeText={setAccess}
+                            />
+                            
+                            <TextInput 
+                                value={notes} 
+                                style={[styles.textInput, styles.multilineInput]} 
+                                placeholder='Additional Notes' 
+                                autoCapitalize='sentences' 
+                                multiline={true}
+                                numberOfLines={3}
+                                textAlignVertical="top"
+                                onChangeText={setNotes}
+                            />
+                            
+                            <TextInput 
+                                value={openedBy} 
+                                style={styles.textInput} 
+                                placeholder='Opened By' 
+                                autoCapitalize='words' 
+                                onChangeText={setOpenedBy}
+                            />
+                            
+                            <TextInput 
+                                value={openedDate} 
+                                style={styles.textInput} 
+                                placeholder='Opened Date (YYYY-MM-DD)' 
+                                autoCapitalize='none' 
+                                onChangeText={setOpenedDate}
+                            />
+                            
+                            <TextInput 
+                                value={videoLink} 
+                                style={styles.textInput} 
+                                placeholder='Video Link (optional)' 
+                                autoCapitalize='none' 
+                                keyboardType='url'
+                                onChangeText={setVideoLink}
+                            />
+
+                            <View style={styles.buttonContainer}>
+                                {submitLocationMutation.isPending ? (
+                                    <View style={styles.loadingContainer}>
+                                        <ActivityIndicator size="large" color="#00ABF0" />
+                                        <Text style={styles.loadingText}>Submitting location...</Text>
+                                    </View>
+                                ) : (
+                                    <TouchableOpacity onPress={handleSubmit} style={styles.commandButton}>
+                                        <Text style={styles.panelButtonTitle}>Submit Location</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        </KeyboardAvoidingView>
                     </View>
-                    <TextInput value={rockDrop} style={styles.textInput} placeholder={`Rock Drop * (${selectedUnit})`} autoCapitalize='none' onChangeText={(text) => setRockDrop(text)}></TextInput>
-                    <TextInput value={total} style={styles.textInput} placeholder='Overall Height' autoCapitalize='none' onChangeText={(text) => setTotal(text)}></TextInput>
-                    <TextInput value={anchor} style={styles.textInput} placeholder='Anchor Info' autoCapitalize='none' onChangeText={(text) => setAnchor(text)}></TextInput>
-                    <TextInput value={access} style={styles.textInput} placeholder='Access' autoCapitalize='none' onChangeText={(text) => setAccess(text)}></TextInput>
-                    <TextInput value={notes} style={styles.textInput} placeholder='Notes' autoCapitalize='none' onChangeText={(text) => setNotes(text)}></TextInput>
-                    <TextInput value={cliffAspect} style={styles.textInput} placeholder='Cliff Aspect' autoCapitalize='none' onChangeText={(text) => setCliffAspect(text)}></TextInput>
-                    <TextInput value={videoLink} style={styles.textInput} placeholder='Video Link' autoCapitalize='none' onChangeText={(text) => setVideoLink(text)}></TextInput>
-                    <TextInput value={openedBy} style={styles.textInput} placeholder='Opened By' autoCapitalize='none' onChangeText={(text) => setOpenedBy(text)}></TextInput>
-                    <TextInput value={openedDate} style={styles.textInput} placeholder='Opened Date' autoCapitalize='none' onChangeText={(text) => setOpenedDate(text)}></TextInput>
-                    
-
-                    <View style={styles.buttonContainer}>
-
-                      <TouchableOpacity onPress={uploadImage} style={styles.borderButton} ><Text style={styles.imageButtonTitle}>Add images</Text></TouchableOpacity>
-
-                      {imageLoading ? (
-                        <Text style={styles.imageCountText}>Loading images <ActivityIndicator size="small" color="#0000ff" /></Text>
-                      ) : (
-                        <></>
-                      )}
-
-                      {images.length > 0 ? (
-                        <Text>{images.length} {images.length === 1 ? 'image' : 'images'} added</Text>
-                      ) : (
-                        <></>
-                      )}
-
-                      {loading || userLoading.action ? (
-                        <ActivityIndicator size="small" color="#0000ff" />
-                      ) : (
-                        <TouchableOpacity onPress={handleSubmit} style={styles.commandButton}><Text style={styles.panelButtonTitle}>Submit</Text></TouchableOpacity>
-                      )}
-                    </View>
-                    
-                    
-                </KeyboardAvoidingView>
-            </View>
-            </ScrollView>
-        </TouchableWithoutFeedback>
+                </ScrollView>
+            </TouchableWithoutFeedback>
         </PaperProvider>
-    )
+    );
 };
 
 export default SubmitLocation;
@@ -243,6 +356,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
     },
+    instructionText: {
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        marginVertical: 20,
+        fontSize: 16,
+        color: '#666',
+        textAlign: 'center',
+    },
     textInput: {
         marginVertical: 4,
         height: 50,
@@ -250,6 +371,11 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         padding: 10,
         backgroundColor: '#fff',
+        borderColor: '#ddd',
+    },
+    multilineInput: {
+        height: 80,
+        paddingTop: 10,
     },
     panelButtonTitle: {
         fontSize: 17,
@@ -263,59 +389,33 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginVertical: 10,
         width: '100%',
-        height: 40,
-    },
-    panelTitle: {
-      fontSize: 27,
-      height: 35,
-    },
-    panelSubtitle: {
-      fontSize: 14,
-      color: 'gray',
-      height: 30,
-      marginBottom: 10,
-    },
-    panelButton: {
-      borderRadius: 10,
-      backgroundColor: '#00ABF0',
-      alignItems: 'center',
-      marginVertical: 7,
-    },
-    imageCountText: {
-      marginTop: 8, 
-      fontSize: 16,
-      color: 'gray', 
+        height: 50,
     },
     buttonContainer: {
-      alignItems: 'center',
-      justifyContent: 'center'
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 20,
     },
-    borderButton: {
-      borderRadius: 10,
-      borderWidth: 1,            
-      borderColor: 'black',    
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginVertical: 10,
-      width: '100%',
-      height: 40,
-      backgroundColor: 'transparent',
+    switchContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 10,
+        paddingHorizontal: 10,
     },
-    imageButtonTitle: {
-      fontSize: 17,
-      fontWeight: 'bold',
-      color: 'black',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  switchText: {
-    fontSize: 16,
-    marginRight: 20,
-  },
-  bold: {
-    fontWeight: 'bold',
-  }
-})
+    switchText: {
+        fontSize: 16,
+        marginRight: 20,
+    },
+    bold: {
+        fontWeight: 'bold',
+    },
+    loadingContainer: {
+        alignItems: 'center',
+        marginVertical: 20,
+    },
+    loadingText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#666',
+    },
+});

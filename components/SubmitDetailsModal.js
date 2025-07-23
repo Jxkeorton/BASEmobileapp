@@ -31,6 +31,8 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
+  // TODO: add user to submissions
+
   // Submit location update mutation
   const submitUpdateMutation = useMutation({
     mutationFn: async (submissionData) => {

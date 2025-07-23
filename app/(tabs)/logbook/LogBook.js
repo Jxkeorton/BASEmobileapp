@@ -17,8 +17,6 @@ const LogBook = () => {
 
   const { user, loading } = useAuth();
 
-  console.log('user object', {user: user.id})
-
   // TanStack Query - profile data for jump number
   const { 
     data: profileResponse, 
