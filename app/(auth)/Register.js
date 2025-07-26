@@ -18,50 +18,42 @@ const Register = () => {
     const signUpMutation = useMutation({
         mutationFn: async ({ email, password, name }) => {
             return kyInstance.post('signup', {
-                json: { email, password, name }
+            json: { email, password, name }
             }).json();
         },
         onSuccess: async (response) => {
             if (response.success) {
-                // Store token and user data if provided
-                if (response.data.session) {
-                    await AsyncStorage.setItem('auth_token', response.data.session.access_token);
-                    await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
-                }
-                
-                console.log('Registration successful:', response);
-                
-                // Update auth context
-                updateUser(response.data.user);
-                
-                // Show success message
+            console.log('Registration successful:', response);
+            
+            // Check if email confirmation is required
+            if (response.data.requiresEmailConfirmation) {
                 Alert.alert(
-                    'Registration Successful', 
-                    response.data.message || 'Account created successfully!',
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                // Navigate to main app or login based on email confirmation requirement
-                                if (response.data.session) {
-                                    router.replace("/(tabs)/map");
-                                } else {
-                                    router.replace("/(auth)/Login");
-                                }
-                            }
-                        }
-                    ]
+                'Check Your Email', 
+                response.data.message || 'Please check your email and click the confirmation link to activate your account.',
+                [
+                    {
+                    text: 'OK',
+                    onPress: () => {
+                        router.replace("/(auth)/EmailConfirmation");
+                    }
+                    }
+                ]
                 );
             } else {
-                Alert.alert('Registration Error', response.error || 'Registration failed. Please try again.');
+                // Auto-login if no confirmation required
+                if (response.data.session) {
+                await AsyncStorage.setItem('auth_token', response.data.session.access_token);
+                await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
+                updateUser(response.data.user);
+                router.replace("/(tabs)/map");
+                }
+            }
             }
         },
         onError: (error) => {
             console.error('Sign up error:', error);
             
-            // Handle different error types
             if (error.response?.status === 400) {
-                // Parse the error response for specific validation errors
                 error.response.json().then(errorData => {
                     if (errorData.details) {
                         // Handle Zod validation errors
