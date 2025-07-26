@@ -34,7 +34,10 @@ const Register = () => {
                     {
                     text: 'OK',
                     onPress: () => {
-                        router.replace("/(auth)/EmailConfirmation");
+                        router.replace({
+                        pathname: "/(auth)/EmailConfirmation",
+                        params: { email: email }
+                    });
                     }
                     }
                 ]

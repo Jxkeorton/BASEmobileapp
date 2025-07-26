@@ -1,20 +1,43 @@
 import { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { kyInstance } from '../../services/open-api/kyClient';
 
 const EmailConfirmation = () => {
   const [isResending, setIsResending] = useState(false);
+  const { email } = useLocalSearchParams();
 
   const resendConfirmation = async () => {
+    if (!email) {
+      Alert.alert('Error', 'Email address not found. Please try registering again.');
+      return;
+    }
+
     setIsResending(true);
     try {
-      // Call resend endpoint (you'll need to create this)
-      await kyInstance.post('resend-confirmation').json();
-      Alert.alert('Email Sent', 'Confirmation email has been resent. Please check your inbox.');
+      const response = await kyInstance.post('resend-confirmation', {
+        json: { email }
+      }).json();
+      
+      if (response.success) {
+        Alert.alert('Email Sent', response.message || 'Confirmation email has been resent. Please check your inbox.');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Failed to resend confirmation email. Please try again.');
+      console.error('Resend error:', error);
+      
+      // Handle different error responses
+      if (error.response?.status === 429) {
+        Alert.alert('Too Many Requests', 'Please wait before requesting another confirmation email.');
+      } else if (error.response?.status === 400) {
+        error.response.json().then(errorData => {
+          Alert.alert('Error', errorData.error || 'Failed to resend confirmation email.');
+        }).catch(() => {
+          Alert.alert('Error', 'Failed to resend confirmation email. Please try again.');
+        });
+      } else {
+        Alert.alert('Error', 'Failed to resend confirmation email. Please try again.');
+      }
     } finally {
       setIsResending(false);
     }
@@ -23,8 +46,13 @@ const EmailConfirmation = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Check Your Email</Text>
+      {email && (
+        <Text style={styles.emailText}>
+          We sent a confirmation email to {email}
+        </Text>
+      )}
       <Text style={styles.message}>
-        We've sent you a confirmation email. Please click the link in the email to activate your account.
+        Please click the link in the email to activate your account.
       </Text>
       
       <Button 
@@ -32,6 +60,7 @@ const EmailConfirmation = () => {
         onPress={resendConfirmation}
         loading={isResending}
         style={styles.button}
+        disabled={!email}
       >
         Resend Confirmation Email
       </Button>
@@ -52,18 +81,28 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#000',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
+    color: 'white',
+  },
+  emailText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 10,
+    color: '#00ABF0',
+    fontWeight: '500',
   },
   message: {
     fontSize: 16,
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 24,
+    color: 'white',
   },
   button: {
     marginVertical: 10,
