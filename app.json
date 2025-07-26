@@ -48,7 +48,7 @@
     "plugins": [
       "expo-router"
     ],
-    "scheme": "demo",
+    "scheme": "basemapapp",
     "extra": {
       "router": {
         "origin": false
