@@ -6,8 +6,7 @@
     "start": "expo start --tunnel",
     "build": "eas build --profile development",
     "dev": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts"
   },
   "dependencies": {
     "@babel/plugin-transform-class-properties": "^7.22.5",
