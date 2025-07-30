@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/bitmap.png",
     "userInterfaceStyle": "light",
+    "scheme": "basemapapp",
     "splash": {
       "image": "./assets/bitmap.png",
       "resizeMode": "contain",
@@ -15,7 +16,6 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true,
       "bundleIdentifier": "com.jxkeorton.basemobileapp",
       "runtimeVersion": "1.0.4",
       "config": {
@@ -41,14 +41,9 @@
         }
       }
     },
-    "web": {
-      "favicon": "./assets/favicon.png",
-      "bundler": "metro"
-    },
     "plugins": [
       "expo-router"
     ],
-    "scheme": "basemapapp",
     "extra": {
       "router": {
         "origin": false
