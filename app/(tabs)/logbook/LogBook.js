@@ -25,7 +25,6 @@ const LogBook = () => {
   } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      console.log('Profile query running')
       const response = await kyInstance.get('profile').json();
       return response;
     },

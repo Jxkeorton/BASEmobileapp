@@ -4,13 +4,15 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "NO_FLIPPER": "1"
+        "NO_FLIPPER": "1",
+        "EXPO_USE_PNPM": "1"
       }
     },
     "preview": {
       "distribution": "internal",
       "channel": "preview",
       "env": {
+        "EXPO_USE_PNPM": "1",
         "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "$EXPO_PUBLIC_REVENUECAT_APPLE_KEY",
         "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "$EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY",
         "EXPO_PUBLIC_GOOGLE_MAPS_IOS_KEY": "$EXPO_PUBLIC_GOOGLE_MAPS_IOS_KEY",
@@ -27,6 +29,7 @@
     },
     "production": {
       "env": {
+        "EXPO_USE_PNPM": "1",
         "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "$EXPO_PUBLIC_REVENUECAT_APPLE_KEY",
         "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "$EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY",
         "EXPO_PUBLIC_GOOGLE_MAPS_IOS_KEY": "$EXPO_PUBLIC_GOOGLE_MAPS_IOS_KEY",

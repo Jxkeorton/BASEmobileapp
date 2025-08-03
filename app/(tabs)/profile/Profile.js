@@ -23,14 +23,12 @@ const Profile = () => {
     isLoading: profileLoading,
     error: profileError 
   } = useQuery({
-    queryKey: ['profile', user?.uid],
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
-      console.log('Fetching profile data...');
       const response = await kyInstance.get('profile').json();
-      console.log('Profile response:', response);
       return response;
     },
-    enabled: !!isAuthenticated && !!(user?.uid),
+    enabled: !!isAuthenticated && !!(user?.id),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
   });
@@ -41,14 +39,12 @@ const Profile = () => {
     isLoading: locationsLoading,
     error: locationsError 
   } = useQuery({
-    queryKey: ['savedLocations', user?.uid],
+    queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
-      console.log('Fetching saved locations...');
       const response = await kyInstance.get('locations/saved').json();
-      console.log('Saved locations response:', response);
       return response;
     },
-    enabled: !!isAuthenticated && !!(user?.uid),
+    enabled: !!isAuthenticated && !!(user?.id),
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: 3,
   });
@@ -86,6 +82,7 @@ const Profile = () => {
       await unsaveLocationMutation.mutateAsync(locationId);
     } catch (error) {
       // Error handling is done in the mutation's onError callback
+      console.error("unsave didnt work")
     }
   };
 
@@ -101,15 +98,7 @@ const Profile = () => {
 
   // Extract profile data
   const profile = profileResponse?.success ? profileResponse.data : {};
-  
-  // Extract saved locations data and transform it for the SavedLocationsCard
-  const savedLocations = savedLocationsResponse?.success && savedLocationsResponse?.data?.saved_locations
-    ? savedLocationsResponse.data.saved_locations.map(savedLoc => ({
-        ...savedLoc.location,
-        saved_at: savedLoc.saved_at,
-        save_id: savedLoc.save_id
-      }))
-    : [];
+  const savedLocations = savedLocationsResponse?.success ? savedLocationsResponse.data.saved_locations : {};
 
   if (profileLoading) {
     return (
@@ -158,10 +147,6 @@ const Profile = () => {
               <Text variant="titleLarge">{profile.jump_number || 0}</Text>
               <Text variant="bodySmall">Total Base Jumps</Text>
             </View>
-            <View style={styles.infoBox}>
-              <Text variant="titleLarge">{savedLocations.length || 0}</Text>
-              <Text variant="bodySmall">Saved Locations</Text>
-            </View>
           </View>
 
           <View style={styles.menuWrapper}>
@@ -186,18 +171,28 @@ const Profile = () => {
           </View>
         </View>
 
-        {locationsError ? (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorText}>Error loading saved locations</Text>
-            <Text style={styles.errorDetails}>{locationsError.message}</Text>
-          </View>
-        ) : (
-          <SavedLocationsCard 
-            data={savedLocations} 
-            onDelete={onDelete}
-            isLoading={locationsLoading || unsaveLocationMutation.isPending}
-          />
+        {locationsLoading ? (
+          <p>Loading</p>
+        ): (
+          <>
+          {locationsError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Error loading saved locations</Text>
+              <Text style={styles.errorDetails}>{locationsError.message}</Text>
+            </View>
+          ) : (
+            <SavedLocationsCard 
+              data={savedLocations} 
+              onDelete={onDelete}
+              isLoading={locationsLoading || unsaveLocationMutation.isPending}
+            />
+          )}
+
+        </>
+
         )}
+
+        
       </ScrollView>
     </SafeAreaView>
   );

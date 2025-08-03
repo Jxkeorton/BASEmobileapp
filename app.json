@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/bitmap.png",
     "userInterfaceStyle": "light",
-    "scheme": "basemapapp",
+    "scheme": "base.map",
     "splash": {
       "image": "./assets/bitmap.png",
       "resizeMode": "contain",

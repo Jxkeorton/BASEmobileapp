@@ -10,14 +10,8 @@ import { useMutation } from '@tanstack/react-query';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
 
-    const { updateUser } = useAuth();
-
-    console.log('Debug - API Key:', process.env.EXPO_PUBLIC_API_KEY);
-    console.log('Debug - API Base URL:', process.env.EXPO_PUBLIC_API_BASE_URL);
-
-    console.log(kyInstance)
+    const { updateUser, loading } = useAuth();
 
     const signInMutation = useMutation({
         mutationFn: async ({ email, password }) => {
@@ -31,7 +25,6 @@ const Login = () => {
                 await AsyncStorage.setItem('auth_token', response.data.session.access_token);
                 await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
                 
-                console.log('user', response)
                 // Update auth context
                 updateUser(response.data.user);
                 
@@ -41,15 +34,41 @@ const Login = () => {
                 Alert.alert('Login Error', response.error || 'Invalid email or password. Please try again.');
             }
         },
-        onError: (error) => {
-            console.error('Sign in error:', error);
-            
-            // Handle different error types
-            if (error.response?.status === 401) {
-                Alert.alert('Login Error', 'Invalid email or password. Please try again.');
-            } else if (error.response?.status === 400) {
-                Alert.alert('Invalid Input', 'Please check your email and password format.');
-            } else {
+        onError: async (error) => {
+            try {
+                const errorData = await error.response.json();
+                console.error('Sign in error data:', errorData);
+                
+                // Handle different error types
+                if (errorData.emailUnconfirmed === true) {
+                    Alert.alert(
+                        'Check Your Email', 
+                        errorData.error || 'Please check your email and click the confirmation link to activate your account.',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    router.replace({
+                                        pathname: "/(auth)/EmailConfirmation",
+                                        params: { email: email }
+                                    });
+                                }
+                            }
+                        ]
+                    );
+                    return;
+                }
+                
+                // Handle other error types
+                if (error.response?.status === 401) {
+                    Alert.alert('Login Error', 'Invalid email or password. Please try again.');
+                } else if (error.response?.status === 400) {
+                    Alert.alert('Invalid Input', 'Please check your email and password format.');
+                } else {
+                    Alert.alert('Network Error', 'Please check your connection and try again.');
+                }
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
                 Alert.alert('Network Error', 'Please check your connection and try again.');
             }
         }

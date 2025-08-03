@@ -15,7 +15,7 @@ const Index = () => {
   const { user, loading, isAuthenticated } = useAuth(); 
 
   useEffect(() => {
-    if (!navigationState?.key) {
+        if (!navigationState?.key) {
       console.log('⏳ Waiting for navigation to be ready...');
       return;
     }
@@ -24,7 +24,6 @@ const Index = () => {
       console.log('⏳ Waiting for auth check...');
       return;
     }
-
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!isAuthenticated && !inAuthGroup) {

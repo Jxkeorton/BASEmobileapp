@@ -18,7 +18,6 @@ const LogbookJumpCard = ({ jumpNumber }) => {
     } = useQuery({
         queryKey: ['logbook', user?.id],
         queryFn: async () => {
-            console.log('Logbook query running')
             const response = await kyInstance.get('logbook').json();
             return response;
         },
@@ -29,8 +28,6 @@ const LogbookJumpCard = ({ jumpNumber }) => {
 
 
     const jumps = logbookResponse?.success ? logbookResponse.data.entries : [];
-    console.log('logbookData', jumps)
-    console.log('Response', logbookResponse)
 
     // Memoized processed jumps data
     const processedJumps = useMemo(() => {
