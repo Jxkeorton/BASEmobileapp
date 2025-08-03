@@ -26,7 +26,6 @@ const Login = () => {
                 await AsyncStorage.setItem('auth_token', response.data.session.access_token);
                 await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
                 
-                console.log('user', response)
                 // Update auth context
                 updateUser(response.data.user);
                 
@@ -36,15 +35,43 @@ const Login = () => {
                 Alert.alert('Login Error', response.error || 'Invalid email or password. Please try again.');
             }
         },
-        onError: (error) => {
+        onError: async (error) => {
             console.error('Sign in error:', error);
             
-            // Handle different error types
-            if (error.response?.status === 401) {
-                Alert.alert('Login Error', 'Invalid email or password. Please try again.');
-            } else if (error.response?.status === 400) {
-                Alert.alert('Invalid Input', 'Please check your email and password format.');
-            } else {
+            try {
+                const errorData = await error.response.json();
+                console.error('Sign in error data:', errorData);
+                
+                // Handle different error types
+                if (errorData.emailUnconfirmed === true) {
+                    Alert.alert(
+                        'Check Your Email', 
+                        errorData.error || 'Please check your email and click the confirmation link to activate your account.',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    router.replace({
+                                        pathname: "/(auth)/EmailConfirmation",
+                                        params: { email: email }
+                                    });
+                                }
+                            }
+                        ]
+                    );
+                    return; // Important: return here to prevent other error handling
+                }
+                
+                // Handle other error types
+                if (error.response?.status === 401) {
+                    Alert.alert('Login Error', 'Invalid email or password. Please try again.');
+                } else if (error.response?.status === 400) {
+                    Alert.alert('Invalid Input', 'Please check your email and password format.');
+                } else {
+                    Alert.alert('Network Error', 'Please check your connection and try again.');
+                }
+            } catch (parseError) {
+                console.error('Error parsing response:', parseError);
                 Alert.alert('Network Error', 'Please check your connection and try again.');
             }
         }

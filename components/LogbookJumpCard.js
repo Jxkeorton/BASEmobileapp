@@ -29,8 +29,6 @@ const LogbookJumpCard = ({ jumpNumber }) => {
 
 
     const jumps = logbookResponse?.success ? logbookResponse.data.entries : [];
-    console.log('logbookData', jumps)
-    console.log('Response', logbookResponse)
 
     // Memoized processed jumps data
     const processedJumps = useMemo(() => {

@@ -23,39 +23,33 @@ const Register = () => {
         },
         onSuccess: async (response) => {
             if (response.success) {
-            console.log('Registration successful:', response);
-            
-            // Check if email confirmation is required
-            if (response.data.requiresEmailConfirmation) {
-                Alert.alert(
-                'Check Your Email', 
-                response.data.message || 'Please check your email and click the confirmation link to activate your account.',
-                [
-                    {
-                    text: 'OK',
-                    onPress: () => {
-                        router.replace({
-                        pathname: "/(auth)/EmailConfirmation",
-                        params: { email: email }
-                    });
-                    }
-                    }
-                ]
-                );
-            } else {
-                // Auto-login if no confirmation required
-                if (response.data.session) {
-                await AsyncStorage.setItem('auth_token', response.data.session.access_token);
-                await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
-                updateUser(response.data.user);
-                router.replace("/(tabs)/map");
+                // Check if email confirmation is required
+                if (!response.data.session) {
+                    Alert.alert(
+                        'Check Your Email', 
+                        response.data.message || 'Please check your email and click the confirmation link to activate your account.',
+                        [
+                            {
+                                text: 'OK',
+                                onPress: () => {
+                                    router.replace({
+                                        pathname: "/(auth)/EmailConfirmation",
+                                        params: { email: email }
+                                    });
+                                }
+                            }
+                        ]
+                    );
+                } else {
+                    // Auto-login if session exists (no confirmation required)
+                    await AsyncStorage.setItem('auth_token', response.data.session.access_token);
+                    await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
+                    updateUser(response.data.user);
+                    router.replace("/(tabs)/map");
                 }
-            }
-            }
+            } 
         },
         onError: (error) => {
-            console.error('Sign up error:', error);
-            
             if (error.response?.status === 400) {
                 error.response.json().then(errorData => {
                     if (errorData.details) {
