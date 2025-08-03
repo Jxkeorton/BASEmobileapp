@@ -22,18 +22,18 @@ export const kyInstance = ky.create({
                     request.headers.set('Authorization', `Bearer ${token}`);
                 }
 
-                // Only set Content-Type for requests that actually have a JSON body
                 const method = request.method.toLowerCase();
-                const hasJsonBody = method === 'post' || 
-                                   (method === 'put' && request.body) || 
-                                   (method === 'patch' && request.body);
                 
-                if (hasJsonBody && !request.headers.get('Content-Type')) {
+                // Check if request has a body (for POST, PUT, PATCH, DELETE with body)
+                const hasBody = request.body !== null && request.body !== undefined;
+                
+                // Set Content-Type for requests with JSON body
+                if (hasBody && !request.headers.get('Content-Type')) {
                     request.headers.set('Content-Type', 'application/json');
                 }
-
-                // For GET and DELETE requests, remove any Content-Type header
-                if (method === 'get' || method === 'delete') {
+                
+                // Only remove Content-Type for GET requests (they never have a body)
+                if (method === 'get') {
                     request.headers.delete('Content-Type');
                 }
             }
