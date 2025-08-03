@@ -36,10 +36,6 @@ export const kyInstance = ky.create({
                 if (method === 'get' || method === 'delete') {
                     request.headers.delete('Content-Type');
                 }
-
-                // Debug logging (remove in production)
-                console.log(`🌐 ${method.toUpperCase()} ${request.url}`);
-                console.log('Headers:', Object.fromEntries(request.headers.entries()));
             }
         ]
     }
