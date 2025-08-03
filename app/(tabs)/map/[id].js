@@ -39,9 +39,7 @@ function Location() {
   } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
-      console.log('Fetching locations for location details...');
       const response = await kyInstance.get('locations').json();
-      console.log('Locations response:', response);
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes - same as map.js
@@ -125,13 +123,11 @@ function Location() {
     
     // Handle different possible response structures
     if (!locationsResponse) {
-      console.log('No locations response');
       return null;
     }
 
     // Check if it has a data property that's an array
     if (locationsResponse.data && Array.isArray(locationsResponse.data)) {
-      console.log('Locations response has data array');
       return locationsResponse.data.find(loc => loc.id === locationId);
     }
 

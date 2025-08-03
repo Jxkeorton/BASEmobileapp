@@ -32,9 +32,7 @@ const EditProfile = () => {
   } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      console.log('Fetching profile data for edit...');
       const response = await kyInstance.get('profile').json();
-      console.log('Profile response:', response);
       return response;
     },
     enabled: !!isAuthenticated && !!(user?.id),

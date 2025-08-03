@@ -41,9 +41,7 @@ const Profile = () => {
   } = useQuery({
     queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
-      console.log('Fetching saved locations...');
       const response = await kyInstance.get('locations/saved').json();
-      console.log('Saved locations response:', response);
       return response;
     },
     enabled: !!isAuthenticated && !!(user?.id),
