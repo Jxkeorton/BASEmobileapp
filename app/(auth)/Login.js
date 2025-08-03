@@ -10,9 +10,8 @@ import { useMutation } from '@tanstack/react-query';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
 
-    const { updateUser } = useAuth();
+    const { updateUser, loading } = useAuth();
 
     const signInMutation = useMutation({
         mutationFn: async ({ email, password }) => {
@@ -36,8 +35,6 @@ const Login = () => {
             }
         },
         onError: async (error) => {
-            console.error('Sign in error:', error);
-            
             try {
                 const errorData = await error.response.json();
                 console.error('Sign in error data:', errorData);
@@ -59,7 +56,7 @@ const Login = () => {
                             }
                         ]
                     );
-                    return; // Important: return here to prevent other error handling
+                    return;
                 }
                 
                 // Handle other error types
