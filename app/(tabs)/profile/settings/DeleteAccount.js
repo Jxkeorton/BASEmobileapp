@@ -2,10 +2,11 @@ import React from "react";
 import { View, StyleSheet, Alert, Text} from "react-native";
 import { Button } from "react-native-paper";
 import { router } from "expo-router";
-import { useUser } from "../../../../providers/UserProvider";
 
 const DeleteAccount = () => {
-    const { deleteAccount } = useUser();
+
+    // TODO: implement delete account using new API
+    const deleteAccount = () => {}
 
     const handleDeleteAccount = async () => {
         const result = await deleteAccount();

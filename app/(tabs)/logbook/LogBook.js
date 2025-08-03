@@ -1,35 +1,39 @@
 import { View, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import {useState, useEffect} from 'react'
-import {  router} from 'expo-router';
+import {useState} from 'react'
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
-import { useUser } from '../../../providers/UserProvider';
-import { useLogbookQuery } from '../../../hooks/useLogbookQuery';
+import { useQuery } from '@tanstack/react-query';
+import { kyInstance } from '../../../services/open-api/kyClient';
 import { Portal, PaperProvider, Text} from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
+
+import { useAuth } from '../../../providers/AuthProvider';
 
 const LogBook = () => {
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  const { isProUser, profile, loading, user } = useUser();
-  
-  // Use TanStack Query for logbook data
+  const { user, loading } = useAuth();
+
+  // TanStack Query - profile data for jump number
   const { 
-    data: logbookData = [], 
-    isLoading: logbookLoading,
-    error: logbookError 
-  } = useLogbookQuery(user?.uid);
+    data: profileResponse, 
+    isLoading: profileLoading,
+    error: profileError 
+  } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      const response = await kyInstance.get('profile').json();
+      return response;
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 3,
+  });
 
-  useEffect(() => {
-    if (!isProUser) {
-      router.replace('/SubscriptionsPage');
-    }
-  }, [isProUser]);
-
-  if (loading.profile || logbookLoading) {
+  if (profileLoading) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ActivityIndicator size='large' />
@@ -37,13 +41,16 @@ const LogBook = () => {
     );
   }
 
-  if (logbookError) {
+  if (profileError) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text>Error loading logbook: {logbookError.message}</Text>
+        <Text>Error loading profile: {profileError.message}</Text>
       </View>
     );
   }
+
+  // Extract data from API responses
+  const profile = profileResponse?.success ? profileResponse.data : {};
 
   return (
     <PaperProvider>
@@ -63,7 +70,7 @@ const LogBook = () => {
                 borderRightColor: '#dddddd',
                 borderRightWidth: 1
               }]}>
-                <Text variant='titleLarge'>{profile.jumpNumber || 0}</Text>
+                <Text variant='titleLarge'>{profile.jump_number || 0}</Text>
                 <Text variant="bodySmall">Total Base Jumps</Text>
               </View>
               <View style={styles.infoBox}>
@@ -79,8 +86,7 @@ const LogBook = () => {
             </View>
 
             <LogbookJumpCard 
-              jumpNumber={profile.jumpNumber || 0}
-              logbookData={logbookData}
+              jumpNumber={profile.jump_number || 0}
             />
           </View>
         </TouchableWithoutFeedback>

@@ -1,119 +1,134 @@
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, Image } from 'react-native';
-import React, {useState} from 'react';
+import { useState } from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
-import { useUser } from '../../providers/UserProvider';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
+import { kyInstance } from '../../services/open-api/kyClient';
 
 const Reset = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const { resetPassword } = useUser();
+    const resetPasswordPost = async (email) => {
+        try {
+            const response = await kyInstance.post('reset-password', {
+                json: { email }
+            }).json();
+            return response;
+        } catch (error) {
+            console.error('Reset password error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    const handlePasswordReset = async () => {
+        // Validation
+        if (!email) {
+            Alert.alert('Error', 'Please enter your email address');
+            return;
+        }
+        
+        if (!email.includes('@')) {
+            Alert.alert('Error', 'Please enter a valid email address');
+            return;
+        }
+
+        setLoading(true);
+        const resp = await resetPasswordPost(email);
+        setLoading(false);
+        
+        if (resp?.success) { 
+            router.replace("/(auth)/Login");
+            Toast.show({
+                type: 'success',
+                text1: 'Reset password email sent',
+                text2: 'Check your email for the reset link',
+                position: 'top',
+            });
+        } else {
+            Alert.alert('Error', resp.error || 'Failed to send reset email');
+        }
+    }
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.container}>
-            <KeyboardAvoidingView behavior='padding'>
-            <View style={styles.imageContainer}> 
-                <Image
-                    source={require('../../assets/bitmap.png')}
-                    style={styles.image}
-                />
+            <View style={styles.container}>
+                <KeyboardAvoidingView behavior='padding'>
+                    <View style={styles.imageContainer}> 
+                        <Image
+                            source={require('../../assets/bitmap.png')}
+                            style={styles.image}
+                        />
+                    </View>
+                    <TextInput
+                        value={email}
+                        style={styles.textInput}
+                        placeholder='Email'
+                        autoCapitalize='none'
+                        keyboardType='email-address'
+                        onChangeText={(text) => setEmail(text)}
+                    />
+
+                    {loading ? (
+                        <ActivityIndicator size="small" color="#007AFF" />
+                    ) : (
+                        <>
+                            <Button
+                                mode="contained"
+                                style={styles.sendResetButton}
+                                onPress={handlePasswordReset}
+                            >
+                                Send Reset Email
+                            </Button>
+                            <Button 
+                                textColor='#007AFF' 
+                                onPress={() => router.replace("/(auth)/Login")} 
+                                style={styles.button}
+                            >
+                                Back to Login
+                            </Button>
+                        </>
+                    )}
+                </KeyboardAvoidingView>
             </View>
-              <TextInput
-                value={email}
-                style={styles.textInput}
-                placeholder='Email'
-                autoCapitalize='none'
-                onChangeText={(text) => setEmail(text)}
-              ></TextInput>
-    
-              {loading ? (
-                <ActivityIndicator size="small" color="#007AFF" />
-              ) : (
-                <>
-                  <Button
-                    title="Send reset link"
-                    mode="contained"
-                    style={styles.sendResetButton}
-                    onPress={async () => {
-                      setLoading(true);
-                      const resp = await resetPassword(email);
-                      if (resp?.success) { 
-                        router.replace("/(auth)/Login");
-                        Toast.show({
-                          type: 'success',
-                          text1: 'Reset password email sent',
-                          position: 'top',
-                        });
-                      } else {
-                        if (resp.error) {
-                          console.log("Firebase Error Details:", resp.error);
-                          const errorCode = resp.error.code;
-                  
-                          if (errorCode === 'auth/invalid-email') {
-                            Alert.alert('Invalid Email', 'Please enter a valid email address.');
-                          } else if (errorCode === 'auth/user-not-found') {
-                            Alert.alert('User Not Found', 'User not found');
-                          } else {
-                            Alert.alert('Error', `Error Code: ${errorCode}`);
-                          }
-                        } else {
-                          console.log("Unknown Error Details:", resp);
-                          Alert.alert('Error', 'An unknown error occurred');
-                        }
-                        setLoading(false);
-                      }
-                    }}
-                  >
-                    Send Reset Email
-                  </Button>
-                  <Button textColor='#007AFF' onPress={() => router.replace("/Login")} style={styles.button}>
-                    Login/Register
-                  </Button>
-                </>
-             )}
-            </KeyboardAvoidingView>
-          </View>
         </TouchableWithoutFeedback>
-      );
-    };
-    
-    const styles = StyleSheet.create({
-      container: {
+    );
+};
+
+const styles = StyleSheet.create({
+    container: {
         flex: 1,
         justifyContent: 'center',
         backgroundColor: 'black', 
         padding: 20,
-      },
-      imageContainer: {
+    },
+    imageContainer: {
         alignItems: 'center', 
         justifyContent: 'center', 
         marginBottom: 20,
-      },
-      image: {
+    },
+    image: {
         width: 200,
         height: 200,
-      },
-      textInput: {
+    },
+    textInput: {
         marginVertical: 10,
         height: 40,
         backgroundColor: 'white',
         borderRadius: 8,
         padding: 10,
         marginBottom: 20,
-      },
-      sendResetButton: {
+    },
+    sendResetButton: {
         backgroundColor: '#007AFF', 
         marginVertical: 10, 
-      },
-      button: {
+    },
+    button: {
         backgroundColor: 'transparent',
         borderWidth: 1,
         borderColor: '#007AFF',
         marginVertical: 10,
-      },
-    });
-    
-    export default Reset;
+    },
+});
+
+export default Reset;

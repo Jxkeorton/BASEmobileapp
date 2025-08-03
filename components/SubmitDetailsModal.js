@@ -11,33 +11,38 @@ import {
   Keyboard,
 } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
-import { useUser } from '../providers/UserProvider'; // NEW
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { kyInstance } from '../services/open-api/kyClient';
+import { useAuth } from '../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 
 const SubmitDetailsModal = ({ visible, onClose, location }) => {
   const [newLocationName, setNewLocationName] = useState('');
   const [exitType, setExitType] = useState('');
-  const [height, setHeight] = useState('');
-  const [coordinates, setCoordinates] = useState('');
-  const [details, setDetails] = useState('');
+  const [rockDropHeight, setRockDropHeight] = useState('');
+  const [totalHeight, setTotalHeight] = useState('');
+  const [cliffAspect, setCliffAspect] = useState('');
+  const [anchorInfo, setAnchorInfo] = useState('');
+  const [accessInfo, setAccessInfo] = useState('');
+  const [notes, setNotes] = useState('');
+  const [openedByName, setOpenedByName] = useState('');
+  const [openedDate, setOpenedDate] = useState('');
 
-  const { submitDetailUpdate, loading } = useUser();
+  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async () => {
-    try {
-      const formData = {
-        locationId: location?.id,
-        originalLocationName: location?.name,
-        newLocationName: newLocationName || location?.name,
-        exitType,
-        height,
-        coordinates,
-        details,
-      };
+  // TODO: add user to submissions
 
-      const result = await submitDetailUpdate(formData); // NEW
-
-      if (result.success) {
+  // Submit location update mutation
+  const submitUpdateMutation = useMutation({
+    mutationFn: async (submissionData) => {
+      const response = await kyInstance.post('locations/submissions', {
+        json: submissionData
+      }).json();
+      return response;
+    },
+    onSuccess: (response) => {
+      if (response.success) {
         onClose();
         
         Toast.show({
@@ -48,26 +53,125 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
         });
 
         // Clear form
-        setNewLocationName('');
-        setExitType('');
-        setHeight('');
-        setCoordinates('');
-        setDetails('');
+        clearForm();
+        
+        // Optionally invalidate related queries
+        queryClient.invalidateQueries({ queryKey: ['submissions'] });
       } else {
         Toast.show({
           type: 'error',
           text1: 'Error submitting details',
-          text2: result.error,
+          text2: response.error || 'Unknown error occurred',
           position: 'top',
         });
       }
-    } catch (error) {
+    },
+    onError: (error) => {
+      console.error('Submit details error:', error);
+      
+      let errorMessage = 'Failed to submit details';
+      let errorDetails = '';
+
+      // Handle different types of errors
+      if (error.response) {
+        if (error.response.status === 400 && error.response.data?.validation) {
+          errorMessage = 'Validation Error';
+          errorDetails = error.response.data.validation.map(err => err.message).join(', ');
+        } else if (error.response.status === 429) {
+          errorMessage = 'Submission Limit Reached';
+          errorDetails = error.response.data?.error || 'Too many submissions';
+        } else if (error.response.data?.error) {
+          errorMessage = 'Submission Failed';
+          errorDetails = error.response.data.error;
+        }
+      }
+
       Toast.show({
         type: 'error',
-        text1: 'Error submitting details',
+        text1: errorMessage,
+        text2: errorDetails,
         position: 'top',
       });
-      console.error('Submit details error:', error);
+    }
+  });
+
+  const clearForm = () => {
+    setNewLocationName('');
+    setExitType('');
+    setRockDropHeight('');
+    setTotalHeight('');
+    setCliffAspect('');
+    setAnchorInfo('');
+    setAccessInfo('');
+    setNotes('');
+    setOpenedByName('');
+    setOpenedDate('');
+  };
+
+  const handleSubmit = async () => {
+    if (!isAuthenticated) {
+      Toast.show({
+        type: 'error',
+        text1: 'Authentication required',
+        text2: 'Please log in to submit details',
+        position: 'top',
+      });
+      return;
+    }
+
+    if (!location?.id) {
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid location',
+        text2: 'Cannot submit details for this location',
+        position: 'top',
+      });
+      return;
+    }
+
+    // Basic validation
+    const hasUpdates = newLocationName || exitType || rockDropHeight || totalHeight || 
+                      cliffAspect || anchorInfo || accessInfo || notes || 
+                      openedByName || openedDate;
+
+    if (!hasUpdates) {
+      Toast.show({
+        type: 'error',
+        text1: 'No updates provided',
+        text2: 'Please fill in at least one field',
+        position: 'top',
+      });
+      return;
+    }
+
+    try {
+      // Prepare submission data for the API
+      const submissionData = {
+        submission_type: 'update',
+        existing_location_id: location.id,
+        name: newLocationName || location.name,
+        country: location.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+        // Only include height fields if they're provided and valid
+        ...(rockDropHeight && !isNaN(parseInt(rockDropHeight)) && {
+          rock_drop_ft: parseInt(rockDropHeight)
+        }),
+        ...(totalHeight && !isNaN(parseInt(totalHeight)) && {
+          total_height_ft: parseInt(totalHeight)
+        }),
+        // Only include other fields if they're provided
+        ...(cliffAspect && { cliff_aspect: cliffAspect }),
+        ...(anchorInfo && { anchor_info: anchorInfo }),
+        ...(accessInfo && { access_info: accessInfo }),
+        ...(notes && { notes: notes }),
+        ...(openedByName && { opened_by_name: openedByName }),
+        ...(openedDate && { opened_date: openedDate }),
+      };
+
+      await submitUpdateMutation.mutateAsync(submissionData);
+    } catch (error) {
+      // Error handling is done in the mutation's onError callback
     }
   };
 
@@ -80,12 +184,7 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
       position: 'top',
     });
 
-    // Clear form
-    setNewLocationName('');
-    setExitType('');
-    setHeight('');
-    setCoordinates('');
-    setDetails('');
+    clearForm();
   };
 
   return (
@@ -110,41 +209,94 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
                 autoCapitalize="words"
               />
 
-              <Text style={styles.panelSubtitle}>Exit Type</Text>
+              <Text style={styles.panelSubtitle}>Exit Type / Object Type</Text>
               <TextInput
                 style={styles.input}
                 value={exitType}
                 onChangeText={setExitType}
-                placeholder="e.g., Building, Antenna, Span, Earth"
+                placeholder="e.g., Building, Antenna, Span, Earth, Cliff"
                 autoCorrect={false}
                 autoCapitalize="words"
               />
 
-              <Text style={styles.panelSubtitle}>Height</Text>
+              <Text style={styles.panelSubtitle}>Rock Drop Height (feet)</Text>
               <TextInput
                 style={styles.input}
-                value={height}
-                onChangeText={setHeight}
-                placeholder="Height in feet or meters"
+                value={rockDropHeight}
+                onChangeText={setRockDropHeight}
+                placeholder="Height in feet"
                 keyboardType="numeric"
                 autoCorrect={false}
               />
 
-              <Text style={styles.panelSubtitle}>Coordinates</Text>
+              <Text style={styles.panelSubtitle}>Total Height (feet)</Text>
               <TextInput
                 style={styles.input}
-                value={coordinates}
-                onChangeText={setCoordinates}
-                placeholder="Lat, Long (e.g., 40.7128, -74.0060)"
+                value={totalHeight}
+                onChangeText={setTotalHeight}
+                placeholder="Total height in feet"
+                keyboardType="numeric"
+                autoCorrect={false}
+              />
+
+              <Text style={styles.panelSubtitle}>Cliff Aspect</Text>
+              <TextInput
+                style={styles.input}
+                value={cliffAspect}
+                onChangeText={setCliffAspect}
+                placeholder="e.g., N, NE, E, SE, S, SW, W, NW"
+                autoCorrect={false}
+                autoCapitalize="characters"
+              />
+
+              <Text style={styles.panelSubtitle}>Anchor Information</Text>
+              <TextInput
+                style={styles.input}
+                value={anchorInfo}
+                onChangeText={setAnchorInfo}
+                placeholder="Anchor type and details"
+                autoCorrect={false}
+                autoCapitalize="sentences"
+              />
+
+              <Text style={styles.panelSubtitle}>Access Information</Text>
+              <TextInput
+                style={[styles.input, { height: 80 }]}
+                value={accessInfo}
+                onChangeText={setAccessInfo}
+                placeholder="How to access this location..."
+                multiline={true}
+                numberOfLines={3}
+                textAlignVertical="top"
+                autoCorrect={true}
+                autoCapitalize="sentences"
+              />
+
+              <Text style={styles.panelSubtitle}>Opened By</Text>
+              <TextInput
+                style={styles.input}
+                value={openedByName}
+                onChangeText={setOpenedByName}
+                placeholder="Person who first jumped this location"
+                autoCorrect={false}
+                autoCapitalize="words"
+              />
+
+              <Text style={styles.panelSubtitle}>Opened Date</Text>
+              <TextInput
+                style={styles.input}
+                value={openedDate}
+                onChangeText={setOpenedDate}
+                placeholder="Date first jumped (e.g., 2023-05-15)"
                 autoCorrect={false}
                 autoCapitalize="none"
               />
 
-              <Text style={styles.panelSubtitle}>Additional Details</Text>
+              <Text style={styles.panelSubtitle}>Additional Notes</Text>
               <TextInput
                 style={[styles.input, { height: 100 }]}
-                value={details}
-                onChangeText={setDetails}
+                value={notes}
+                onChangeText={setNotes}
                 placeholder="Any additional information about this location..."
                 multiline={true}
                 numberOfLines={4}
@@ -153,7 +305,7 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
                 autoCapitalize="sentences"
               />
 
-              {loading.action ? (
+              {submitUpdateMutation.isPending ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator animating={true} color="#00ABF0" size="large" />
                   <Text style={styles.loadingText}>Submitting details...</Text>

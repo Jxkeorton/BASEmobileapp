@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import { useUser } from '../providers/UserProvider';  // NEW
 import LinearGradient from 'react-native-linear-gradient';
 import {router} from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
+import { useAuth } from '../providers/AuthProvider';
 
 const PackageList = () => {
-  const { user, packages, purchasePackage, loading, isProUser } = useUser();
+  const { user, loading } = useAuth();
   const [isLoading, setIsLoading ] = useState(false);
+
+  // TODO: Add back revenue cat logic
+  const isProUser = true
+  const purchasePackage = () => {}
+  const packages = {}
 
   const handlePurchase = async (pkg) => {
     setIsLoading(true);

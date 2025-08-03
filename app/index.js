@@ -3,7 +3,7 @@ import {
   router,
   useSegments,
 } from "expo-router";
-import { useUser } from "../providers/UserProvider";
+import { useAuth } from "../providers/AuthProvider";
 import { useEffect } from "react";
 import { ActivityIndicator, MD2Colors} from "react-native-paper";
 import { View, StyleSheet, Text } from "react-native";
@@ -12,53 +12,40 @@ const Index = () => {
   const segments = useSegments();
   const navigationState = useRootNavigationState();
   
-  const { isLoggedIn, isReady, loading, initialized, user } = useUser(); 
-
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 Index Debug:', {
-      isLoggedIn,
-      isReady,
-      initialized,
-      loading,
-      user: user ? { uid: user.uid, email: user.email } : null,
-      segments,
-      navigationReady: !!navigationState?.key
-    });
-  }, [isLoggedIn, isReady, initialized, loading, user, segments, navigationState?.key]);
+  const { user, loading, isAuthenticated } = useAuth(); 
 
   useEffect(() => {
-    if (!navigationState?.key || !isReady) {
-      console.log('⏳ Waiting for navigation or user to be ready...');
+        if (!navigationState?.key) {
+      console.log('⏳ Waiting for navigation to be ready...');
       return;
     }
 
+    if (loading) {
+      console.log('⏳ Waiting for auth check...');
+      return;
+    }
     const inAuthGroup = segments[0] === "(auth)";
-    console.log('🚦 Navigation Decision:', { isLoggedIn, inAuthGroup, segments });
 
-    if (!isLoggedIn && !inAuthGroup) {
-      console.log('➡️ Redirecting to login');
+    if (!isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/Login");
-    } else if (isLoggedIn) {
-      console.log('➡️ Redirecting to tabs');
+    } else if (isAuthenticated) {
       router.replace("/(tabs)/map");
     }
-  }, [segments, navigationState?.key, isLoggedIn, isReady]);
+  }, [segments, navigationState?.key, isAuthenticated, loading, user]);
 
   // Show loading while initializing
-  if (!navigationState?.key || !isReady || loading.auth) {
+  if (!navigationState?.key || loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator animating={true} color={MD2Colors.red800} size="large" />
         <Text style={styles.loadingText}>
           {!navigationState?.key && "Loading navigation..."}
-          {!isReady && "Initializing..."}
-          {loading.auth && "Checking authentication..."}
+          {loading && "Checking authentication..."}
         </Text>
         <Text style={styles.debugText}>
           Navigation: {navigationState?.key ? '✅' : '❌'} | 
-          Ready: {isReady ? '✅' : '❌'} | 
-          Auth Loading: {loading.auth ? '🔄' : '✅'}
+          Auth Loading: {loading ? '🔄' : '✅'} |
+          User: {user?.email || 'Not logged in'}
         </Text>
       </View>
     );

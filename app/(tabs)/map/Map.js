@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react'
 import MapView from 'react-native-map-clustering';
 import {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import CustomCallout from '../../../components/CustomCallout';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import { FontAwesome } from '@expo/vector-icons'; 
 import ModalContent from '../../../components/ModalContent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -198,7 +197,6 @@ export default function Map() {
                 onChangeText={text => setSearchTerm(text)}
                 value={searchTerm}
               />
-              <Ionicons name='ios-search' size={20} color='#000' />
               <TouchableHighlight
                 onPress={async () => {
                   setFilterIconLoading(true);
