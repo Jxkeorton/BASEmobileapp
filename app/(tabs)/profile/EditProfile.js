@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Platform
 } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { PaperProvider, ActivityIndicator } from 'react-native-paper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -30,14 +30,14 @@ const EditProfile = () => {
     isLoading: profileLoading,
     error: profileError 
   } = useQuery({
-    queryKey: ['profile', user?.uid],
+    queryKey: ['profile', user?.id],
     queryFn: async () => {
       console.log('Fetching profile data for edit...');
       const response = await kyInstance.get('profile').json();
       console.log('Profile response:', response);
       return response;
     },
-    enabled: !!isAuthenticated && !!(user?.uid),
+    enabled: !!isAuthenticated && !!(user?.id),
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: 3,
   });
@@ -54,6 +54,8 @@ const EditProfile = () => {
       if (response.success) {
         // Invalidate and refetch profile queries
         queryClient.invalidateQueries({ queryKey: ['profile'] });
+
+        router.back();
         
         Toast.show({
           type: 'success',

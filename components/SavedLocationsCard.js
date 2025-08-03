@@ -36,20 +36,20 @@ const SavedLocationsCard = ({ data, onDelete }) => {
           <View key={item.id} style={styles.card}>
             <Card>
               <Card.Content>
-                <Text2 variant='titleLarge'>{item.name}</Text2>
+                <Text2 variant='titleLarge'>{item.location.name}</Text2>
                 <Text style={styles.calloutCoordinates}>
-                  Rock Drop: {isMetric ? convertToMeters(item.details.rockdrop) : (item.details.rockdrop ? `${item.details.rockdrop} ft` : '?')}
+                  Rock Drop: {isMetric ? convertToMeters(item.location.rock_drop_ft) : (item.location.rock_drop_ft ? `${item.location.rock_drop_ft} ft` : '?')}
                 </Text>
               </Card.Content>
               <Card.Actions>
                 <Button
                   style={styles.buttonOutlined}
                   textColor="black"
-                  onPress={() => onDetailsPress(item.id)}
+                  onPress={() => onDetailsPress(item.location.id)}
                 >
                   Details
                 </Button>
-                <Button style={styles.button} onPress={() => onDelete(item.id)}>
+                <Button style={styles.button} onPress={() => onDelete(item.location.id)}>
                   Unsave
                 </Button>
               </Card.Actions>

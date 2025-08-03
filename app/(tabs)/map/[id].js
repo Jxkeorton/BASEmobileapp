@@ -53,7 +53,7 @@ function Location() {
     data: savedLocationsResponse,
     isLoading: savedLoading 
   } = useQuery({
-    queryKey: ['savedLocations', user?.id || user?.uid],
+    queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
       const response = await kyInstance.get('locations/saved').json();
       return response;
