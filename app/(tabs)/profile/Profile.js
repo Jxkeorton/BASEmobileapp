@@ -49,8 +49,6 @@ const Profile = () => {
     retry: 3,
   });
 
-  const savedLocations = savedLocationsResponse.data.saved_locations;
-
   // Unsave location mutation
   const unsaveLocationMutation = useMutation({
     mutationFn: async (locationId) => {
@@ -84,6 +82,7 @@ const Profile = () => {
       await unsaveLocationMutation.mutateAsync(locationId);
     } catch (error) {
       // Error handling is done in the mutation's onError callback
+      console.error("unsave didnt work")
     }
   };
 
@@ -99,6 +98,7 @@ const Profile = () => {
 
   // Extract profile data
   const profile = profileResponse?.success ? profileResponse.data : {};
+  const savedLocations = savedLocationsResponse?.success ? savedLocationsResponse.data.saved_locations : {};
 
   if (profileLoading) {
     return (
@@ -146,10 +146,6 @@ const Profile = () => {
             }]}>
               <Text variant="titleLarge">{profile.jump_number || 0}</Text>
               <Text variant="bodySmall">Total Base Jumps</Text>
-            </View>
-            <View style={styles.infoBox}>
-              <Text variant="titleLarge">{savedLocationsResponse.data.saved_locations.length || 0}</Text>
-              <Text variant="bodySmall">Saved Locations</Text>
             </View>
           </View>
 
