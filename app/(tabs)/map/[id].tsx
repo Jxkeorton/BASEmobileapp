@@ -1,15 +1,16 @@
 import { View, StyleSheet, ScrollView, Platform, Linking, ActivityIndicator} from 'react-native'
 import { useLocalSearchParams, Stack} from 'expo-router';
-import React ,{ useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import MapView, {Marker} from 'react-native-maps';
 import { Button, Text, Divider, IconButton } from 'react-native-paper';
+import type { LocationsResponse, Location } from './Map';
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 
 import { useAuth } from '../../../providers/AuthProvider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/open-api/kyClient';
 
 //Modal imports 
 import { Portal, PaperProvider } from 'react-native-paper'
@@ -18,58 +19,67 @@ import SubmitDetailsModal from '../../../components/SubmitDetailsModal';
 // unit state 
 import { useUnitSystem } from '../../../context/UnitSystemContext';
 
-function Location() {
+export default function Location() {
   const [isCopied, setIsCopied] = useState(false);
   const { id } = useLocalSearchParams();
   const { isMetric } = useUnitSystem();
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const client = useKyClient()
 
   //Modal
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
+  const locationId = id && !Array.isArray(id) ? parseInt(id) : NaN;
+
   // TanStack Query cache (should be cached from map.js)
-  const locationId = parseInt(id);
-  const { 
-    data: locationsResponse, 
-    isLoading: locationsLoading,
-    error: locationsError 
-  } = useQuery({
+  const { data: locationsResponse, isLoading: locationsLoading, error: locationsError } = useQuery<LocationsResponse>({
     queryKey: ['locations'],
     queryFn: async () => {
-      const response = await kyInstance.get('locations').json();
-      return response;
-    },
-    staleTime: 5 * 60 * 1000, // 5 minutes - same as map.js
-    retry: 3,
-  });
+    return client  
+      .GET("/api/v1/locations")
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch locations');
+        }
+        return res.data;
+      });
+  }});
+  const locations = locationsResponse?.success ? locationsResponse.data : [];
 
-  // Get user's saved locations
+    // Get user's saved locations
   const { 
     data: savedLocationsResponse,
     isLoading: savedLoading 
   } = useQuery({
     queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
-      const response = await kyInstance.get('locations/saved').json();
-      return response;
+      return client
+      .GET("/api/v1/locations/saved")
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch saved locations');
+        }
+        return res.data;
+      });
     },
     enabled: isAuthenticated,
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Save location mutation
+  // Get user's saved locations
   const saveLocationMutation = useMutation({
-    mutationFn: async (locationId) => {
-      const response = await kyInstance.post('locations/save', {
-        json: { location_id: locationId }
-      }).json();
-      return response;
+    mutationFn: async (locationId: number) => {
+      const res = await client.POST("/api/v1/locations/save", {
+        body: { location_id: locationId }
+      });
+      if (res.error) throw new Error(res.error.error || "Failed to save location");
+      return res.data;
     },
     onSuccess: (response) => {
-      if (response.success) {
+      if (response?.success) {
         queryClient.invalidateQueries({ queryKey: ['savedLocations'] });
         Toast.show({
           type: 'success',
@@ -78,9 +88,8 @@ function Location() {
         });
       }
     },
-    onError: (error) => {
-      console.error('Save location error:', error);
-      const errorMessage = error.response?.data?.error || 'Failed to save location';
+    onError: (error: any) => {
+      const errorMessage = error.message || 'Failed to save location';
       Toast.show({
         type: 'error',
         text1: errorMessage,
@@ -91,14 +100,15 @@ function Location() {
 
   // Unsave location mutation  
   const unsaveLocationMutation = useMutation({
-    mutationFn: async (locationId) => {
-      const response = await kyInstance.delete('locations/unsave', {
-        json: { location_id: locationId }
-      }).json();
-      return response;
+    mutationFn: async (locationId: number) => {
+      const res = await client.DELETE("/api/v1/locations/unsave", {
+        body: { location_id: locationId }
+      });
+      if (res.error) throw new Error(res.error.error || "Failed to unsave location");
+      return res.data;
     },
     onSuccess: (response) => {
-      if (response.success) {
+      if (response?.success) {
         queryClient.invalidateQueries({ queryKey: ['savedLocations'] });
         Toast.show({
           type: 'success',
@@ -107,9 +117,8 @@ function Location() {
         });
       }
     },
-    onError: (error) => {
-      console.error('Unsave location error:', error);
-      const errorMessage = error.response?.data?.error || 'Failed to unsave location';
+    onError: (error: any) => {
+      const errorMessage = error.message || 'Failed to unsave location';
       Toast.show({
         type: 'error',
         text1: errorMessage,
@@ -119,20 +128,17 @@ function Location() {
   });
 
   // Find the specific location from the cached data
-  const location = useMemo(() => {
-    
-    // Handle different possible response structures
-    if (!locationsResponse) {
-      return null;
+  const location: Location | undefined = useMemo(() => {
+    if (!locations) {
+      return undefined;
     }
 
-    // Check if it has a data property that's an array
-    if (locationsResponse.data && Array.isArray(locationsResponse.data)) {
-      return locationsResponse.data.find(loc => loc.id === locationId);
+    if (locations && Array.isArray(locations)) {
+      return locations.find(loc => loc.id === locationId);
     }
 
-    return null;
-  }, [locationsResponse, locationId]);
+    return undefined;
+  }, [locations, locationId]);
 
   // Check if location is saved
   const isSaved = useMemo(() => {
@@ -183,47 +189,37 @@ function Location() {
   // Open location in maps app
   const openMaps = () => {
     if (!location?.latitude || !location?.longitude) return;
-    
-    const scheme = Platform.select({ ios: 'maps://0,0?q=', android: 'geo:0,0?q=' });
+
+    const scheme = Platform.select({
+      ios: 'maps://0,0?q=',
+      android: 'geo:0,0?q=',
+    });
+
+    if (!scheme) return;
+
     const latLng = `${location.latitude},${location.longitude}`;
     const label = location.name || 'Location';
     const url = Platform.select({
       ios: `${scheme}${label}@${latLng}`,
-      android: `${scheme}${latLng}(${label})`
+      android: `${scheme}${latLng}(${label})`,
     });
 
-    Linking.openURL(url);
-  };
-
-  // Extract numeric part from height strings
-  const extractNumericPart = (value) => {
-    if (!value) return null;
-    
-    // If it's already a number, return it as string
-    if (typeof value === 'number') {
-      return value.toString();
+    if (url) {
+      Linking.openURL(url).catch((err) => {
+        console.error('Failed to open URL:', err);
+      });
     }
-    
-    // If it's a string, extract numeric part
-    if (typeof value === 'string') {
-      const numericPart = value.match(/\d+(\.\d+)?/);
-      return numericPart ? numericPart[0] : null;
-    }
-    
-    return null;
   };
 
   // Convert height values based on unit system
-  const convertHeight = (heightStr) => {
-    const numericValue = extractNumericPart(heightStr);
-    if (!numericValue) return '?';
-    
-    const feet = parseInt(numericValue);
+  const convertHeight = (heightStr: number | undefined | null) => {
+    if (!heightStr) return '?';
+;
     if (isMetric) {
-      const meters = Math.round(feet * 0.3048);
+      const meters = Math.round(heightStr * 0.3048);
       return `${meters} m`;
     }
-    return `${feet} ft`;
+    return `${heightStr} ft`;
   };
 
   // Loading state
@@ -468,5 +464,3 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
 });
-
-export default Location

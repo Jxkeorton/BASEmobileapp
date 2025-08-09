@@ -6,41 +6,14 @@ import {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
 import CustomCallout from '../../../components/CustomCallout';
 import { FontAwesome } from '@expo/vector-icons'; 
 import ModalContent from '../../../components/ModalContent';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUnitSystem } from '../../../context/UnitSystemContext';
 import { useQuery } from '@tanstack/react-query';
 import type { paths } from '../../../types/api';
 import { useKyClient } from '../../../services/open-api/kyClient';
 
-type LocationsResponse = paths['/api/v1/locations']['get']['responses'][200]['content']['application/json'];
+export type LocationsResponse = paths['/api/v1/locations']['get']['responses'][200]['content']['application/json'];
 type LocationsFilters = paths['/api/v1/locations']['get']['parameters']['query'];
-type Location = NonNullable<LocationsResponse['data']>[number]
-
-interface SavedEvent {
-  id: number;
-  [key: string]: any;
-}
-
-
-const saveEventToStorage = async (event: Location): Promise<void> => {
-  try {
-    let savedEvents: Location[] = [];
-    const storedEvents = await AsyncStorage.getItem('savedEvents');
-    if (storedEvents) {
-      savedEvents = JSON.parse(storedEvents);
-    }
-
-    savedEvents.push(event); 
-
-    if (savedEvents.length > 10) {
-      savedEvents.shift();
-    }
-
-    await AsyncStorage.setItem('savedEvents', JSON.stringify(savedEvents));
-  } catch (error) {
-    console.error('Error saving event to AsyncStorage:', error);
-  }
-};
+export type Location = NonNullable<LocationsResponse['data']>[number]
 
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -179,7 +152,6 @@ export default function Map() {
                       title={event.name || 'Unknown Name'}
                       description={event.opened_by_name || event.country || ''}
                       pinColor='red'
-                      onPress={() => saveEventToStorage(event)}
                     >
                       <CustomCallout info={event} />
                     </Marker>
