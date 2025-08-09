@@ -12,10 +12,16 @@ import { View, StyleSheet, SafeAreaView, Share, ScrollView } from 'react-native'
 import SavedLocationsCard from '../../../components/SavedLocationsCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { useKyClient } from '../../../services/open-api/kyClient';
+import { paths } from '../../../types/api';
+
+type ProfileResponse = paths['/api/v1/profile']['get']['responses']['200']['content']['application/json'];
+export type ProfileData = NonNullable<ProfileResponse['data']>;
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const client = useKyClient();
 
   // Get profile data
   const { 
@@ -25,8 +31,14 @@ const Profile = () => {
   } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      const response = await kyInstance.get('profile').json();
-      return response;
+      return client
+      .GET('/api/v1/profile')
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch profile');
+        }
+        return res.data;
+      });
     },
     enabled: !!isAuthenticated && !!(user?.id),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -41,8 +53,14 @@ const Profile = () => {
   } = useQuery({
     queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
-      const response = await kyInstance.get('locations/saved').json();
-      return response;
+      return client
+      .GET('/api/v1/locations/saved')
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch saved locations');
+        }
+        return res.data;
+      });
     },
     enabled: !!isAuthenticated && !!(user?.id),
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -51,11 +69,17 @@ const Profile = () => {
 
   // Unsave location mutation
   const unsaveLocationMutation = useMutation({
-    mutationFn: async (locationId) => {
-      const response = await kyInstance.delete('locations/unsave', {
-        json: { location_id: locationId }
-      }).json();
-      return response;
+    mutationFn: async (locationId: number) => {
+      return client
+      .DELETE('/api/v1/locations/unsave', {
+        body: { location_id: locationId }
+      })
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to unsave location');
+        }
+        return res.data;
+      });
     },
     onSuccess: (response) => {
       if (response.success) {
@@ -77,12 +101,12 @@ const Profile = () => {
     }
   });
 
-  const onDelete = async (locationId) => {
+  const onDelete = async (locationId: number) => {
     try {
       await unsaveLocationMutation.mutateAsync(locationId);
     } catch (error) {
       // Error handling is done in the mutation's onError callback
-      console.error("unsave didnt work")
+      console.error("Unsave location failed")
     }
   };
 
@@ -92,13 +116,13 @@ const Profile = () => {
         message: 'BASE world map, virtual logbook and more !',
       });
     } catch (error) {
-      alert(error.message);
+      alert((error as Error)?.message || 'An unknown error occurred');
     }
   };
 
   // Extract profile data
-  const profile = profileResponse?.success ? profileResponse.data : {};
-  const savedLocations = savedLocationsResponse?.success ? savedLocationsResponse.data.saved_locations : {};
+  const profile = profileResponse?.success ? profileResponse.data : undefined;
+  const savedLocations = savedLocationsResponse?.success ? savedLocationsResponse.data?.saved_locations ?? {} : {};
 
   if (profileLoading) {
     return (
@@ -118,6 +142,14 @@ const Profile = () => {
     );
   }
 
+  if (!profile) {
+    return (
+      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
+        <Text style={styles.errorText}>Profile not found</Text>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -130,7 +162,7 @@ const Profile = () => {
               <Text variant="titleLarge" style={[styles.title, {
                 marginTop: 15,
                 marginBottom: 5,
-              }]}>{profile.name || 'No name set'}</Text>
+              }]}>{profile?.name || 'No name set'}</Text>
               <Text variant="bodySmall" style={styles.caption}>
                 @{profile.username || 'No username'}
               </Text>
@@ -184,7 +216,6 @@ const Profile = () => {
             <SavedLocationsCard 
               data={savedLocations} 
               onDelete={onDelete}
-              isLoading={locationsLoading || unsaveLocationMutation.isPending}
             />
           )}
 

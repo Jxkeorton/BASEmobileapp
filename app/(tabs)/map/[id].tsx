@@ -3,20 +3,14 @@ import { useLocalSearchParams, Stack} from 'expo-router';
 import { useState, useMemo } from 'react';
 import MapView, {Marker} from 'react-native-maps';
 import { Button, Text, Divider, IconButton } from 'react-native-paper';
-import type { LocationsResponse, Location } from './Map';
-
+import type { Location } from './Map';
 import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
-
 import { useAuth } from '../../../providers/AuthProvider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useKyClient } from '../../../services/open-api/kyClient';
-
-//Modal imports 
 import { Portal, PaperProvider } from 'react-native-paper'
 import SubmitDetailsModal from '../../../components/SubmitDetailsModal';
-
-// unit state 
 import { useUnitSystem } from '../../../context/UnitSystemContext';
 
 export default function Location() {
@@ -35,7 +29,7 @@ export default function Location() {
   const locationId = id && !Array.isArray(id) ? parseInt(id) : NaN;
 
   // TanStack Query cache (should be cached from map.js)
-  const { data: locationsResponse, isLoading: locationsLoading, error: locationsError } = useQuery<LocationsResponse>({
+  const { data: locationsResponse, isLoading: locationsLoading, error: locationsError } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
     return client  

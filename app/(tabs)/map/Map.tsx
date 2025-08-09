@@ -11,9 +11,10 @@ import { useQuery } from '@tanstack/react-query';
 import type { paths } from '../../../types/api';
 import { useKyClient } from '../../../services/open-api/kyClient';
 
-export type LocationsResponse = paths['/api/v1/locations']['get']['responses'][200]['content']['application/json'];
-type LocationsFilters = paths['/api/v1/locations']['get']['parameters']['query'];
+type LocationsResponse = paths['/api/v1/locations']['get']['responses'][200]['content']['application/json'];
 export type Location = NonNullable<LocationsResponse['data']>[number]
+
+type LocationsFilters = paths['/api/v1/locations']['get']['parameters']['query'];
 
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +59,7 @@ export default function Map() {
   }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
 
   // TanStack Query 
-  const { data: locationsResponse, isLoading: loadingMap, error } = useQuery<LocationsResponse>({
+  const { data: locationsResponse, isLoading: loadingMap, error } = useQuery({
     queryKey: ['locations', apiFilters],
     queryFn: async () => {
     return client  
