@@ -9,23 +9,28 @@ import ModalContent from '../../../components/ModalContent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useUnitSystem } from '../../../context/UnitSystemContext';
 import { useQuery } from '@tanstack/react-query';
-import { kyInstance } from '../../../services/open-api/kyClient';
+import type { paths } from '../../../types/api';
+import { useKyClient } from '../../../services/open-api/kyClient';
 
-const saveEventToStorage = async (event) => {
+type LocationsResponse = paths['/api/v1/locations']['get']['responses'][200]['content']['application/json'];
+type LocationsFilters = paths['/api/v1/locations']['get']['parameters']['query'];
+type Location = NonNullable<LocationsResponse['data']>[number]
+
+interface SavedEvent {
+  id: number;
+  [key: string]: any;
+}
+
+
+const saveEventToStorage = async (event: Location): Promise<void> => {
   try {
-    const eventWithIntegerId = {
-      ...event,
-      id: parseInt(event.id, 10)
-    };
-
-    let savedEvents = await AsyncStorage.getItem('savedEvents');
-    if (savedEvents) {
-      savedEvents = JSON.parse(savedEvents);
-    } else {
-      savedEvents = [];
+    let savedEvents: Location[] = [];
+    const storedEvents = await AsyncStorage.getItem('savedEvents');
+    if (storedEvents) {
+      savedEvents = JSON.parse(storedEvents);
     }
 
-    savedEvents.push(eventWithIntegerId);
+    savedEvents.push(event); 
 
     if (savedEvents.length > 10) {
       savedEvents.shift();
@@ -40,6 +45,7 @@ const saveEventToStorage = async (event) => {
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState('');
   const [satelliteActive, setSatelliteActive] = useState(false);
+  const client = useKyClient()
   
   // Loading states for UI interactions
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
@@ -57,8 +63,8 @@ export default function Map() {
   const { isMetric } = useUnitSystem();
 
   // Build API filters based on current search and filters
-  const apiFilters = useMemo(() => {
-    const filters = {};
+  const apiFilters: LocationsFilters = useMemo(() => {
+    const filters: LocationsFilters = {};
     
     if (searchTerm.trim()) {
       filters.search = searchTerm.trim();
@@ -79,33 +85,28 @@ export default function Map() {
   }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
 
   // TanStack Query 
-  const { data: locationsResponse, isLoading: loadingMap, error } = useQuery({
+  const { data: locationsResponse, isLoading: loadingMap, error } = useQuery<LocationsResponse>({
     queryKey: ['locations', apiFilters],
     queryFn: async () => {
-      const searchParams = new URLSearchParams();
-      Object.entries(apiFilters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          searchParams.append(key, value);
+    return client  
+      .GET("/api/v1/locations", {
+        params: { query: {...apiFilters}}
+      })
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch locations');
         }
+        return res.data;
       });
-      
-      const endpoint = searchParams.toString() 
-        ? `locations?${searchParams.toString()}` 
-        : 'locations';
-        
-      const response = await kyInstance.get(endpoint).json();
-      return response.data || response; 
-    },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    retry: 3,
-  });
+  }});
+  const locations = locationsResponse?.success ? locationsResponse.data : [];
   
-  const filterEventsByRockDrop = (event) => {
+  const filterEventsByRockDrop = (location: Location) => {
     if (unknownRockdrop) {
-      const hasUnknownHeight = !event.total_height_ft || 
-                               event.total_height_ft === 0 || 
-                               ( event.rock_drop_ft && 
-                                (event.rock_drop_ft === '' || event.rock_drop_ft.includes('?')));
+      const hasUnknownHeight = !location.total_height_ft || 
+                               location.total_height_ft === 0 || 
+                               ( location.rock_drop_ft && 
+                                (!location.rock_drop_ft || location.rock_drop_ft === 0));
       return !hasUnknownHeight;
     }
     
@@ -130,7 +131,7 @@ export default function Map() {
             <ModalContent
               visible={visible}
               onClose={hideModal}
-              onApplyFilter={(min, max, unknown) => {
+              onApplyFilter={(min: string, max: string, unknown: boolean) => {
                 setMinRockDrop(min);
                 setMaxRockDrop(max);
                 setUnknownRockDrop(unknown);
@@ -160,7 +161,7 @@ export default function Map() {
               clusteringEnabled={true}
               provider={PROVIDER_GOOGLE}
             >
-              {locationsResponse
+              {locations && locations
                 .filter(event => filterEventsByRockDrop(event))
                 .map((event, index) => {
                   const latitude = event.latitude;
@@ -247,7 +248,7 @@ export default function Map() {
           {!loadingMap && (
             <View style={styles.resultsContainer}>
               <Text style={styles.resultsText}>
-                {locationsResponse.length} location{locationsResponse.length !== 1 ? 's' : ''} found
+                {locations?.length || 0} location{(locations?.length || 0) !== 1 ? 's' : ''} found
               </Text>
             </View>
           )}

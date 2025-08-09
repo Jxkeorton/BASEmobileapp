@@ -1,13 +1,20 @@
 import ky from 'ky';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import createClient from 'openapi-fetch';
+import { paths } from '../../types/api';
+
+let baseUrl = ''
+if(process.env.EXPO_PUBLIC_API_BASE_URL !== undefined){
+    baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
+};
 
 // Create Ky instance with base configuration
-export const kyInstance = ky.create({
-    prefixUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
+export const kyInstance = (timeout: number) => 
+    ky.create({
     headers: {
         'x-api-key': process.env.EXPO_PUBLIC_API_KEY,
     },
-    timeout: 30000,
+    timeout: timeout,
     retry: {
         limit: 2,
         methods: ['get'],
@@ -40,3 +47,10 @@ export const kyInstance = ky.create({
         ]
     }
 });
+
+export const useKyClient = () => {
+    return createClient<paths>({
+        baseUrl,
+        fetch: kyInstance(30000),
+    })
+}

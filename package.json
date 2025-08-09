@@ -7,7 +7,9 @@
     "start": "expo start --tunnel",
     "build": "eas build --profile development",
     "dev": "expo start --dev-client",
-    "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts"
+    "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts",
+    "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",
+    "types:all": "pnpm run types:generate && npm run openapi:generate"
   },
   "dependencies": {
     "@babel/plugin-transform-class-properties": "^7.22.5",
@@ -35,7 +37,6 @@
     "expo-updates": "~0.27.4",
     "ky": "^1.8.2",
     "openapi-fetch": "^0.14.0",
-    "openapi-typescript": "^7.8.0",
     "pullstate": "^1.25.0",
     "punycode": "^2.3.1",
     "react": "18.3.1",
@@ -58,9 +59,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/node": "^24.2.0",
     "@types/react": "^19.1.9",
     "@types/react-native-vector-icons": "^6.4.16",
     "@types/uuid": "^9.0.6",
+    "openapi-typescript": "^7.8.0",
     "typescript": "^5.8.3"
   },
   "overrides": {
