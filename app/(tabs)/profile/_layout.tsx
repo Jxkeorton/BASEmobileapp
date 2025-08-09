@@ -19,7 +19,7 @@ export default () => {
                         mode='contained-tonal' 
                         buttonColor="white" 
                         onPress={() => router.navigate('/profile/settings')} 
-                        title="Settings" >
+                        >
                             <Icon name="cog" size={20} color="#000" />
                     </Button>
                 ),

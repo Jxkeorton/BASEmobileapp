@@ -11,18 +11,22 @@ import { router, useFocusEffect } from 'expo-router';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { PaperProvider, ActivityIndicator } from 'react-native-paper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from '../../../services/open-api/kyClient';
+import { kyInstance, useKyClient } from '../../../services/open-api/kyClient';
 import { useAuth } from '../../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
+import { ProfileData } from './Profile';
+import { paths } from '../../../types/api';
+
+type UpdateProfileData = NonNullable<paths['/api/v1/profile']['patch']['requestBody']>['content']['application/json'];
 
 const EditProfile = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [jumpNumber, setJumpNumber] = useState('');
   const [username, setUsername] = useState('');
-
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const client = useKyClient();
 
   // Get profile data
   const { 
@@ -32,8 +36,14 @@ const EditProfile = () => {
   } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      const response = await kyInstance.get('profile').json();
-      return response;
+      return client
+      .GET('/api/v1/profile')
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch profile');
+        }
+        return res.data;
+      });
     },
     enabled: !!isAuthenticated && !!(user?.id),
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -42,11 +52,17 @@ const EditProfile = () => {
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (profileData) => {
-      const response = await kyInstance.patch('profile', {
-        json: profileData
-      }).json();
-      return response;
+    mutationFn: async (profileData: UpdateProfileData) => {
+      return client
+        .PATCH('/api/v1/profile', {
+          json: profileData
+        })
+        .then((res) => {
+          if (res.error) {
+            throw new Error('Failed to update profile');
+          }
+          return res.data;
+        });
     },
     onSuccess: (response) => {
       if (response.success) {
@@ -60,13 +76,6 @@ const EditProfile = () => {
           text1: 'Profile updated successfully',
           position: 'top',
         });
-      } else {
-        Toast.show({
-          type: 'error',
-          text1: 'Failed to update profile',
-          text2: response.error || 'Unknown error occurred',
-          position: 'top',
-        });
       }
     },
     onError: (error) => {
@@ -74,17 +83,6 @@ const EditProfile = () => {
       
       let errorMessage = 'Failed to update profile';
       let errorDetails = '';
-
-      // Handle different types of errors
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data?.validation) {
-          errorMessage = 'Validation Error';
-          errorDetails = error.response.data.validation.map(err => err.message).join(', ');
-        } else if (error.response.data?.error) {
-          errorMessage = 'Update Failed';
-          errorDetails = error.response.data.error;
-        }
-      }
 
       Toast.show({
         type: 'error',
@@ -140,23 +138,27 @@ const EditProfile = () => {
 
     try {
       // Prepare update data (only include fields that have values)
-      const updateData = {};
-      
+      const profileData: UpdateProfileData = {
+        name: profileResponse?.data?.name || '',
+        username: profileResponse?.data?.username || '',
+        jump_number: profileResponse?.data?.jump_number || 0,
+      };
+
       if (name.trim() !== profileResponse?.data?.name) {
-        updateData.name = name.trim();
+        profileData.name = name.trim();
       }
       
       if (username.trim() !== profileResponse?.data?.username) {
-        updateData.username = username.trim();
+        profileData.username = username.trim();
       }
       
       const jumpNum = parseInt(jumpNumber) || 0;
       if (jumpNum !== profileResponse?.data?.jump_number) {
-        updateData.jump_number = jumpNum;
+        profileData.jump_number = jumpNum;
       }
 
       // Only submit if there are actual changes
-      if (Object.keys(updateData).length === 0) {
+      if (Object.keys(profileData).length === 0) {
         Toast.show({
           type: 'info',
           text1: 'No changes to save',
@@ -165,7 +167,7 @@ const EditProfile = () => {
         return;
       }
 
-      await updateProfileMutation.mutateAsync(updateData);
+      await updateProfileMutation.mutateAsync(profileData);
     } catch (error) {
       // Error handling is done in the mutation's onError callback
     }
