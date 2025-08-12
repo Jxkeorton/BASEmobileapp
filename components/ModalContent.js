@@ -1,5 +1,4 @@
-// ModalContent.js
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Modal, Text, View, TextInput, TouchableOpacity, StyleSheet, ScrollView, TouchableWithoutFeedback, Keyboard, Switch } from 'react-native';
 import Toast from 'react-native-toast-message';
 const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop }) => {

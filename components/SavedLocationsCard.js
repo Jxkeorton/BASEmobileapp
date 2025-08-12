@@ -1,7 +1,6 @@
 import { Button, Card, Text as Text2 } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
 import { router } from 'expo-router';
-
 import { useUnitSystem } from '../context/UnitSystemContext';
 
 const SavedLocationsCard = ({ data, onDelete }) => {
