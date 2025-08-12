@@ -14,37 +14,48 @@ import { ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from '../services/open-api/kyClient';
+import { useKyClient } from '../services/open-api/kyClient';
+import { LogbookJump } from './LogbookJumpCard';
+import { paths } from '../types/api';
 
-const LogbookModal = ({ visible, onClose, isLoading }) => {
+type LogbookPostBody = paths['/logbook']['post']['requestBody']['content']['application/json'];
+
+interface LogbookModalProps {
+    visible: boolean;
+    onClose: () => void;
+    isLoading: boolean;
+}
+
+const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
     const [location, setLocation] = useState('');
-    const [exitType, setExitType] = useState('');
-    const [delay, setDelay] = useState('');
+    const [exitType, setExitType] = useState<LogbookPostBody['exit_type']>('Earth');
+    const [delay, setDelay] = useState<number>(0);
     const [details, setDetails] = useState('');
     const [date, setDate] = useState('');
     const [showExitTypes, setShowExitTypes] = useState(false);
-
+    const client = useKyClient();
     const queryClient = useQueryClient();
 
     // Valid exit types as per API validation
-    const exitTypes = ['Building', 'Antenna', 'Span', 'Earth'];
+    const exitTypes: LogbookJump['exit_type'][] = ['Building', 'Antenna', 'Span', 'Earth'];
 
     // TanStack mutation for submitting jump data
     const submitJumpMutation = useMutation({
-        mutationFn: async (jumpData) => {
-            const response = await kyInstance.post('logbook', {
-                json: {
-                    location_name: jumpData.location,
-                    exit_type: jumpData.exitType,
-                    delay_seconds: jumpData.delay ? parseInt(jumpData.delay) : null,
-                    jump_date: jumpData.date,
-                    details: jumpData.details
+        mutationFn: async (jumpData: LogbookPostBody) => {
+            const response = await client
+            .POST('/logbook', {
+                body: {
+                    location_name: jumpData.location_name,
+                    exit_type: jumpData.exit_type ?? 'Earth',
+                    delay_seconds: jumpData.delay_seconds ? jumpData.delay_seconds : NaN,
+                    jump_date: jumpData.jump_date ?? '',
+                    details: jumpData.details ?? ''
                 }
-            }).json();
-            return response;
+            });
+            return response.response;
         },
         onSuccess: (response) => {
-            if (response.success) {
+            if (response.status === 200) {
                 // Invalidate and refetch logbook queries to update the UI
                 queryClient.invalidateQueries({ queryKey: ['logbook'] });
                 queryClient.invalidateQueries({ queryKey: ['profile'] }); // Update jump count
@@ -64,12 +75,12 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                 Toast.show({
                     type: 'error',
                     text1: 'Failed to submit jump',
-                    text2: response.error || 'Unknown error occurred',
+                    text2: 'Unknown error occurred',
                     position: 'top',
                 });
             }
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Submit jump error:', error);
             
             let errorMessage = 'Network error occurred';
@@ -81,7 +92,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                 if (error.response.status === 400 && error.response.data?.validation) {
                     errorMessage = 'Validation Error';
                     const validationErrors = error.response.data.validation;
-                    errorDetails = validationErrors.map(err => {
+                    errorDetails = validationErrors.map((err: any) => {
                         if (err.instancePath === '/exit_type') {
                             return 'Please select a valid exit type';
                         }
@@ -109,19 +120,19 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
 
     const clearForm = () => {
         setLocation('');
-        setExitType('');
-        setDelay('');
+        setExitType('Earth');
+        setDelay(0);
         setDetails('');
         setDate('');
     };
 
     const formData = {
-        location,
-        exitType,
-        delay,
-        details,
-        date
-    };
+        location_name: location,
+        exit_type: exitType,
+        delay_seconds: delay,
+        details: details,
+        jump_date: date
+    } as LogbookPostBody;
 
     const handleSubmit = async () => {
         // Enhanced validation
@@ -134,17 +145,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
             return;
         }
 
-        if (exitType && !exitTypes.includes(exitType)) {
-            Toast.show({
-                type: 'error',
-                text1: 'Invalid exit type',
-                text2: 'Please select from: Building, Antenna, Span, Earth',
-                position: 'top',
-            });
-            return;
-        }
-
-        if (delay && (isNaN(delay) || parseInt(delay) < 0)) {
+        if (delay && (isNaN(delay) || delay < 0)) {
             Toast.show({
                 type: 'error',
                 text1: 'Invalid delay',
@@ -213,8 +214,11 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                                                 exitType === type && styles.selectedExitType
                                             ]}
                                             onPress={() => {
-                                                setExitType(type);
-                                                setShowExitTypes(false);
+                                                if (typeof type === 'string') {
+                                                    setExitType(type);
+                                                    setShowExitTypes(false);
+                                                }
+                               
                                             }}
                                         >
                                             <Text style={[
@@ -228,7 +232,7 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                                     <TouchableOpacity
                                         style={styles.exitTypeOption}
                                         onPress={() => {
-                                            setExitType('');
+                                            setExitType('Earth');
                                             setShowExitTypes(false);
                                         }}
                                     >
@@ -241,8 +245,8 @@ const LogbookModal = ({ visible, onClose, isLoading }) => {
                             <TextInput
                                 style={styles.input}
                                 keyboardType='numeric'
-                                value={delay}
-                                onChangeText={setDelay}
+                                value={delay.toString()}
+                                onChangeText={(text) => setDelay(Number(text) || 0)}
                                 autoCorrect={false}
                                 autoCapitalize="none"
                                 placeholder='in seconds'

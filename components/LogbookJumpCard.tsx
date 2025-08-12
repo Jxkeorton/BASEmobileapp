@@ -3,38 +3,51 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput} from '
 import {  router } from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
 import { useQuery } from '@tanstack/react-query';
-import { kyInstance } from '../services/open-api/kyClient';
+import { useKyClient } from '../services/open-api/kyClient';
 import { useAuth } from '../providers/AuthProvider';
+import { paths } from '../types/api';
 
-const LogbookJumpCard = ({ jumpNumber }) => {
+interface LogbookJumpCardProps {
+    jumpNumber: number;
+}
+
+export type LogbookJump = NonNullable<paths['/logbook']['get']['responses']['200']['content']['application/json']['data']>['entries'][number];
+
+const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     const [searchTerm, setSearchTerm] = useState('');
     const { user } = useAuth();
+    const client = useKyClient();
     
     // TanStack Query for logbook data
     const { 
         data: logbookResponse, 
-        isLoading,
-        error 
+        isLoading: loadingLogbook, 
+        error: error 
     } = useQuery({
         queryKey: ['logbook', user?.id],
         queryFn: async () => {
-            const response = await kyInstance.get('logbook').json();
-            return response;
+            return client
+            .GET('/logbook')
+            .then((res) => {
+                if (res.error) {
+                    throw new Error('Failed to fetch locations');
+                }
+                return res.data;
+            });
         },
         enabled: !!user?.id,
         staleTime: 2 * 60 * 1000, // 2 minutes
         retry: 3,
     });
 
-
-    const jumps = logbookResponse?.success ? logbookResponse.data.entries : [];
+    const jumps = logbookResponse?.success ? logbookResponse.data?.entries : [] as LogbookJump[];
 
     // Memoized processed jumps data
     const processedJumps = useMemo(() => {
-        if (!jumps.length) return [];
+        if (jumps && !jumps.length) return [];
         
         // Reverse to show newest first and add jump numbers
-        const reversedJumps = [...jumps].reverse();
+        const reversedJumps = [...(jumps || [])].reverse();
         return reversedJumps.map((jump, index) => ({
             ...jump,
             jumpNumber: jumpNumber - index,
@@ -53,10 +66,10 @@ const LogbookJumpCard = ({ jumpNumber }) => {
         });
     }, [processedJumps, searchTerm]);
 
-    const onCardPress = (index, jump) => {
+    const onCardPress = (index: number, jump: LogbookJump) => {
         router.navigate({
             pathname: `/(tabs)/logbook/${index}`, 
-            params: { jumpNumber: jump.jumpNumber }
+            params: { jumpNumber: jump.id }
         });
     };
 
@@ -68,7 +81,7 @@ const LogbookJumpCard = ({ jumpNumber }) => {
         );
     }
 
-    if (isLoading) {
+    if (loadingLogbook) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator size='large' color="#00ABF0" />
