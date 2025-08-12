@@ -1,12 +1,13 @@
 import { View, StyleSheet, ScrollView, TouchableHighlight, TouchableWithoutFeedback, Keyboard } from 'react-native'
-import {useState} from 'react'
+import { useState} from 'react'
 import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
 import { useQuery } from '@tanstack/react-query';
-import { kyInstance } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/open-api/kyClient';
 import { Portal, PaperProvider, Text} from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
+import type { ProfileData } from '../profile/Profile';
 
 import { useAuth } from '../../../providers/AuthProvider';
 
@@ -14,6 +15,7 @@ const LogBook = () => {
   const [visible, setVisible] = useState(false);
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
+  const client = useKyClient();
 
   const { user, loading } = useAuth();
 
@@ -25,8 +27,14 @@ const LogBook = () => {
   } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
-      const response = await kyInstance.get('profile').json();
-      return response;
+      return client
+      .GET('/profile')
+      .then((res) => {
+        if (res.error) {
+          throw new Error('Failed to fetch profile');
+        }
+        return res.data;
+      });
     },
     enabled: !!user?.id,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -50,7 +58,7 @@ const LogBook = () => {
   }
 
   // Extract data from API responses
-  const profile = profileResponse?.success ? profileResponse.data : {};
+  const profile = profileResponse?.success ? profileResponse.data : {} as ProfileData;
 
   return (
     <PaperProvider>
@@ -70,14 +78,13 @@ const LogBook = () => {
                 borderRightColor: '#dddddd',
                 borderRightWidth: 1
               }]}>
-                <Text variant='titleLarge'>{profile.jump_number || 0}</Text>
+                <Text variant='titleLarge'>{profile?.jump_number || 0}</Text>
                 <Text variant="bodySmall">Total Base Jumps</Text>
               </View>
               <View style={styles.infoBox}>
                 <TouchableHighlight
                   onPress={showModal}
                   underlayColor="#DDDDDD" 
-                  style={styles.filterButton}
                   disabled={loading.action}
                 >
                   <FontAwesome name="plus" size={30} color={loading.action ? "#ccc" : "#000"} />
@@ -86,7 +93,7 @@ const LogBook = () => {
             </View>
 
             <LogbookJumpCard 
-              jumpNumber={profile.jump_number || 0}
+              jumpNumber={profile?.jump_number || 0}
             />
           </View>
         </TouchableWithoutFeedback>

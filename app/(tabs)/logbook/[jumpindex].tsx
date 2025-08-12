@@ -5,15 +5,17 @@ import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from "../../../services/open-api/kyClient";
-
+import { useKyClient } from "../../../services/open-api/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
 
 const jumpDetails = () => {
-    const [jump, setJump] = useState(null);
+    const [jump, setJump] = useState<any>(null);
     const params = useLocalSearchParams();
+    const client = useKyClient();
 
-    const { jumpindex, jumpNumber } = params;
+    // Type assertions for params
+    const jumpindex = Number(params.jumpindex);
+    const jumpNumber = params.jumpNumber as string | undefined;
     const { user } = useAuth();
     const queryClient = useQueryClient();
 
@@ -25,8 +27,14 @@ const jumpDetails = () => {
     } = useQuery({
         queryKey: ['logbook', user?.id],
         queryFn: async () => {
-            const response = await kyInstance.get('logbook').json();
-            return response;
+            return client
+            .GET('/logbook')
+            .then((res) => {
+                if (res.error) {
+                    throw new Error('Failed to fetch locations');
+                }
+                return res.data;
+            });
         },
         enabled: !!user?.id,
         staleTime: 2 * 60 * 1000, // 2 minutes
@@ -35,9 +43,15 @@ const jumpDetails = () => {
 
     // Delete jump mutation
     const deleteJumpMutation = useMutation({
-        mutationFn: async (jumpId) => {
-            const response = await kyInstance.delete(`logbook/${jumpId}`).json();
-            return response;
+        mutationFn: async (jumpId: string) => {
+            return client
+            .DELETE('/logbook/{id}', { params: { path: { id: jumpId } } })
+            .then((res: any) => {
+                if (res.error) {
+                    throw new Error('Failed to delete jump');
+                }
+                return res.data;
+            });
         },
         onSuccess: (response) => {
             if (response.success) {
@@ -54,7 +68,6 @@ const jumpDetails = () => {
                 Toast.show({
                     type: 'error',
                     text1: 'Failed to delete jump',
-                    text2: response.error,
                     position: 'top',
                 });
             }
@@ -74,7 +87,7 @@ const jumpDetails = () => {
         React.useCallback(() => {
             const loadData = async () => {
                 try {
-                    if (logbookResponse?.success && logbookResponse?.data?.entries) {
+                    if (logbookResponse?.success && logbookResponse?.data?.entries && typeof jumpindex === 'number' && !isNaN(jumpindex)) {
                         const jumps = logbookResponse.data.entries;
 
                         // Reverse the jumps array to match the original ordering
@@ -87,7 +100,7 @@ const jumpDetails = () => {
                             setJump(selectedJump);
                         }
                     }
-                } catch (error) {
+                } catch (error: any) {
                     console.error('Error processing jump data:', error);
                     Toast.show({
                         type: 'error',
@@ -114,7 +127,7 @@ const jumpDetails = () => {
         }
 
         try {
-            await deleteJumpMutation.mutateAsync(jump.id);
+            await deleteJumpMutation.mutateAsync(jump.id as string);
         } catch (error) {
             // Error handling is done in the mutation's onError callback
         }
@@ -136,7 +149,7 @@ const jumpDetails = () => {
     if (jumpsError) {
         return (
             <View style={styles.noJumpContainer}>
-                <Text style={[styles.noImageText, { fontSize: 25 }]}>
+                <Text style={{ fontSize: 25 }}>
                     Error loading jump data. Please try again.
                 </Text>
             </View>
@@ -147,7 +160,7 @@ const jumpDetails = () => {
     if (!jump) {
         return (
             <View style={styles.noJumpContainer}>
-                <Text style={[styles.noImageText, { fontSize: 25 }]}>
+                <Text style={{ fontSize: 25 }}>
                     Cannot fetch jump details. Please try again.
                 </Text>
             </View>
@@ -158,7 +171,7 @@ const jumpDetails = () => {
         <ScrollView contentContainerStyle={styles.container}>
             <Stack.Screen
                 options={{
-                    title: jumpNumber,
+                    title: jumpNumber ?? "",
                 }}
             />
 
