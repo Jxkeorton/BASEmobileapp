@@ -8,7 +8,7 @@ import { useKyClient } from "../../../services/open-api/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
 import { paths } from "../../../types/api";
 
-type SubmitLocationData = NonNullable<paths['/api/v1/locations/submissions']['post']['requestBody']>['content']['application/json'];
+type SubmitLocationData = NonNullable<paths['/locations/submissions']['post']['requestBody']>['content']['application/json'];
 
 const SubmitLocation = () => {
     const [exitName, setExitName] = useState('');
@@ -35,7 +35,7 @@ const SubmitLocation = () => {
     const submitLocationMutation = useMutation({
         mutationFn: async (locationData: SubmitLocationData) => {
             return client
-            .POST('/api/v1/locations/submissions', {
+            .POST('/locations/submissions', {
                 body: locationData
             })
             .then((res) => {

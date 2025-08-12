@@ -15,7 +15,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useKyClient } from '../../../services/open-api/kyClient';
 import { paths } from '../../../types/api';
 
-type ProfileResponse = paths['/api/v1/profile']['get']['responses']['200']['content']['application/json'];
+type ProfileResponse = paths['/profile']['get']['responses']['200']['content']['application/json'];
 export type ProfileData = NonNullable<ProfileResponse['data']>;
 
 const Profile = () => {
@@ -32,7 +32,7 @@ const Profile = () => {
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       return client
-      .GET('/api/v1/profile')
+      .GET('/profile')
       .then((res) => {
         if (res.error) {
           throw new Error('Failed to fetch profile');
@@ -54,7 +54,7 @@ const Profile = () => {
     queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
       return client
-      .GET('/api/v1/locations/saved')
+      .GET('/locations/saved')
       .then((res) => {
         if (res.error) {
           throw new Error('Failed to fetch saved locations');
@@ -71,7 +71,7 @@ const Profile = () => {
   const unsaveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
       return client
-      .DELETE('/api/v1/locations/unsave', {
+      .DELETE('/locations/unsave', {
         body: { location_id: locationId }
       })
       .then((res) => {

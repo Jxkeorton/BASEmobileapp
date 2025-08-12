@@ -33,7 +33,7 @@ export default function Location() {
     queryKey: ['locations'],
     queryFn: async () => {
     return client  
-      .GET("/api/v1/locations")
+      .GET("/locations")
       .then((res) => {
         if (res.error) {
           throw new Error('Failed to fetch locations');
@@ -51,7 +51,7 @@ export default function Location() {
     queryKey: ['savedLocations', user?.id],
     queryFn: async () => {
       return client
-      .GET("/api/v1/locations/saved")
+      .GET("/locations/saved")
       .then((res) => {
         if (res.error) {
           throw new Error('Failed to fetch saved locations');
@@ -66,7 +66,7 @@ export default function Location() {
   // Get user's saved locations
   const saveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
-      const res = await client.POST("/api/v1/locations/save", {
+      const res = await client.POST("/locations/save", {
         body: { location_id: locationId }
       });
       if (res.error) throw new Error(res.error.error || "Failed to save location");
@@ -95,7 +95,7 @@ export default function Location() {
   // Unsave location mutation  
   const unsaveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
-      const res = await client.DELETE("/api/v1/locations/unsave", {
+      const res = await client.DELETE("/locations/unsave", {
         body: { location_id: locationId }
       });
       if (res.error) throw new Error(res.error.error || "Failed to unsave location");

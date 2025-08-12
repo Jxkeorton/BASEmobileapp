@@ -16,7 +16,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { paths } from '../../../types/api';
 
-type UpdateProfileData = NonNullable<paths['/api/v1/profile']['patch']['requestBody']>['content']['application/json'];
+type UpdateProfileData = NonNullable<paths['/profile']['patch']['requestBody']>['content']['application/json'];
 
 const EditProfile = () => {
   const [name, setName] = useState('');
@@ -36,7 +36,7 @@ const EditProfile = () => {
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       return client
-      .GET('/api/v1/profile')
+      .GET('/profile')
       .then((res) => {
         if (res.error) {
           throw new Error('Failed to fetch profile');
@@ -53,7 +53,7 @@ const EditProfile = () => {
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: UpdateProfileData) => {
       return client
-        .PATCH('/api/v1/profile', {
+        .PATCH('/profile', {
           json: profileData
         })
         .then((res) => {

@@ -37,7 +37,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/locations": {
+    "/admin/locations": {
         parameters: {
             query?: never;
             header?: never;
@@ -92,7 +92,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/locations/{locationId}": {
+    "/admin/locations/{locationId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -168,7 +168,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/v1/admin/submissions": {
+    "/admin/submissions": {
         parameters: {
             query?: never;
             header?: never;
@@ -231,7 +231,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/admin/submissions/{submissionId}": {
+    "/admin/submissions/{submissionId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -306,7 +306,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/v1/locations/submission-limits": {
+    "/locations/submission-limits": {
         parameters: {
             query?: never;
             header?: never;
@@ -352,7 +352,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/locations/submissions/{id}": {
+    "/locations/submissions/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -433,7 +433,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/v1/locations/submissions": {
+    "/locations/submissions": {
         parameters: {
             query?: never;
             header?: never;
@@ -568,7 +568,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/locations": {
+    "/locations": {
         parameters: {
             query?: never;
             header?: never;
@@ -637,7 +637,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/locations/save": {
+    "/locations/save": {
         parameters: {
             query?: never;
             header?: never;
@@ -700,7 +700,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/locations/unsave": {
+    "/locations/unsave": {
         parameters: {
             query?: never;
             header?: never;
@@ -758,7 +758,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/locations/saved": {
+    "/locations/saved": {
         parameters: {
             query?: never;
             header?: never;
@@ -830,7 +830,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/signin": {
+    "/signin": {
         parameters: {
             query?: never;
             header?: never;
@@ -876,7 +876,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/signup": {
+    "/signup": {
         parameters: {
             query?: never;
             header?: never;
@@ -924,7 +924,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reset-password": {
+    "/reset-password": {
         parameters: {
             query?: never;
             header?: never;
@@ -968,7 +968,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/reset-password-confirm": {
+    "/reset-password-confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -1013,7 +1013,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/confirm-email": {
+    "/confirm-email": {
         parameters: {
             query?: never;
             header?: never;
@@ -1055,7 +1055,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/resend-confirmation": {
+    "/resend-confirmation": {
         parameters: {
             query?: never;
             header?: never;
@@ -1099,7 +1099,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/signout": {
+    "/signout": {
         parameters: {
             query?: never;
             header?: never;
@@ -1133,7 +1133,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/delete-account": {
+    "/delete-account": {
         parameters: {
             query?: never;
             header?: never;
@@ -1210,7 +1210,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/refresh": {
+    "/refresh": {
         parameters: {
             query?: never;
             header?: never;
@@ -1251,7 +1251,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/profile": {
+    "/profile": {
         parameters: {
             query?: never;
             header?: never;
@@ -1363,7 +1363,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/api/v1/subscriptions/webhook": {
+    "/subscriptions/webhook": {
         parameters: {
             query?: never;
             header?: never;
@@ -1416,7 +1416,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/subscriptions/restore": {
+    "/subscriptions/restore": {
         parameters: {
             query?: never;
             header?: never;
@@ -1469,7 +1469,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/logbook": {
+    "/logbook": {
         parameters: {
             query?: never;
             header?: never;
@@ -1594,7 +1594,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/logbook/{id}": {
+    "/logbook/{id}": {
         parameters: {
             query?: never;
             header?: never;
