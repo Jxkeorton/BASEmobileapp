@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { router } from 'expo-router'
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Image } from 'react-native';
 import { useAuth } from '../../providers/AuthProvider';
-import { kyInstance } from '../../services/open-api/kyClient';
+import { useKyClient } from '../../services/open-api/kyClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation } from '@tanstack/react-query';
 
@@ -12,19 +12,22 @@ const Register = () => {
     const [password, setPassword] = useState('');
     const [name, setDisplayName] = useState('');
     const [termsChecked, setTermsChecked] = useState(false);
+    const client = useKyClient();
 
     const { updateUser } = useAuth();
 
     const signUpMutation = useMutation({
-        mutationFn: async ({ email, password, name }) => {
-            return kyInstance.post('signup', {
-            json: { email, password, name }
-            }).json();
+        mutationFn: async ({ email, password, name }: { email: string; password: string; name: string }) => {
+            return client.POST('/signup', {
+                    body: { email, password, name }
+            });
         },
         onSuccess: async (response) => {
-            if (response.success) {
+            if (response.response.status === 200) {
+
+                const res = response.response
                 // Check if email confirmation is required
-                if (!response.data.session) {
+                if (!res.headers.) {
                     Alert.alert(
                         'Check Your Email', 
                         response.data.message || 'Please check your email and click the confirmation link to activate your account.',
@@ -157,7 +160,6 @@ const Register = () => {
               ) : (
                 <>
                   <Button
-                    title="Register"
                     mode="contained"
                     style={styles.registerButton}
                     onPress={handleSignUp}

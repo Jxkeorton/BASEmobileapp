@@ -3,13 +3,16 @@ import { useState } from 'react';
 import { Button, TextInput, ActivityIndicator, Text } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { kyInstance } from '../../services/open-api/kyClient';
+import { kyInstance, useKyClient } from '../../services/open-api/kyClient';
 
 const ResetPasswordConfirm = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const { access_token, refresh_token } = useLocalSearchParams();
+    const params = useLocalSearchParams();
+    const access_token: string = params.access_token as string;
+    const refresh_token: string = params.refresh_token as string;
+    const client = useKyClient();
 
     const handlePasswordReset = async () => {
         if (!newPassword || !confirmPassword) {
@@ -27,7 +30,7 @@ const ResetPasswordConfirm = () => {
             return;
         }
 
-        if (!access_token || !refresh_token) {
+        if (!access_token || !refresh_token || typeof access_token !== 'string') {
             Alert.alert('Error', 'Invalid reset link. Please request a new password reset.');
             return;
         }
@@ -36,15 +39,15 @@ const ResetPasswordConfirm = () => {
 
         try {
             // Call your API to reset the password
-            const response = await kyInstance.post('reset-password-confirm', {
-                json: {
-                    access_token,
+            const response = await client.POST('/reset-password-confirm', {
+                body: {
+                    access_token: Array.isArray(access_token) ? access_token[0] : access_token,
                     refresh_token,
                     new_password: newPassword,
                 }
-            }).json();
+            })
 
-            if (response.success) {
+            if (response.response.status === 200) {
                 Toast.show({
                     type: 'success',
                     text1: 'Password Reset Successful',

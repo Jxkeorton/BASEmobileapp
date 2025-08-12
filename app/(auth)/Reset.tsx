@@ -3,19 +3,27 @@ import { useState } from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { kyInstance } from '../../services/open-api/kyClient';
+import { useKyClient } from '../../services/open-api/kyClient';
 
 const Reset = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
+    const client = useKyClient();
 
-    const resetPasswordPost = async (email) => {
+    const resetPasswordPost = async (email: string) => {
         try {
-            const response = await kyInstance.post('reset-password', {
-                json: { email }
-            }).json();
-            return response;
-        } catch (error) {
+            const response = await client
+            .POST('/reset-password', {
+                body: { email }
+            }).then(res => {
+                return res
+            });
+
+            if(response.response.status === 200) {
+                return { success: true };
+            }
+
+        } catch (error: any) {
             console.error('Reset password error:', error);
             return { success: false, error: error.message };
         }
@@ -36,8 +44,8 @@ const Reset = () => {
         setLoading(true);
         const resp = await resetPasswordPost(email);
         setLoading(false);
-        
-        if (resp?.success) { 
+
+        if (resp?.success) {
             router.replace("/(auth)/Login");
             Toast.show({
                 type: 'success',
@@ -46,7 +54,7 @@ const Reset = () => {
                 position: 'top',
             });
         } else {
-            Alert.alert('Error', resp.error || 'Failed to send reset email');
+            Alert.alert('Error', resp?.error || 'Failed to send reset email');
         }
     }
 
