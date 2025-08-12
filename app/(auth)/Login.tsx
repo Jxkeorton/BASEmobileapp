@@ -2,7 +2,7 @@ import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keybo
 import {useState} from 'react';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { useAuth } from '../../providers/AuthProvider';
-import { kyInstance } from '../../services/open-api/kyClient';
+import { useKyClient } from '../../services/open-api/kyClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
@@ -10,20 +10,21 @@ import { useMutation } from '@tanstack/react-query';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const client = useKyClient();
 
     const { updateUser, loading } = useAuth();
 
     const signInMutation = useMutation({
-        mutationFn: async ({ email, password }) => {
-            return kyInstance.post('signin', {
-                json: { email, password }
-            }).json();
+        mutationFn: async ({ email, password }: { email: string; password: string }) => {
+            return client.POST('/signin', {
+                body: { email, password }
+            });
         },
         onSuccess: async (response) => {
-            if (response.success) {
+            if (response.response.status === 200) {
                 // Store token and user data using simple storage
-                await AsyncStorage.setItem('auth_token', response.data.session.access_token);
-                await AsyncStorage.setItem('refresh_token', response.data.session.refresh_token);
+                await AsyncStorage.setItem('auth_token', response.data?.session?.access_token || '');
+                await AsyncStorage.setItem('refresh_token', response.data?.session?.refresh_token || '');
                 
                 // Update auth context
                 updateUser(response.data.user);
@@ -115,7 +116,6 @@ const Login = () => {
                     ) : (
                         <>
                             <Button
-                                title="Login"
                                 mode="contained"
                                 style={styles.loginButton} 
                                 onPress={handleSignIn}
@@ -124,7 +124,6 @@ const Login = () => {
                             </Button>
                             <Button 
                                 textColor='#007AFF' 
-                                title="Register" 
                                 onPress={() => router.replace("Register")} 
                                 style={styles.button}
                             >
@@ -132,7 +131,6 @@ const Login = () => {
                             </Button>
                             <Button 
                                 textColor='#007AFF' 
-                                title="Forgot Password" 
                                 onPress={() => router.replace("Reset")} 
                                 style={styles.button}
                             >

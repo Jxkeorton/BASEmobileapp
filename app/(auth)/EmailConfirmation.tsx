@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
-import { kyInstance } from '../../services/open-api/kyClient';
+import { kyInstance, useKyClient } from '../../services/open-api/kyClient';
 
 const EmailConfirmation = () => {
   const [isResending, setIsResending] = useState(false);
   const { email } = useLocalSearchParams();
+  const client = useKyClient();
 
   const resendConfirmation = async () => {
     if (!email) {
@@ -16,21 +17,23 @@ const EmailConfirmation = () => {
 
     setIsResending(true);
     try {
-      const response = await kyInstance.post('resend-confirmation', {
-        json: { email }
-      }).json();
-      
-      if (response.success) {
-        Alert.alert('Email Sent', response.message || 'Confirmation email has been resent. Please check your inbox.');
+      const response = await client.POST('/resend-confirmation', {
+        body: { email: typeof email === 'string' ? email : email?.[0] || '' }
+      });
+
+      if (response.response.status === 200) {
+        Alert.alert('Email Sent', 'Confirmation email has been resent. Please check your inbox.');
+      } else {
+        Alert.alert('Error', 'Failed to resend confirmation email. Please try again.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Resend error:', error);
       
       // Handle different error responses
       if (error.response?.status === 429) {
         Alert.alert('Too Many Requests', 'Please wait before requesting another confirmation email.');
       } else if (error.response?.status === 400) {
-        error.response.json().then(errorData => {
+        error.response.json().then((errorData: any) => {
           Alert.alert('Error', errorData.error || 'Failed to resend confirmation email.');
         }).catch(() => {
           Alert.alert('Error', 'Failed to resend confirmation email. Please try again.');

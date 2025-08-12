@@ -1,7 +1,6 @@
 import { StyleSheet, View, Text, TouchableOpacity, Linking, Platform} from 'react-native'
 import {Callout} from 'react-native-maps';
 import { router} from 'expo-router';
-
 import { useUnitSystem } from '../context/UnitSystemContext';
 
 export default function CustomCallout({info}) {
