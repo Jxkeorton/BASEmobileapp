@@ -7,12 +7,10 @@ import { useUnitSystem } from '../context/UnitSystemContext';
 const SavedLocationsCard = ({ data, onDelete }) => {
 
   const { isMetric } = useUnitSystem();
-  // function to direct to the locations details page
    const onDetailsPress = (itemId) => {
       router.navigate(`/(tabs)/map/${itemId}`)
    };
 
-    // Function to convert feet to meters when isMetric is true
     const convertToMeters = (value) => {
       return (value ? `${Math.round(parseFloat(value) * 0.3048)} meters` : '?');
     };

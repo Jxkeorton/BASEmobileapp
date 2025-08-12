@@ -4,8 +4,11 @@ import { Switch, PaperProvider, ActivityIndicator } from "react-native-paper";
 import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from "../../../services/open-api/kyClient";
+import { useKyClient } from "../../../services/open-api/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
+import { paths } from "../../../types/api";
+
+type SubmitLocationData = NonNullable<paths['/api/v1/locations/submissions']['post']['requestBody']>['content']['application/json'];
 
 const SubmitLocation = () => {
     const [exitName, setExitName] = useState('');
@@ -20,20 +23,27 @@ const SubmitLocation = () => {
     const [openedBy, setOpenedBy] = useState('');
     const [openedDate, setOpenedDate] = useState('');
     const [country, setCountry] = useState('');
-    const [selectedUnit, setSelectedUnit] = useState('Meters');
+    const [selectedUnit, setSelectedUnit] = useState<'Meters' | 'Feet'>('Meters');
 
     const { isAuthenticated } = useAuth();
     const queryClient = useQueryClient();
+    const client = useKyClient();
 
     // TODO: add user to submissions
 
     // Submit location mutation
     const submitLocationMutation = useMutation({
-        mutationFn: async (locationData) => {
-            const response = await kyInstance.post('locations/submissions', {
-                json: locationData
-            }).json();
-            return response;
+        mutationFn: async (locationData: SubmitLocationData) => {
+            return client
+            .POST('/api/v1/locations/submissions', {
+                body: locationData
+            })
+            .then((res) => {
+                if (res.error) {
+                    throw new Error('Failed to submit location');
+                }
+                return res.data;
+            });
         },
         onSuccess: (response) => {
             if (response.success) {
@@ -54,12 +64,12 @@ const SubmitLocation = () => {
                 Toast.show({
                     type: 'error',
                     text1: 'Error trying to send submission',
-                    text2: response.error || 'Unknown error occurred',
+                    text2: 'Unknown error occurred',
                     position: 'top',
                 });
             }
         },
-        onError: (error) => {
+        onError: (error: any) => {
             console.error('Submit location error:', error);
             
             let errorMessage = 'Failed to submit location';
@@ -69,7 +79,7 @@ const SubmitLocation = () => {
             if (error.response) {
                 if (error.response.status === 400 && error.response.data?.validation) {
                     errorMessage = 'Validation Error';
-                    errorDetails = error.response.data.validation.map(err => err.message).join(', ');
+                    errorDetails = error.response.data.validation.map((err: any) => err.message).join(', ');
                 } else if (error.response.status === 429) {
                     errorMessage = 'Submission Limit Reached';
                     errorDetails = error.response.data?.error || 'Too many submissions today';
@@ -104,15 +114,15 @@ const SubmitLocation = () => {
     };
 
     // Parse coordinates string into latitude and longitude
-    const parseCoordinates = (coordsString) => {
+    const parseCoordinates = (coordsString: string) => {
         if (!coordsString) return null;
         
         // Handle various coordinate formats
         const coords = coordsString.replace(/[^\d.,-]/g, '').split(',');
         if (coords.length !== 2) return null;
         
-        const lat = parseFloat(coords[0].trim());
-        const lng = parseFloat(coords[1].trim());
+        const lat = coords[0] ? parseFloat(coords[0].trim()) : NaN;
+        const lng = coords[1] ? parseFloat(coords[1].trim()) : NaN;
         
         if (isNaN(lat) || isNaN(lng)) return null;
         if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
@@ -121,8 +131,7 @@ const SubmitLocation = () => {
     };
 
     // Convert height to feet (API expects feet)
-    const convertToFeet = (value, unit) => {
-        if (!value || isNaN(parseFloat(value))) return null;
+    const convertHeight = (value: string, unit: 'Meters' | 'Feet') => {
         const numValue = parseFloat(value);
         return unit === 'Meters' ? Math.round(numValue * 3.28084) : Math.round(numValue);
     };
@@ -182,12 +191,12 @@ const SubmitLocation = () => {
             const locationData = {
                 submission_type: 'new',
                 name: exitName.trim(),
-                country: country.trim() || undefined,
+                country: country.trim() || '',
                 latitude: parsedCoords.latitude,
                 longitude: parsedCoords.longitude,
-                rock_drop_ft: convertToFeet(rockDrop, selectedUnit),
+                rock_drop_ft: convertHeight(rockDrop, selectedUnit),
                 // Only include optional fields if they have values
-                ...(total && { total_height_ft: convertToFeet(total, selectedUnit) }),
+                ...(total && { total_height_ft: convertHeight(total, selectedUnit) }),
                 ...(cliffAspect && { cliff_aspect: cliffAspect.trim() }),
                 ...(anchor && { anchor_info: anchor.trim() }),
                 ...(access && { access_info: access.trim() }),
@@ -195,7 +204,7 @@ const SubmitLocation = () => {
                 ...(openedBy && { opened_by_name: openedBy.trim() }),
                 ...(openedDate && { opened_date: openedDate.trim() }),
                 ...(videoLink && { video_link: videoLink.trim() }),
-            };
+            } satisfies SubmitLocationData;
 
             await submitLocationMutation.mutateAsync(locationData);
         } catch (error) {
