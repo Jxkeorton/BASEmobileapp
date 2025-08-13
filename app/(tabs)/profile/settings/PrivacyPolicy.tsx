@@ -1,4 +1,3 @@
-import React from 'react';
 import { ScrollView, Text, StyleSheet } from 'react-native';
 import { router } from 'expo-router'
 
@@ -71,18 +70,5 @@ const styles = StyleSheet.create({
     contactLink: {
         color: 'blue',
         textDecorationLine: 'underline',
-    },
-      date: {
-        fontSize: 12,
-        marginBottom: 10,
-      },
-      sectionHeader: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginTop: 10,
-      },
-      contactLink: {
-        color: 'blue',
-        textDecorationLine: 'underline',
-      },
+    }
 });

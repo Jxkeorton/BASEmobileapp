@@ -69,7 +69,7 @@ const LogBook = () => {
               <LogbookModal
                 visible={visible}
                 onClose={hideModal}
-                isLoading={loading.action} 
+                isLoading={loading} 
               />
             </Portal>
 
@@ -85,9 +85,9 @@ const LogBook = () => {
                 <TouchableHighlight
                   onPress={showModal}
                   underlayColor="#DDDDDD" 
-                  disabled={loading.action}
+                  disabled={loading}
                 >
-                  <FontAwesome name="plus" size={30} color={loading.action ? "#ccc" : "#000"} />
+                  <FontAwesome name="plus" size={30} color={loading ? "#ccc" : "#000"} />
                 </TouchableHighlight>
               </View>
             </View>

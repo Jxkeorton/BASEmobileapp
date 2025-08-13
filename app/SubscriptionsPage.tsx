@@ -61,7 +61,7 @@ const PackageList = () => {
     return false;
   };
 
-  if (loading.subscription) {
+  if (loading) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
         <ActivityIndicator size="large" color="#007AFF" />
@@ -109,7 +109,7 @@ const PackageList = () => {
           <Text style={styles.packageText}>
             {package1.product.priceString}
           </Text>
-          {isLoading || loading.action ? (
+          {isLoading || loading ? (
             <ActivityIndicator color="white" size="small" />
           ) : userHasAccessToPackage(package1) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
@@ -131,7 +131,7 @@ const PackageList = () => {
           <Text style={styles.packageText}>
             {package2.product.priceString}
           </Text>
-          {isLoading || loading.action ? (
+          {isLoading || loading ? (
             <ActivityIndicator color="white" size="small" /> 
           ) : userHasAccessToPackage(package2) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
@@ -147,13 +147,13 @@ const PackageList = () => {
       </View>
       
       {/* 7-day Trial Button with LinearGradient Effect */}
-      {!(isLoading || loading.action) && (
+      {!(isLoading || loading) && (
       <View style={styles.trialContainer}>
         <Text style={styles.trialText}>A 7 Day Free trial will be applied if it is your first time subscribing</Text>
       </View> )}
 
       {/* Back to Map Button */}
-      {isLoading || loading.action ? (
+      {isLoading || loading ? (
        <Text style={styles.backToMapButtonText}>Please wait...</Text>
       ) : (
         <TouchableOpacity 

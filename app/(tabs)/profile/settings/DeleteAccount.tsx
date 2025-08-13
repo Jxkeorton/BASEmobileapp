@@ -9,21 +9,13 @@ const DeleteAccount = () => {
     const deleteAccount = () => {}
 
     const handleDeleteAccount = async () => {
-        const result = await deleteAccount();
-        if (result.success) {
-            // Account has been deleted successfully
-            router.replace('/(auth)/Register')
-        } else {
-            // Handle the error
-            console.error(result.error);
-            Alert.alert('failed to delete account', 'please try again or contact us')
-        }
+         await deleteAccount();
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.text}>Are you sure you want to delete your account?</Text>
-            <Button title="Delete Account" onPress={handleDeleteAccount} style={styles.button}><Text style={styles.buttonTitle}>Delete Account</Text></Button>
+            <Button onPress={handleDeleteAccount} style={styles.button}><Text style={styles.buttonTitle}>Delete Account</Text></Button>
         </View>
     );
 };
