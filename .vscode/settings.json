@@ -4,6 +4,9 @@
     "editor.formatOnPaste": true,
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "always"
+    },
     "files.autoSave": "onFocusChange",
     "vs-code-prettier-eslint.prettierLast": false
 }
