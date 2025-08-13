@@ -8,7 +8,7 @@ import { useKyClient } from "../../../services/open-api/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
 import { paths } from "../../../types/api";
 
-type SubmitLocationData = NonNullable<paths['/locations/submissions']['post']['requestBody']>['content']['application/json'];
+export type SubmitLocationData = NonNullable<paths['/locations/submissions']['post']['requestBody']>['content']['application/json'];
 
 const SubmitLocation = () => {
     const [exitName, setExitName] = useState('');

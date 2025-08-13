@@ -17,6 +17,7 @@ import { paths } from '../../../types/api';
 
 type ProfileResponse = paths['/profile']['get']['responses']['200']['content']['application/json'];
 export type ProfileData = NonNullable<ProfileResponse['data']>;
+export type SavedLocationsArray = NonNullable<paths['/locations/saved']['get']['responses']['200']['content']['application/json']['data']>['saved_locations'];
 
 const Profile = () => {
   const { user, isAuthenticated } = useAuth();
@@ -122,7 +123,7 @@ const Profile = () => {
 
   // Extract profile data
   const profile = profileResponse?.success ? profileResponse.data : undefined;
-  const savedLocations = savedLocationsResponse?.success ? savedLocationsResponse.data?.saved_locations ?? {} : {};
+  const savedLocations = savedLocationsResponse?.success ? savedLocationsResponse.data?.saved_locations ?? [] as SavedLocationsArray : [] as SavedLocationsArray;
 
   if (profileLoading) {
     return (

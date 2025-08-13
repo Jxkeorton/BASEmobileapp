@@ -12,11 +12,19 @@ import {
 } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from '../services/open-api/kyClient';
+import { useKyClient } from '../services/open-api/kyClient';
 import { useAuth } from '../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
+import { SubmitLocationData } from '../app/(tabs)/profile/SubmitLocation';
+import { Location } from '../app/(tabs)/map/Map';
 
-const SubmitDetailsModal = ({ visible, onClose, location }) => {
+interface SubmitDetailsModalProps {
+  visible: boolean,
+  onClose: () => void
+  location: Location
+}
+
+const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalProps) => {
   const [newLocationName, setNewLocationName] = useState('');
   const [exitType, setExitType] = useState('');
   const [rockDropHeight, setRockDropHeight] = useState('');
@@ -30,16 +38,23 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
 
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  const client = useKyClient();
 
   // TODO: add user to submissions
 
   // Submit location update mutation
   const submitUpdateMutation = useMutation({
-    mutationFn: async (submissionData) => {
-      const response = await kyInstance.post('locations/submissions', {
-        json: submissionData
-      }).json();
-      return response;
+    mutationFn: async (submissionData: SubmitLocationData) => {
+      return client
+      .POST('/locations/submissions', {
+        body: submissionData
+      })            
+      .then((res) => {
+          if (res.error) {
+              throw new Error('Failed to submit location');
+          }
+          return res.data;
+      });
     },
     onSuccess: (response) => {
       if (response.success) {
@@ -61,12 +76,12 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
         Toast.show({
           type: 'error',
           text1: 'Error submitting details',
-          text2: response.error || 'Unknown error occurred',
+          text2: 'Unknown error occurred',
           position: 'top',
         });
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Submit details error:', error);
       
       let errorMessage = 'Failed to submit details';
@@ -76,7 +91,7 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
       if (error.response) {
         if (error.response.status === 400 && error.response.data?.validation) {
           errorMessage = 'Validation Error';
-          errorDetails = error.response.data.validation.map(err => err.message).join(', ');
+          errorDetails = error.response.data.validation.map((err: any) => err.message).join(', ');
         } else if (error.response.status === 429) {
           errorMessage = 'Submission Limit Reached';
           errorDetails = error.response.data?.error || 'Too many submissions';
@@ -150,7 +165,7 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
         submission_type: 'update',
         existing_location_id: location.id,
         name: newLocationName || location.name,
-        country: location.country,
+        country: location.country || '',
         latitude: location.latitude,
         longitude: location.longitude,
         // Only include height fields if they're provided and valid
@@ -167,7 +182,7 @@ const SubmitDetailsModal = ({ visible, onClose, location }) => {
         ...(notes && { notes: notes }),
         ...(openedByName && { opened_by_name: openedByName }),
         ...(openedDate && { opened_date: openedDate }),
-      };
+      } satisfies SubmitLocationData;
 
       await submitUpdateMutation.mutateAsync(submissionData);
     } catch (error) {

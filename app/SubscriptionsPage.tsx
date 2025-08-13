@@ -5,6 +5,7 @@ import {router} from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../providers/AuthProvider';
+import {CustomerInfo, PurchasesPackage} from 'react-native-purchases';
 
 const PackageList = () => {
   const { user, loading } = useAuth();
@@ -12,21 +13,26 @@ const PackageList = () => {
 
   // TODO: Add back revenue cat logic
   const isProUser = true
-  const purchasePackage = () => {}
-  const packages = {}
+  const purchasePackage = async (pkg: PurchasesPackage): Promise<CustomerInfo> => {
+    // Placeholder implementation
+    return new Promise((resolve) => {
+      resolve({} as CustomerInfo);
+    });
+  }
+  const packages = [] as PurchasesPackage[];
 
-  const handlePurchase = async (pkg) => {
+  const handlePurchase = async (pkg: PurchasesPackage) => {
     setIsLoading(true);
     try {
-      const result = await purchasePackage(pkg);
+      const result: CustomerInfo = await purchasePackage(pkg);
 
-      if (result.success && isProUser) { 
-        router.push('/(tabs)/map/Map')
-      } else if (result.error) {
+      if (isProUser) { 
+        router.push('/(tabs)/map/Map');
+      } else {
         Toast.show({
           type: 'error',
           text1: 'Failed to purchase package',
-          text2: result.error,
+          text2: 'An error occurred during the purchase process.',
           position: 'top',
         });
       }
@@ -43,7 +49,7 @@ const PackageList = () => {
     }
   };
 
-  const userHasAccessToPackage = (pkg) => {
+  const userHasAccessToPackage = (pkg: PurchasesPackage) => {
     if (isProUser) {
       return true;
     }
@@ -188,7 +194,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: '48%', 
     height: 150,
-    alignItems: 'center',
     marginTop: 30,
     marginHorizontal: 5,
   },

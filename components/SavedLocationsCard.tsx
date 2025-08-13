@@ -2,16 +2,22 @@ import { Button, Card, Text as Text2 } from 'react-native-paper';
 import { View, StyleSheet, Text } from 'react-native';
 import { router } from 'expo-router';
 import { useUnitSystem } from '../context/UnitSystemContext';
+import { SavedLocationsArray } from '../app/(tabs)/profile/Profile';
 
-const SavedLocationsCard = ({ data, onDelete }) => {
+interface SavedLocationsCardProps {
+  data: SavedLocationsArray;
+  onDelete: (id: number) => void;
+}
+
+const SavedLocationsCard = ({ data, onDelete }: SavedLocationsCardProps) => {
 
   const { isMetric } = useUnitSystem();
-   const onDetailsPress = (itemId) => {
+   const onDetailsPress = (itemId: number) => {
       router.navigate(`/(tabs)/map/${itemId}`)
    };
 
-    const convertToMeters = (value) => {
-      return (value ? `${Math.round(parseFloat(value) * 0.3048)} meters` : '?');
+    const convertToMeters = (value?: number) => {
+      return (value ? `${Math.round(value * 0.3048)} meters` : '?');
     };
 
     // Check if data is empty
@@ -30,17 +36,16 @@ const SavedLocationsCard = ({ data, onDelete }) => {
       <View style={styles.container}>
         <Text style={styles.title}>Saved Locations</Text>
         {data.map((item) => (
-          <View key={item.id} style={styles.card}>
+          <View key={item.save_id} style={styles.card}>
             <Card>
               <Card.Content>
                 <Text2 variant='titleLarge'>{item.location.name}</Text2>
                 <Text style={styles.calloutCoordinates}>
-                  Rock Drop: {isMetric ? convertToMeters(item.location.rock_drop_ft) : (item.location.rock_drop_ft ? `${item.location.rock_drop_ft} ft` : '?')}
+                  Rock Drop: {isMetric ? convertToMeters(item.location.rock_drop_ft ?? undefined) : (item.location.rock_drop_ft ? `${item.location.rock_drop_ft} ft` : '?')}
                 </Text>
               </Card.Content>
               <Card.Actions>
                 <Button
-                  style={styles.buttonOutlined}
                   textColor="black"
                   onPress={() => onDetailsPress(item.location.id)}
                 >
@@ -79,9 +84,6 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#00ABF0'
-    },
-    buttonOutlined: {
-        buttonColor: 'black',
     },
     calloutCoordinates: {
       marginBottom: 5,

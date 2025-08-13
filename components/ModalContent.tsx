@@ -1,7 +1,16 @@
 import { useState } from 'react';
+
+interface ModalContentProps {
+  visible: boolean;
+  onClose: () => void;
+  onApplyFilter: (minRockDrop: string, maxRockDrop: string, unknownRockdrop: boolean) => void;
+  minRockDrop: string;
+  maxRockDrop: string;
+}
 import { Modal, Text, View, TextInput, TouchableOpacity, StyleSheet, ScrollView, TouchableWithoutFeedback, Keyboard, Switch } from 'react-native';
 import Toast from 'react-native-toast-message';
-const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop }) => {
+
+const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop }: ModalContentProps) => {
   const [tempMinRockDrop, setTempMinRockDrop] = useState(minRockDrop);
   const [tempMaxRockDrop, setTempMaxRockDrop] = useState(maxRockDrop);
   const [tempUnknownRockdrop, setTempUnknownRockDrop] = useState(false);
@@ -67,7 +76,6 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
         <Switch
             value={tempUnknownRockdrop}
             onValueChange={() => setTempUnknownRockDrop(!tempUnknownRockdrop)}
-            color="#00ABF0" // Change the color as desired
         />
 
         <View style={styles.modalFooter}>
