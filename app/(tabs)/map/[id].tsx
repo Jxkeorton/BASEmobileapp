@@ -8,7 +8,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useKyClient } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/kyClient';
 import { Portal, PaperProvider } from 'react-native-paper'
 import SubmitDetailsModal from '../../../components/SubmitDetailsModal';
 import { useUnitSystem } from '../../../context/UnitSystemContext';

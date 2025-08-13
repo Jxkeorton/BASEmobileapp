@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { router } from 'expo-router'
 import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Alert, TextInput, Image } from 'react-native';
 import { useAuth } from '../../providers/AuthProvider';
-import { useKyClient } from '../../services/open-api/kyClient';
+import { useKyClient } from '../../services/kyClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useMutation } from '@tanstack/react-query';
 

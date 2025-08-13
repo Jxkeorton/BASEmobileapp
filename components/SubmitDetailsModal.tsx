@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useKyClient } from '../services/open-api/kyClient';
+import { useKyClient } from '../services/kyClient';
 import { useAuth } from '../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { SubmitLocationData } from '../app/(tabs)/profile/SubmitLocation';
@@ -49,7 +49,7 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
       .POST('/locations/submissions', {
         body: submissionData
       })            
-      .then((res) => {
+      .then((res: any) => {
           if (res.error) {
               throw new Error('Failed to submit location');
           }

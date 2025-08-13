@@ -14,7 +14,7 @@ import { ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useKyClient } from '../services/open-api/kyClient';
+import { useKyClient } from '../services/kyClient';
 import { LogbookJump } from './LogbookJumpCard';
 import { paths } from '../types/api';
 

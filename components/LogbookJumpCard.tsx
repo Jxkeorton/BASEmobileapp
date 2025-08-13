@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput} from '
 import {  router } from 'expo-router';
 import { ActivityIndicator } from 'react-native-paper';
 import { useQuery } from '@tanstack/react-query';
-import { useKyClient } from '../services/open-api/kyClient';
+import { useKyClient } from '../services/kyClient';
 import { useAuth } from '../providers/AuthProvider';
 import { paths } from '../types/api';
 

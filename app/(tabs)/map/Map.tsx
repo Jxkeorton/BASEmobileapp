@@ -9,7 +9,7 @@ import ModalContent from '../../../components/ModalContent';
 import { useUnitSystem } from '../../../context/UnitSystemContext';
 import { useQuery } from '@tanstack/react-query';
 import type { paths } from '../../../types/api';
-import { useKyClient } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/kyClient';
 
 type LocationsResponse = paths['/locations']['get']['responses'][200]['content']['application/json'];
 export type Location = NonNullable<LocationsResponse['data']>[number]

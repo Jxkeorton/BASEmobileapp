@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button, TextInput, ActivityIndicator, Text } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { kyInstance, useKyClient } from '../../services/open-api/kyClient';
+import { kyInstance, useKyClient } from '../../services/kyClient';
 
 const ResetPasswordConfirm = () => {
     const [newPassword, setNewPassword] = useState('');

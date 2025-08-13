@@ -1,7 +1,7 @@
 import ky from 'ky';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import createClient from 'openapi-fetch';
-import { paths } from '../../types/api';
+import { paths } from '../types/api';
 
 let baseUrl = ''
 if(process.env.EXPO_PUBLIC_API_BASE_URL !== undefined){

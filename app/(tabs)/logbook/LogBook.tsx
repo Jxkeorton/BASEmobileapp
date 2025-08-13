@@ -4,7 +4,7 @@ import LogbookJumpCard from '../../../components/LogbookJumpCard'
 import { FontAwesome } from '@expo/vector-icons'; 
 import { ActivityIndicator } from 'react-native-paper';
 import { useQuery } from '@tanstack/react-query';
-import { useKyClient } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/kyClient';
 import { Portal, PaperProvider, Text} from 'react-native-paper'
 import LogbookModal from '../../../components/LogbookModal';
 import type { ProfileData } from '../profile/Profile';

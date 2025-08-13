@@ -5,7 +5,7 @@ import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { router } from "expo-router";
 import Toast from 'react-native-toast-message';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useKyClient } from "../../../services/open-api/kyClient";
+import { useKyClient } from "../../../services/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
 
 const jumpDetails = () => {

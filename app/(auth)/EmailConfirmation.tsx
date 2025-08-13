@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Button } from 'react-native-paper';
 import { router, useLocalSearchParams } from 'expo-router';
-import { kyInstance, useKyClient } from '../../services/open-api/kyClient';
+import { kyInstance, useKyClient } from '../../services/kyClient';
 
 const EmailConfirmation = () => {
   const [isResending, setIsResending] = useState(false);

@@ -2,7 +2,7 @@ import { View, StyleSheet, KeyboardAvoidingView, TouchableWithoutFeedback, Keybo
 import {useState} from 'react';
 import { ActivityIndicator, Button } from 'react-native-paper';
 import { useAuth } from '../../providers/AuthProvider';
-import { useKyClient } from '../../services/open-api/kyClient';
+import { useKyClient } from '../../services/kyClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';

@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
 import { useAuth } from '../../../providers/AuthProvider';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { kyInstance } from '../../../services/open-api/kyClient';
 import {
   Text,
   TouchableRipple,
@@ -12,7 +11,7 @@ import { View, StyleSheet, SafeAreaView, Share, ScrollView } from 'react-native'
 import SavedLocationsCard from '../../../components/SavedLocationsCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import { useKyClient } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/kyClient';
 import { paths } from '../../../types/api';
 
 type ProfileResponse = paths['/profile']['get']['responses']['200']['content']['application/json'];

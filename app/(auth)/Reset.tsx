@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button, TextInput, ActivityIndicator } from 'react-native-paper';
 import { router } from 'expo-router';
 import Toast from 'react-native-toast-message';
-import { useKyClient } from '../../services/open-api/kyClient';
+import { useKyClient } from '../../services/kyClient';
 
 const Reset = () => {
     const [email, setEmail] = useState('');

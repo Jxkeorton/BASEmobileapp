@@ -11,7 +11,7 @@ import { router, useFocusEffect } from 'expo-router';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { PaperProvider, ActivityIndicator } from 'react-native-paper';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useKyClient } from '../../../services/open-api/kyClient';
+import { useKyClient } from '../../../services/kyClient';
 import { useAuth } from '../../../providers/AuthProvider';
 import Toast from 'react-native-toast-message';
 import { paths } from '../../../types/api';
