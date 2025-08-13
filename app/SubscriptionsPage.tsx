@@ -1,24 +1,26 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import {router} from 'expo-router';
-import { ActivityIndicator } from 'react-native-paper';
-import Toast from 'react-native-toast-message';
-import { useAuth } from '../providers/AuthProvider';
-import {CustomerInfo, PurchasesPackage} from 'react-native-purchases';
+import { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
+import { router } from "expo-router";
+import { ActivityIndicator } from "react-native-paper";
+import Toast from "react-native-toast-message";
+import { useAuth } from "../providers/AuthProvider";
+import { CustomerInfo, PurchasesPackage } from "react-native-purchases";
 
 const PackageList = () => {
   const { user, loading } = useAuth();
-  const [isLoading, setIsLoading ] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // TODO: Add back revenue cat logic
-  const isProUser = true
-  const purchasePackage = async (pkg: PurchasesPackage): Promise<CustomerInfo> => {
+  const isProUser = true;
+  const purchasePackage = async (
+    pkg: PurchasesPackage
+  ): Promise<CustomerInfo> => {
     // Placeholder implementation
     return new Promise((resolve) => {
       resolve({} as CustomerInfo);
     });
-  }
+  };
   const packages = [] as PurchasesPackage[];
 
   const handlePurchase = async (pkg: PurchasesPackage) => {
@@ -26,23 +28,22 @@ const PackageList = () => {
     try {
       const result: CustomerInfo = await purchasePackage(pkg);
 
-      if (isProUser) { 
-        router.push('/(tabs)/map/Map');
+      if (isProUser) {
+        router.push("/(tabs)/map/Map");
       } else {
         Toast.show({
-          type: 'error',
-          text1: 'Failed to purchase package',
-          text2: 'An error occurred during the purchase process.',
-          position: 'top',
+          type: "error",
+          text1: "Failed to purchase package",
+          text2: "An error occurred during the purchase process.",
+          position: "top",
         });
       }
-      
     } catch (error) {
-      console.error('Failed to purchase package:', error);
+      console.error("Failed to purchase package:", error);
       Toast.show({
-        type: 'error',
-        text1: 'Failed to purchase package',
-        position: 'top',
+        type: "error",
+        text1: "Failed to purchase package",
+        position: "top",
       });
     } finally {
       setIsLoading(false);
@@ -53,17 +54,17 @@ const PackageList = () => {
     if (isProUser) {
       return true;
     }
-  
+
     if (user?.entitlements?.active) {
       return user.entitlements.active[pkg.product.identifier] !== undefined;
     }
-  
+
     return false;
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
+      <View style={[styles.container, { justifyContent: "center" }]}>
         <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.title}>Loading packages...</Text>
       </View>
@@ -75,11 +76,11 @@ const PackageList = () => {
 
   if (!package1 || !package2) {
     return (
-      <View style={[styles.container, { justifyContent: 'center' }]}>
+      <View style={[styles.container, { justifyContent: "center" }]}>
         <Text style={styles.title}>No packages available</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backToMapButton}
-          onPress={() => router.push('/(tabs)/map/Map')}
+          onPress={() => router.push("/(tabs)/map/Map")}
         >
           <Text style={styles.backToMapButtonText}>Back to Map</Text>
         </TouchableOpacity>
@@ -89,10 +90,7 @@ const PackageList = () => {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={require('../assets/bitmap.png')}
-        style={styles.image}
-      />
+      <Image source={require("../assets/bitmap.png")} style={styles.image} />
       <Text style={styles.title}>Unlock Pro Features</Text>
       <View style={styles.features}>
         <Text style={styles.featureItem}>- Precise Coordinates</Text>
@@ -102,13 +100,13 @@ const PackageList = () => {
       </View>
       <View style={styles.bottomContainer}>
         {/* First Package */}
-        <LinearGradient colors={['#007AFF', '#00AFFF']} style={styles.package}>
-          <Text style={[styles.packageText, {fontSize: 20, textAlign: 'center'}]}>
+        <LinearGradient colors={["#007AFF", "#00AFFF"]} style={styles.package}>
+          <Text
+            style={[styles.packageText, { fontSize: 20, textAlign: "center" }]}
+          >
             Monthly Subscription
           </Text>
-          <Text style={styles.packageText}>
-            {package1.product.priceString}
-          </Text>
+          <Text style={styles.packageText}>{package1.product.priceString}</Text>
           {isLoading || loading ? (
             <ActivityIndicator color="white" size="small" />
           ) : userHasAccessToPackage(package1) ? (
@@ -124,15 +122,15 @@ const PackageList = () => {
         </LinearGradient>
 
         {/* Second Package */}
-        <LinearGradient colors={['#007AFF', '#00AFFF']} style={styles.package}>
-        <Text style={[styles.packageText, {fontSize: 20, textAlign: 'center'}]}>
+        <LinearGradient colors={["#007AFF", "#00AFFF"]} style={styles.package}>
+          <Text
+            style={[styles.packageText, { fontSize: 20, textAlign: "center" }]}
+          >
             Yearly Subscription
           </Text>
-          <Text style={styles.packageText}>
-            {package2.product.priceString}
-          </Text>
+          <Text style={styles.packageText}>{package2.product.priceString}</Text>
           {isLoading || loading ? (
-            <ActivityIndicator color="white" size="small" /> 
+            <ActivityIndicator color="white" size="small" />
           ) : userHasAccessToPackage(package2) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
           ) : (
@@ -145,25 +143,28 @@ const PackageList = () => {
           )}
         </LinearGradient>
       </View>
-      
+
       {/* 7-day Trial Button with LinearGradient Effect */}
       {!(isLoading || loading) && (
-      <View style={styles.trialContainer}>
-        <Text style={styles.trialText}>A 7 Day Free trial will be applied if it is your first time subscribing</Text>
-      </View> )}
+        <View style={styles.trialContainer}>
+          <Text style={styles.trialText}>
+            A 7 Day Free trial will be applied if it is your first time
+            subscribing
+          </Text>
+        </View>
+      )}
 
       {/* Back to Map Button */}
       {isLoading || loading ? (
-       <Text style={styles.backToMapButtonText}>Please wait...</Text>
+        <Text style={styles.backToMapButtonText}>Please wait...</Text>
       ) : (
-        <TouchableOpacity 
-        style={styles.backToMapButton}
-        onPress={() => router.push('/(tabs)/map/Map')}
-      >
-        <Text style={styles.backToMapButtonText}>Back to Map</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.backToMapButton}
+          onPress={() => router.push("/(tabs)/map/Map")}
+        >
+          <Text style={styles.backToMapButtonText}>Back to Map</Text>
+        </TouchableOpacity>
       )}
-      
     </View>
   );
 };
@@ -172,27 +173,27 @@ const PackageList = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'black',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "black",
   },
   title: {
     fontSize: 27,
     marginBottom: 10,
     marginTop: 20,
-    color: 'white',
-    fontWeight: 'bold',
+    color: "white",
+    fontWeight: "bold",
   },
   bottomContainer: {
-    flexDirection: 'row', 
+    flexDirection: "row",
   },
   package: {
-    backgroundColor: 'transparent',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 10,
     borderRadius: 8,
-    width: '48%', 
+    width: "48%",
     height: 150,
     marginTop: 30,
     marginHorizontal: 5,
@@ -200,63 +201,63 @@ const styles = StyleSheet.create({
   packageText: {
     fontSize: 16,
     marginBottom: 5,
-    color: 'white',
-    fontWeight: 'bold',
-    textShadowColor: 'black',
+    color: "white",
+    fontWeight: "bold",
+    textShadowColor: "black",
     textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 2,
   },
   accessText: {
     fontSize: 16,
-    color: 'gray',
+    color: "gray",
   },
   image: {
     width: 200,
     height: 200,
   },
   features: {
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     marginTop: 20,
   },
   featureItem: {
     fontSize: 16,
-    color: 'white',
+    color: "white",
     marginBottom: 5,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   button: {
-    backgroundColor: 'black',
+    backgroundColor: "black",
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
-    width: '80%',
+    width: "80%",
   },
   buttonText: {
-    color: 'white',
-    textAlign: 'center',
+    color: "white",
+    textAlign: "center",
   },
   backToMapButton: {
-    backgroundColor: 'black',
+    backgroundColor: "black",
     padding: 10,
     borderRadius: 8,
     marginTop: 30,
-    width: '80%',
+    width: "80%",
   },
   backToMapButtonText: {
-    color: 'white', 
-    fontSize: 20, 
-    fontWeight: 'bold', 
-    textAlign: 'center',
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    textAlign: "center",
   },
   trialText: {
-    color: 'white', 
-    fontSize: 14, 
-    textAlign: 'center',
+    color: "white",
+    fontSize: 14,
+    textAlign: "center",
   },
   trialContainer: {
     marginTop: 20,
-    marginHorizontal:20,
-  }
+    marginHorizontal: 20,
+  },
 });
 
 export default PackageList;

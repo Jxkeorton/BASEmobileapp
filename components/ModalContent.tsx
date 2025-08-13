@@ -1,95 +1,130 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface ModalContentProps {
   visible: boolean;
   onClose: () => void;
-  onApplyFilter: (minRockDrop: string, maxRockDrop: string, unknownRockdrop: boolean) => void;
+  onApplyFilter: (
+    minRockDrop: string,
+    maxRockDrop: string,
+    unknownRockdrop: boolean
+  ) => void;
   minRockDrop: string;
   maxRockDrop: string;
 }
-import { Modal, Text, View, TextInput, TouchableOpacity, StyleSheet, ScrollView, TouchableWithoutFeedback, Keyboard, Switch } from 'react-native';
-import Toast from 'react-native-toast-message';
+import {
+  Modal,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Switch,
+} from "react-native";
+import Toast from "react-native-toast-message";
 
-const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDrop }: ModalContentProps) => {
+const ModalContent = ({
+  visible,
+  onClose,
+  onApplyFilter,
+  minRockDrop,
+  maxRockDrop,
+}: ModalContentProps) => {
   const [tempMinRockDrop, setTempMinRockDrop] = useState(minRockDrop);
   const [tempMaxRockDrop, setTempMaxRockDrop] = useState(maxRockDrop);
   const [tempUnknownRockdrop, setTempUnknownRockDrop] = useState(false);
 
   const clearFilter = () => {
-    setTempMinRockDrop('');
-    setTempMaxRockDrop('');
+    setTempMinRockDrop("");
+    setTempMaxRockDrop("");
     setTempUnknownRockDrop(false);
 
     Toast.show({
-      type: 'info', // You can customize the type (success, info, error, etc.)
-      text1: 'Filter cleared',
-      position: 'top',
+      type: "info", // You can customize the type (success, info, error, etc.)
+      text1: "Filter cleared",
+      position: "top",
     });
   };
 
   const applyFilter = () => {
-    if (tempMinRockDrop !== '' && tempMaxRockDrop !== '' && parseFloat(tempMinRockDrop) > parseFloat(tempMaxRockDrop)) {
+    if (
+      tempMinRockDrop !== "" &&
+      tempMaxRockDrop !== "" &&
+      parseFloat(tempMinRockDrop) > parseFloat(tempMaxRockDrop)
+    ) {
       // Display an error message or handle the validation error as you prefer
-      alert('Min Rock Drop cannot be greater than Max Rock Drop');
+      alert("Min Rock Drop cannot be greater than Max Rock Drop");
     } else {
       onClose();
       onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
       Toast.show({
-        type: 'success', // You can customize the type (success, info, error, etc.)
-        text1: 'Filter applied',
-        position: 'top',
+        type: "success", // You can customize the type (success, info, error, etc.)
+        text1: "Filter applied",
+        position: "top",
       });
     }
   };
 
   return (
     <Modal visible={visible} onRequestClose={onClose} transparent={true}>
-        <TouchableWithoutFeedback onPress={onClose}>
+      <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalContainer}>
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-            <ScrollView>
-        <Text style={styles.panelTitle}>Filter Pins</Text>
-        <Text style={styles.panelSubtitle}>Min Rock Drop: </Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={tempMinRockDrop}
-          onChangeText={setTempMinRockDrop}
-          autoCorrect={false}
-          autoCapitalize="none"
-          accessibilityLabel="Minimum Rock Drop"
-        />
+          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <View style={styles.container}>
+              <ScrollView>
+                <Text style={styles.panelTitle}>Filter Pins</Text>
+                <Text style={styles.panelSubtitle}>Min Rock Drop: </Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={tempMinRockDrop}
+                  onChangeText={setTempMinRockDrop}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  accessibilityLabel="Minimum Rock Drop"
+                />
 
-        <Text style={styles.panelSubtitle}>Max Rock Drop: </Text>
-        <TextInput
-          style={styles.input}
-          keyboardType="numeric"
-          value={tempMaxRockDrop}
-          onChangeText={setTempMaxRockDrop}
-          autoCorrect={false}
-          autoCapitalize="none"
-          accessibilityLabel="Maximum Rock Drop"
-        />
+                <Text style={styles.panelSubtitle}>Max Rock Drop: </Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={tempMaxRockDrop}
+                  onChangeText={setTempMaxRockDrop}
+                  autoCorrect={false}
+                  autoCapitalize="none"
+                  accessibilityLabel="Maximum Rock Drop"
+                />
 
-        <Text style={styles.panelSubtitle}>Remove Unknown Rockdrops </Text>
-        <Switch
-            value={tempUnknownRockdrop}
-            onValueChange={() => setTempUnknownRockDrop(!tempUnknownRockdrop)}
-        />
+                <Text style={styles.panelSubtitle}>
+                  Remove Unknown Rockdrops{" "}
+                </Text>
+                <Switch
+                  value={tempUnknownRockdrop}
+                  onValueChange={() =>
+                    setTempUnknownRockDrop(!tempUnknownRockdrop)
+                  }
+                />
 
-        <View style={styles.modalFooter}>
-          <TouchableOpacity onPress={clearFilter} style={styles.borderButton}>
-            <Text style={styles.imageButtonTitle}>Clear Filter</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={applyFilter} style={styles.panelButton}>
-            <Text style={styles.panelButtonTitle}>Apply Filter</Text>
-          </TouchableOpacity>
-          </View>
-          </ScrollView>
+                <View style={styles.modalFooter}>
+                  <TouchableOpacity
+                    onPress={clearFilter}
+                    style={styles.borderButton}
+                  >
+                    <Text style={styles.imageButtonTitle}>Clear Filter</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={applyFilter}
+                    style={styles.panelButton}
+                  >
+                    <Text style={styles.panelButtonTitle}>Apply Filter</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </TouchableWithoutFeedback>
-      </View>
       </TouchableWithoutFeedback>
     </Modal>
   );
@@ -97,18 +132,18 @@ const ModalContent = ({ visible, onClose, onApplyFilter, minRockDrop, maxRockDro
 
 const styles = StyleSheet.create({
   container: {
-    width: '80%',
-    backgroundColor: '#FFFFFF',
+    width: "80%",
+    backgroundColor: "#FFFFFF",
     padding: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  // modal styles 
+  // modal styles
   panelTitle: {
     fontSize: 27,
     height: 35,
@@ -116,12 +151,12 @@ const styles = StyleSheet.create({
   },
   panelSubtitle: {
     fontSize: 14,
-    color: 'black',
+    color: "black",
     height: 30,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
@@ -129,34 +164,34 @@ const styles = StyleSheet.create({
   },
   modalFooter: {
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   panelButton: {
     padding: 13,
     borderRadius: 10,
-    backgroundColor: '#00ABF0',
-    alignItems: 'center',
+    backgroundColor: "#00ABF0",
+    alignItems: "center",
     marginVertical: 7,
   },
   panelButtonTitle: {
     fontSize: 17,
-    fontWeight: 'bold',
-    color: 'black',
+    fontWeight: "bold",
+    color: "black",
   },
   borderButton: {
-    padding:13,
+    padding: 13,
     borderRadius: 10,
-    borderWidth: 1,            // Add a border width
-    borderColor: 'black',    // Specify the border color
-    alignItems: 'center',
+    borderWidth: 1, // Add a border width
+    borderColor: "black", // Specify the border color
+    alignItems: "center",
     marginVertical: 7,
-    backgroundColor: 'transparent', // Make the background transparent
+    backgroundColor: "transparent", // Make the background transparent
   },
   imageButtonTitle: {
     fontSize: 17,
-    fontWeight: 'bold',
-    color: 'black',
-},
+    fontWeight: "bold",
+    color: "black",
+  },
 });
 
 export default ModalContent;

@@ -1,10 +1,20 @@
+import React from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ListRenderItem,
+} from "react-native";
+import { useAuth } from "../../../../providers/AuthProvider";
+import { router } from "expo-router";
 
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, ListRenderItem } from 'react-native';
-import { useAuth } from '../../../../providers/AuthProvider';
-import { router } from 'expo-router';
-
-type SettingsItemKey = 'contactUs' | 'logout' | 'deleteAccount' | 'terms' | 'privacypolicy';
+type SettingsItemKey =
+  | "contactUs"
+  | "logout"
+  | "deleteAccount"
+  | "terms"
+  | "privacypolicy";
 
 interface SettingsItem {
   key: SettingsItemKey;
@@ -12,11 +22,11 @@ interface SettingsItem {
 }
 
 const settingsItems: SettingsItem[] = [
-  { key: 'contactUs', label: 'Contact Us' },
-  { key: 'logout', label: 'Logout' },
-  { key: 'deleteAccount', label: 'Delete Account' },
-  { key: 'terms', label: 'Terms and Conditions' },
-  { key: 'privacypolicy', label: 'Privacy Policy' },
+  { key: "contactUs", label: "Contact Us" },
+  { key: "logout", label: "Logout" },
+  { key: "deleteAccount", label: "Delete Account" },
+  { key: "terms", label: "Terms and Conditions" },
+  { key: "privacypolicy", label: "Privacy Policy" },
 ];
 
 const Settings: React.FC = () => {
@@ -25,21 +35,21 @@ const Settings: React.FC = () => {
   // Function to handle item presses
   const handlePress = (key: SettingsItemKey) => {
     switch (key) {
-      case 'contactUs':
-        router.navigate('/profile/settings/Contact');
+      case "contactUs":
+        router.navigate("/profile/settings/Contact");
         break;
-      case 'logout':
+      case "logout":
         signOut();
-        router.replace('/(auth)/Login');
+        router.replace("/(auth)/Login");
         break;
-      case 'deleteAccount':
-        router.navigate('/profile/settings/DeleteAccount');
+      case "deleteAccount":
+        router.navigate("/profile/settings/DeleteAccount");
         break;
-      case 'privacypolicy':
-        router.navigate('/profile/settings/PrivacyPolicy');
+      case "privacypolicy":
+        router.navigate("/profile/settings/PrivacyPolicy");
         break;
-      case 'terms':
-        router.navigate('/profile/settings/Terms');
+      case "terms":
+        router.navigate("/profile/settings/Terms");
         break;
       default:
         break;
@@ -50,7 +60,7 @@ const Settings: React.FC = () => {
   const renderItem: ListRenderItem<SettingsItem> = ({ item }) => (
     <TouchableOpacity
       onPress={() => handlePress(item.key)}
-      style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: '#ccc' }}
+      style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: "#ccc" }}
     >
       <Text>{item.label}</Text>
     </TouchableOpacity>

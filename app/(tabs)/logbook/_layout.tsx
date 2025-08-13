@@ -1,28 +1,30 @@
 import { Stack, useLocalSearchParams } from "expo-router";
 
 export default () => {
-    const params = useLocalSearchParams();
+  const params = useLocalSearchParams();
 
-    return (
-    <Stack screenOptions={{
+  return (
+    <Stack
+      screenOptions={{
         headerStyle: {
-          backgroundColor: 'black',
+          backgroundColor: "black",
         },
-        headerTintColor: '#fff',
-        headerBackTitle: 'Back',
-      }} >
-        <Stack.Screen
-            name="LogBook"
-            options={{
-                title: "Logbook",
-            }}
-        />
-        <Stack.Screen
-            name="[jumpindex]"
-            options={{
-                title: "Jump Details",
-            }}
-        />
+        headerTintColor: "#fff",
+        headerBackTitle: "Back",
+      }}
+    >
+      <Stack.Screen
+        name="LogBook"
+        options={{
+          title: "Logbook",
+        }}
+      />
+      <Stack.Screen
+        name="[jumpindex]"
+        options={{
+          title: "Jump Details",
+        }}
+      />
     </Stack>
-    )
+  );
 };

@@ -1,33 +1,47 @@
-import { StyleSheet, View, TextInput, TouchableWithoutFeedback, Keyboard, Text, TouchableHighlight} from 'react-native'
-import { Switch, Portal, PaperProvider, ActivityIndicator } from 'react-native-paper'
-import { useState, useMemo } from 'react'
-import MapView from 'react-native-map-clustering';
-import {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
-import CustomCallout from '../../../components/CustomCallout';
-import { FontAwesome } from '@expo/vector-icons'; 
-import ModalContent from '../../../components/ModalContent';
-import { useUnitSystem } from '../../../context/UnitSystemContext';
-import { useQuery } from '@tanstack/react-query';
-import type { paths } from '../../../types/api';
-import { useKyClient } from '../../../services/kyClient';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Text,
+  TouchableHighlight,
+} from "react-native";
+import {
+  Switch,
+  Portal,
+  PaperProvider,
+  ActivityIndicator,
+} from "react-native-paper";
+import { useState, useMemo } from "react";
+import MapView from "react-native-map-clustering";
+import { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import CustomCallout from "../../../components/CustomCallout";
+import { FontAwesome } from "@expo/vector-icons";
+import ModalContent from "../../../components/ModalContent";
+import { useUnitSystem } from "../../../context/UnitSystemContext";
+import { useQuery } from "@tanstack/react-query";
+import type { paths } from "../../../types/api";
+import { useKyClient } from "../../../services/kyClient";
 
-type LocationsResponse = paths['/locations']['get']['responses'][200]['content']['application/json'];
-export type Location = NonNullable<LocationsResponse['data']>[number]
+type LocationsResponse =
+  paths["/locations"]["get"]["responses"][200]["content"]["application/json"];
+export type Location = NonNullable<LocationsResponse["data"]>[number];
 
-type LocationsFilters = paths['/locations']['get']['parameters']['query'];
+type LocationsFilters = paths["/locations"]["get"]["parameters"]["query"];
 
 export default function Map() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [satelliteActive, setSatelliteActive] = useState(false);
-  const client = useKyClient()
-  
+  const client = useKyClient();
+
   // Loading states for UI interactions
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
   const [filterIconLoading, setFilterIconLoading] = useState(false);
 
-  // Filter modal state 
-  const [minRockDrop, setMinRockDrop] = useState('');
-  const [maxRockDrop, setMaxRockDrop] = useState('');
+  // Filter modal state
+  const [minRockDrop, setMinRockDrop] = useState("");
+  const [maxRockDrop, setMaxRockDrop] = useState("");
   const [unknownRockdrop, setUnknownRockDrop] = useState(false);
   const [visible, setVisible] = useState(false);
 
@@ -39,60 +53,72 @@ export default function Map() {
   // Build API filters based on current search and filters
   const apiFilters: LocationsFilters = useMemo(() => {
     const filters: LocationsFilters = {};
-    
+
     if (searchTerm.trim()) {
       filters.search = searchTerm.trim();
     }
-    
+
     // Convert height filters to API format (assuming your API uses total_height_ft)
-    if (minRockDrop !== '') {
-      const minHeightFt = isMetric ? parseFloat(minRockDrop) / 0.3048 : parseFloat(minRockDrop);
+    if (minRockDrop !== "") {
+      const minHeightFt = isMetric
+        ? parseFloat(minRockDrop) / 0.3048
+        : parseFloat(minRockDrop);
       filters.min_height = Math.round(minHeightFt);
     }
-    
-    if (maxRockDrop !== '') {
-      const maxHeightFt = isMetric ? parseFloat(maxRockDrop) / 0.3048 : parseFloat(maxRockDrop);
+
+    if (maxRockDrop !== "") {
+      const maxHeightFt = isMetric
+        ? parseFloat(maxRockDrop) / 0.3048
+        : parseFloat(maxRockDrop);
       filters.max_height = Math.round(maxHeightFt);
     }
-    
+
     return filters;
   }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
 
-  // TanStack Query 
-  const { data: locationsResponse, isLoading: loadingMap, error } = useQuery({
-    queryKey: ['locations', apiFilters],
+  // TanStack Query
+  const {
+    data: locationsResponse,
+    isLoading: loadingMap,
+    error,
+  } = useQuery({
+    queryKey: ["locations", apiFilters],
     queryFn: async () => {
-    return client  
-      .GET("/locations", {
-        params: { query: {...apiFilters}}
-      })
-      .then((res) => {
-        if (res.error) {
-          throw new Error('Failed to fetch locations');
-        }
-        return res.data;
-      });
-  }});
+      return client
+        .GET("/locations", {
+          params: { query: { ...apiFilters } },
+        })
+        .then((res) => {
+          if (res.error) {
+            throw new Error("Failed to fetch locations");
+          }
+          return res.data;
+        });
+    },
+  });
   const locations = locationsResponse?.success ? locationsResponse.data : [];
-  
+
   const filterEventsByRockDrop = (location: Location) => {
     if (unknownRockdrop) {
-      const hasUnknownHeight = !location.total_height_ft || 
-                               location.total_height_ft === 0 || 
-                               ( location.rock_drop_ft && 
-                                (!location.rock_drop_ft || location.rock_drop_ft === 0));
+      const hasUnknownHeight =
+        !location.total_height_ft ||
+        location.total_height_ft === 0 ||
+        (location.rock_drop_ft &&
+          (!location.rock_drop_ft || location.rock_drop_ft === 0));
       return !hasUnknownHeight;
     }
-    
+
     return true;
   };
 
   // Handle loading and error states
   if (error) {
-    console.error('Locations API Error:', error);
+    console.error("Locations API Error:", error);
     return (
       <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>Error loading locations: {error.message}</Text>
+        <Text style={styles.errorText}>
+          Error loading locations: {error.message}
+        </Text>
       </View>
     );
   }
@@ -114,14 +140,14 @@ export default function Map() {
               maxRockDrop={maxRockDrop}
             />
           </Portal>
-          
+
           {loadingMap ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#00ABF0" />
               <Text style={styles.loadingText}>Loading locations...</Text>
             </View>
           ) : (
-            <MapView 
+            <MapView
               style={styles.map}
               initialRegion={{
                 latitude: 56.25284254305279,
@@ -129,46 +155,49 @@ export default function Map() {
                 latitudeDelta: 14.138225243481841,
                 longitudeDelta: 14.52603159394414,
               }}
-              mapType={satelliteActive ? 'hybrid' : 'standard'}
-              clusterColor='black'
-              clusterTextColor='white'
+              mapType={satelliteActive ? "hybrid" : "standard"}
+              clusterColor="black"
+              clusterTextColor="white"
               clusteringEnabled={true}
               provider={PROVIDER_GOOGLE}
             >
-              {locations && locations
-                .filter(event => filterEventsByRockDrop(event))
-                .map((event, index) => {
-                  const latitude = event.latitude;
-                  const longitude = event.longitude;
-                  
-                  if (!latitude || !longitude) {
-                    console.warn('Invalid coordinates for event:', event);
-                    return null;
-                  }
-                  
-                  return (
-                    <Marker
-                      key={event.id || index}
-                      coordinate={{ latitude, longitude }}
-                      title={event.name || 'Unknown Name'}
-                      description={event.opened_by_name || event.country || ''}
-                      pinColor='red'
-                    >
-                      <CustomCallout info={event} />
-                    </Marker>
-                  );
-                })}
+              {locations &&
+                locations
+                  .filter((event) => filterEventsByRockDrop(event))
+                  .map((event, index) => {
+                    const latitude = event.latitude;
+                    const longitude = event.longitude;
+
+                    if (!latitude || !longitude) {
+                      console.warn("Invalid coordinates for event:", event);
+                      return null;
+                    }
+
+                    return (
+                      <Marker
+                        key={event.id || index}
+                        coordinate={{ latitude, longitude }}
+                        title={event.name || "Unknown Name"}
+                        description={
+                          event.opened_by_name || event.country || ""
+                        }
+                        pinColor="red"
+                      >
+                        <CustomCallout info={event} />
+                      </Marker>
+                    );
+                  })}
             </MapView>
           )}
-          
+
           <View style={styles.searchBox}>
             <View style={styles.textInputContainer}>
-              <TextInput 
-                placeholder='Search here'
-                placeholderTextColor='#000'
-                autoCapitalize='none'
-                style={{flex:1, padding:0}}
-                onChangeText={text => setSearchTerm(text)}
+              <TextInput
+                placeholder="Search here"
+                placeholderTextColor="#000"
+                autoCapitalize="none"
+                style={{ flex: 1, padding: 0 }}
+                onChangeText={(text) => setSearchTerm(text)}
                 value={searchTerm}
               />
               <TouchableHighlight
@@ -189,7 +218,7 @@ export default function Map() {
                 </View>
               </TouchableHighlight>
             </View>
-            
+
             <View style={styles.switchContainer}>
               <Text style={styles.switchLabel}>Satellite</Text>
               {satelliteViewLoading ? (
@@ -207,7 +236,9 @@ export default function Map() {
                   color="#00ABF0"
                 />
               )}
-              <Text style={[styles.switchLabel, {paddingLeft: 5}]}>Imperial</Text>
+              <Text style={[styles.switchLabel, { paddingLeft: 5 }]}>
+                Imperial
+              </Text>
               <Switch
                 value={isMetric}
                 onValueChange={() => {}} // This should be handled by UnitSystemContext
@@ -216,12 +247,13 @@ export default function Map() {
               <Text style={styles.switchLabel}>Metric</Text>
             </View>
           </View>
-          
+
           {/* Show results count */}
           {!loadingMap && (
             <View style={styles.resultsContainer}>
               <Text style={styles.resultsText}>
-                {locations?.length || 0} location{(locations?.length || 0) !== 1 ? 's' : ''} found
+                {locations?.length || 0} location
+                {(locations?.length || 0) !== 1 ? "s" : ""} found
               </Text>
             </View>
           )}
@@ -234,18 +266,18 @@ export default function Map() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   map: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   bubble: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
+    flexDirection: "row",
+    alignSelf: "flex-start",
+    backgroundColor: "#fff",
     borderRadius: 6,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 0.5,
     padding: 15,
     width: 150,
@@ -255,29 +287,29 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   arrowBorder: {
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
-    borderTopColor: '#007a87',
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    borderTopColor: "#007a87",
     borderWidth: 16,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: -0.5,
   },
   arrow: {
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
-    borderTopColor: '#fff',
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+    borderTopColor: "#fff",
     borderWidth: 16,
-    alignSelf: 'center',
+    alignSelf: "center",
     marginTop: -32,
   },
   searchBox: {
-    position: 'absolute',
-    backgroundColor: '#fff',
-    width: '90%',
-    alignSelf: 'center',
+    position: "absolute",
+    backgroundColor: "#fff",
+    width: "90%",
+    alignSelf: "center",
     borderRadius: 5,
     padding: 10,
-    shadowColor: '#ccc',
+    shadowColor: "#ccc",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.5,
     shadowRadius: 5,
@@ -288,44 +320,44 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     marginLeft: 10,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
   text: {
-    color: 'white',
+    color: "white",
   },
   buttonSatellite: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    backgroundColor: 'black',
+    backgroundColor: "black",
   },
   switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     marginLeft: 10,
     marginTop: 10,
   },
   switchLabel: {
     marginHorizontal: 5,
-    color: 'black',
+    color: "black",
   },
   textInputContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginRight: 10,
-    marginBottom: 10, 
+    marginBottom: 10,
   },
-  // modal styles 
+  // modal styles
   dropdownIcon: {
     marginLeft: 10,
     marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   dropdownModal: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   panelTitle: {
     fontSize: 27,
@@ -334,12 +366,12 @@ const styles = StyleSheet.create({
   },
   panelSubtitle: {
     fontSize: 14,
-    color: 'gray',
+    color: "gray",
     height: 30,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
@@ -347,53 +379,53 @@ const styles = StyleSheet.create({
   },
   modalFooter: {
     marginTop: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   panelButton: {
     padding: 13,
     borderRadius: 10,
-    backgroundColor: '#00ABF0',
-    alignItems: 'center',
+    backgroundColor: "#00ABF0",
+    alignItems: "center",
     marginVertical: 7,
   },
   panelButtonTitle: {
     fontSize: 17,
-    fontWeight: 'bold',
-    color: 'white',
+    fontWeight: "bold",
+    color: "white",
   },
   filterButton: {
     marginLeft: 10,
     marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 10,
-    color: '#666',
+    color: "#666",
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginHorizontal: 20,
   },
   resultsContainer: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 50,
-    alignSelf: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    alignSelf: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 20,
   },
   resultsText: {
-    color: 'white',
+    color: "white",
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

@@ -1,8 +1,8 @@
-import { Button, Card, Text as Text2 } from 'react-native-paper';
-import { View, StyleSheet, Text } from 'react-native';
-import { router } from 'expo-router';
-import { useUnitSystem } from '../context/UnitSystemContext';
-import { SavedLocationsArray } from '../app/(tabs)/profile/Profile';
+import { Button, Card, Text as Text2 } from "react-native-paper";
+import { View, StyleSheet, Text } from "react-native";
+import { router } from "expo-router";
+import { useUnitSystem } from "../context/UnitSystemContext";
+import { SavedLocationsArray } from "../app/(tabs)/profile/Profile";
 
 interface SavedLocationsCardProps {
   data: SavedLocationsArray;
@@ -10,82 +10,88 @@ interface SavedLocationsCardProps {
 }
 
 const SavedLocationsCard = ({ data, onDelete }: SavedLocationsCardProps) => {
-
   const { isMetric } = useUnitSystem();
-   const onDetailsPress = (itemId: number) => {
-      router.navigate(`/(tabs)/map/${itemId}`)
-   };
+  const onDetailsPress = (itemId: number) => {
+    router.navigate(`/(tabs)/map/${itemId}`);
+  };
 
-    const convertToMeters = (value?: number) => {
-      return (value ? `${Math.round(value * 0.3048)} meters` : '?');
-    };
+  const convertToMeters = (value?: number) => {
+    return value ? `${Math.round(value * 0.3048)} meters` : "?";
+  };
 
-    // Check if data is empty
-    if (data.length === 0) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.title}>No Saved Locations</Text>
-          <View style={{ justifyContent: 'center'}}>
-            <Text>Visit the Map to save locations</Text>
-          </View>
-        </View>
-      );
-    }
-
+  // Check if data is empty
+  if (data.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Saved Locations</Text>
-        {data.map((item) => (
-          <View key={item.save_id} style={styles.card}>
-            <Card>
-              <Card.Content>
-                <Text2 variant='titleLarge'>{item.location.name}</Text2>
-                <Text style={styles.calloutCoordinates}>
-                  Rock Drop: {isMetric ? convertToMeters(item.location.rock_drop_ft ?? undefined) : (item.location.rock_drop_ft ? `${item.location.rock_drop_ft} ft` : '?')}
-                </Text>
-              </Card.Content>
-              <Card.Actions>
-                <Button
-                  textColor="black"
-                  onPress={() => onDetailsPress(item.location.id)}
-                >
-                  Details
-                </Button>
-                <Button style={styles.button} onPress={() => onDelete(item.location.id)}>
-                  Unsave
-                </Button>
-              </Card.Actions>
-            </Card>
-          </View>
-        ))}
-        
+        <Text style={styles.title}>No Saved Locations</Text>
+        <View style={{ justifyContent: "center" }}>
+          <Text>Visit the Map to save locations</Text>
+        </View>
       </View>
     );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Saved Locations</Text>
+      {data.map((item) => (
+        <View key={item.save_id} style={styles.card}>
+          <Card>
+            <Card.Content>
+              <Text2 variant="titleLarge">{item.location.name}</Text2>
+              <Text style={styles.calloutCoordinates}>
+                Rock Drop:{" "}
+                {isMetric
+                  ? convertToMeters(item.location.rock_drop_ft ?? undefined)
+                  : item.location.rock_drop_ft
+                    ? `${item.location.rock_drop_ft} ft`
+                    : "?"}
+              </Text>
+            </Card.Content>
+            <Card.Actions>
+              <Button
+                textColor="black"
+                onPress={() => onDetailsPress(item.location.id)}
+              >
+                Details
+              </Button>
+              <Button
+                style={styles.button}
+                onPress={() => onDelete(item.location.id)}
+              >
+                Unsave
+              </Button>
+            </Card.Actions>
+          </Card>
+        </View>
+      ))}
+    </View>
+  );
 };
 
 export default SavedLocationsCard;
 
 const styles = StyleSheet.create({
-    container: {
-      marginVertical: 10,
-      padding: 10,
-      backgroundColor: '#f4f4f4',
-    },
-    title: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 10,
-    },
-    card: {
-      marginVertical: 10,
-      marginLeft: 5,
-      width: '98%',
-      backgroundColor: '#f4f4f4'
-    },
-    button: {
-        backgroundColor: '#00ABF0'
-    },
-    calloutCoordinates: {
-      marginBottom: 5,
-    },
-  });
+  container: {
+    marginVertical: 10,
+    padding: 10,
+    backgroundColor: "#f4f4f4",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  card: {
+    marginVertical: 10,
+    marginLeft: 5,
+    width: "98%",
+    backgroundColor: "#f4f4f4",
+  },
+  button: {
+    backgroundColor: "#00ABF0",
+  },
+  calloutCoordinates: {
+    marginBottom: 5,
+  },
+});

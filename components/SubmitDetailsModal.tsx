@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Modal,
   View,
@@ -9,32 +9,36 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   Keyboard,
-} from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useKyClient } from '../services/kyClient';
-import { useAuth } from '../providers/AuthProvider';
-import Toast from 'react-native-toast-message';
-import { SubmitLocationData } from '../app/(tabs)/profile/SubmitLocation';
-import { Location } from '../app/(tabs)/map/Map';
+} from "react-native";
+import { ActivityIndicator } from "react-native-paper";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useKyClient } from "../services/kyClient";
+import { useAuth } from "../providers/AuthProvider";
+import Toast from "react-native-toast-message";
+import { SubmitLocationData } from "../app/(tabs)/profile/SubmitLocation";
+import { Location } from "../app/(tabs)/map/Map";
 
 interface SubmitDetailsModalProps {
-  visible: boolean,
-  onClose: () => void
-  location: Location
+  visible: boolean;
+  onClose: () => void;
+  location: Location;
 }
 
-const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalProps) => {
-  const [newLocationName, setNewLocationName] = useState('');
-  const [exitType, setExitType] = useState('');
-  const [rockDropHeight, setRockDropHeight] = useState('');
-  const [totalHeight, setTotalHeight] = useState('');
-  const [cliffAspect, setCliffAspect] = useState('');
-  const [anchorInfo, setAnchorInfo] = useState('');
-  const [accessInfo, setAccessInfo] = useState('');
-  const [notes, setNotes] = useState('');
-  const [openedByName, setOpenedByName] = useState('');
-  const [openedDate, setOpenedDate] = useState('');
+const SubmitDetailsModal = ({
+  visible,
+  onClose,
+  location,
+}: SubmitDetailsModalProps) => {
+  const [newLocationName, setNewLocationName] = useState("");
+  const [exitType, setExitType] = useState("");
+  const [rockDropHeight, setRockDropHeight] = useState("");
+  const [totalHeight, setTotalHeight] = useState("");
+  const [cliffAspect, setCliffAspect] = useState("");
+  const [anchorInfo, setAnchorInfo] = useState("");
+  const [accessInfo, setAccessInfo] = useState("");
+  const [notes, setNotes] = useState("");
+  const [openedByName, setOpenedByName] = useState("");
+  const [openedDate, setOpenedDate] = useState("");
 
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
@@ -46,115 +50,125 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
   const submitUpdateMutation = useMutation({
     mutationFn: async (submissionData: SubmitLocationData) => {
       return client
-      .POST('/locations/submissions', {
-        body: submissionData
-      })            
-      .then((res: any) => {
+        .POST("/locations/submissions", {
+          body: submissionData,
+        })
+        .then((res: any) => {
           if (res.error) {
-              throw new Error('Failed to submit location');
+            throw new Error("Failed to submit location");
           }
           return res.data;
-      });
+        });
     },
     onSuccess: (response) => {
       if (response.success) {
         onClose();
-        
+
         Toast.show({
-          type: 'success',
-          text1: 'Details submitted successfully',
-          text2: 'Your submission is under review',
-          position: 'top',
+          type: "success",
+          text1: "Details submitted successfully",
+          text2: "Your submission is under review",
+          position: "top",
         });
 
         // Clear form
         clearForm();
-        
+
         // Optionally invalidate related queries
-        queryClient.invalidateQueries({ queryKey: ['submissions'] });
+        queryClient.invalidateQueries({ queryKey: ["submissions"] });
       } else {
         Toast.show({
-          type: 'error',
-          text1: 'Error submitting details',
-          text2: 'Unknown error occurred',
-          position: 'top',
+          type: "error",
+          text1: "Error submitting details",
+          text2: "Unknown error occurred",
+          position: "top",
         });
       }
     },
     onError: (error: any) => {
-      console.error('Submit details error:', error);
-      
-      let errorMessage = 'Failed to submit details';
-      let errorDetails = '';
+      console.error("Submit details error:", error);
+
+      let errorMessage = "Failed to submit details";
+      let errorDetails = "";
 
       // Handle different types of errors
       if (error.response) {
         if (error.response.status === 400 && error.response.data?.validation) {
-          errorMessage = 'Validation Error';
-          errorDetails = error.response.data.validation.map((err: any) => err.message).join(', ');
+          errorMessage = "Validation Error";
+          errorDetails = error.response.data.validation
+            .map((err: any) => err.message)
+            .join(", ");
         } else if (error.response.status === 429) {
-          errorMessage = 'Submission Limit Reached';
-          errorDetails = error.response.data?.error || 'Too many submissions';
+          errorMessage = "Submission Limit Reached";
+          errorDetails = error.response.data?.error || "Too many submissions";
         } else if (error.response.data?.error) {
-          errorMessage = 'Submission Failed';
+          errorMessage = "Submission Failed";
           errorDetails = error.response.data.error;
         }
       }
 
       Toast.show({
-        type: 'error',
+        type: "error",
         text1: errorMessage,
         text2: errorDetails,
-        position: 'top',
+        position: "top",
       });
-    }
+    },
   });
 
   const clearForm = () => {
-    setNewLocationName('');
-    setExitType('');
-    setRockDropHeight('');
-    setTotalHeight('');
-    setCliffAspect('');
-    setAnchorInfo('');
-    setAccessInfo('');
-    setNotes('');
-    setOpenedByName('');
-    setOpenedDate('');
+    setNewLocationName("");
+    setExitType("");
+    setRockDropHeight("");
+    setTotalHeight("");
+    setCliffAspect("");
+    setAnchorInfo("");
+    setAccessInfo("");
+    setNotes("");
+    setOpenedByName("");
+    setOpenedDate("");
   };
 
   const handleSubmit = async () => {
     if (!isAuthenticated) {
       Toast.show({
-        type: 'error',
-        text1: 'Authentication required',
-        text2: 'Please log in to submit details',
-        position: 'top',
+        type: "error",
+        text1: "Authentication required",
+        text2: "Please log in to submit details",
+        position: "top",
       });
       return;
     }
 
     if (!location?.id) {
       Toast.show({
-        type: 'error',
-        text1: 'Invalid location',
-        text2: 'Cannot submit details for this location',
-        position: 'top',
+        type: "error",
+        text1: "Invalid location",
+        text2: "Cannot submit details for this location",
+        position: "top",
       });
       return;
     }
 
     // Basic validation
-    const hasUpdates = newLocationName || exitType || rockDropHeight || totalHeight || 
-                      cliffAspect || anchorInfo || accessInfo || notes || 
-                      openedByName || openedDate;
+    const hasUpdates =
+      newLocationName ||
+      exitType ||
+      rockDropHeight ||
+      totalHeight ||
+      cliffAspect ||
+      anchorInfo ||
+      accessInfo ||
+      notes ||
+      openedByName ||
+      openedDate;
 
     if (!hasUpdates) {
       Toast.show({
-        type: 'error',
-        text1: 'No updates provided',
-        text2: 'Please fill in at least one field',
-        position: 'top',
+        type: "error",
+        text1: "No updates provided",
+        text2: "Please fill in at least one field",
+        position: "top",
       });
       return;
     }
@@ -162,19 +176,21 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
     try {
       // Prepare submission data for the API
       const submissionData = {
-        submission_type: 'update',
+        submission_type: "update",
         existing_location_id: location.id,
         name: newLocationName || location.name,
-        country: location.country || '',
+        country: location.country || "",
         latitude: location.latitude,
         longitude: location.longitude,
         // Only include height fields if they're provided and valid
-        ...(rockDropHeight && !isNaN(parseInt(rockDropHeight)) && {
-          rock_drop_ft: parseInt(rockDropHeight)
-        }),
-        ...(totalHeight && !isNaN(parseInt(totalHeight)) && {
-          total_height_ft: parseInt(totalHeight)
-        }),
+        ...(rockDropHeight &&
+          !isNaN(parseInt(rockDropHeight)) && {
+            rock_drop_ft: parseInt(rockDropHeight),
+          }),
+        ...(totalHeight &&
+          !isNaN(parseInt(totalHeight)) && {
+            total_height_ft: parseInt(totalHeight),
+          }),
         // Only include other fields if they're provided
         ...(cliffAspect && { cliff_aspect: cliffAspect }),
         ...(anchorInfo && { anchor_info: anchorInfo }),
@@ -192,11 +208,11 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
 
   const handleCancel = () => {
     onClose();
-    
+
     Toast.show({
-      type: 'info',
-      text1: 'Submission cancelled',
-      position: 'top',
+      type: "info",
+      text1: "Submission cancelled",
+      position: "top",
     });
 
     clearForm();
@@ -210,11 +226,13 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
             <ScrollView showsVerticalScrollIndicator={false}>
               <Text style={styles.panelTitle}>Submit Details</Text>
               <Text style={styles.subtitle}>
-                Help improve the database by submitting additional details for{' '}
+                Help improve the database by submitting additional details for{" "}
                 <Text style={styles.locationName}>{location?.name}</Text>
               </Text>
 
-              <Text style={styles.panelSubtitle}>Location Name (if different)</Text>
+              <Text style={styles.panelSubtitle}>
+                Location Name (if different)
+              </Text>
               <TextInput
                 style={styles.input}
                 value={newLocationName}
@@ -322,16 +340,26 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
 
               {submitUpdateMutation.isPending ? (
                 <View style={styles.loadingContainer}>
-                  <ActivityIndicator animating={true} color="#00ABF0" size="large" />
+                  <ActivityIndicator
+                    animating={true}
+                    color="#00ABF0"
+                    size="large"
+                  />
                   <Text style={styles.loadingText}>Submitting details...</Text>
                 </View>
               ) : (
                 <>
-                  <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                  <TouchableOpacity
+                    style={styles.submitButton}
+                    onPress={handleSubmit}
+                  >
                     <Text style={styles.buttonText}>Submit Details</Text>
                   </TouchableOpacity>
-                  
-                  <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={handleCancel}
+                  >
                     <Text style={styles.buttonText}>Cancel</Text>
                   </TouchableOpacity>
                 </>
@@ -347,84 +375,84 @@ const SubmitDetailsModal = ({ visible, onClose, location }: SubmitDetailsModalPr
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   container: {
-    width: '90%',
-    maxHeight: '80%',
-    backgroundColor: '#FFFFFF',
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "#FFFFFF",
     borderRadius: 10,
     padding: 20,
     elevation: 5,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
   panelTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    textAlign: 'center',
-    color: '#333',
+    textAlign: "center",
+    color: "#333",
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
     lineHeight: 22,
   },
   locationName: {
-    fontWeight: 'bold',
-    color: '#00ABF0',
+    fontWeight: "bold",
+    color: "#00ABF0",
   },
   panelSubtitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
     marginTop: 15,
     marginBottom: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     marginBottom: 10,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   submitButton: {
-    backgroundColor: '#00ABF0',
+    backgroundColor: "#00ABF0",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
     marginBottom: 10,
   },
   cancelButton: {
-    backgroundColor: '#A52A2A',
+    backgroundColor: "#A52A2A",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   loadingContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
 });
 
