@@ -1,6 +1,5 @@
-import React from "react";
-import { ScrollView, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
+import { ScrollView, StyleSheet, Text } from "react-native";
 
 const PrivacyPolicy = () => {
   const openContactPage = () => {

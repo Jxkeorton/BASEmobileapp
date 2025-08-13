@@ -1,17 +1,17 @@
-import { useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-} from "react-native";
-import { router } from "expo-router";
-import { ActivityIndicator } from "react-native-paper";
 import { useQuery } from "@tanstack/react-query";
-import { useKyClient } from "../services/kyClient";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { ActivityIndicator } from "react-native-paper";
 import { useAuth } from "../providers/AuthProvider";
+import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
 
 interface LogbookJumpCardProps {

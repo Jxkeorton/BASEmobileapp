@@ -1,9 +1,9 @@
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
 

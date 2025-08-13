@@ -1,19 +1,23 @@
+import { FontAwesome } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import {
-  View,
-  StyleSheet,
+  Keyboard,
   ScrollView,
+  StyleSheet,
   TouchableHighlight,
   TouchableWithoutFeedback,
-  Keyboard,
+  View,
 } from "react-native";
-import { useState } from "react";
+import {
+  ActivityIndicator,
+  PaperProvider,
+  Portal,
+  Text,
+} from "react-native-paper";
 import LogbookJumpCard from "../../../components/LogbookJumpCard";
-import { FontAwesome } from "@expo/vector-icons";
-import { ActivityIndicator } from "react-native-paper";
-import { useQuery } from "@tanstack/react-query";
-import { useKyClient } from "../../../services/kyClient";
-import { Portal, PaperProvider, Text } from "react-native-paper";
 import LogbookModal from "../../../components/LogbookModal";
+import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
 
 import { useAuth } from "../../../providers/AuthProvider";

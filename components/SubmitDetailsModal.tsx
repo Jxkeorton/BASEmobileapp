@@ -1,22 +1,22 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import {
+  Keyboard,
   Modal,
-  View,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  ScrollView,
   TouchableWithoutFeedback,
-  Keyboard,
+  View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useKyClient } from "../services/kyClient";
-import { useAuth } from "../providers/AuthProvider";
 import Toast from "react-native-toast-message";
-import { SubmitLocationData } from "../app/(tabs)/profile/SubmitLocation";
 import { Location } from "../app/(tabs)/map/Map";
+import { SubmitLocationData } from "../app/(tabs)/profile/SubmitLocation";
+import { useAuth } from "../providers/AuthProvider";
+import { useKyClient } from "../services/kyClient";
 
 interface SubmitDetailsModalProps {
   visible: boolean;

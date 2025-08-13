@@ -1,5 +1,5 @@
-import ky from "ky";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ky from "ky";
 import createClient from "openapi-fetch";
 import { paths } from "../types/api";
 

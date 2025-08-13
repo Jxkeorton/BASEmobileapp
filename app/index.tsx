@@ -1,8 +1,8 @@
-import { useRootNavigationState, router, useSegments } from "expo-router";
-import { useAuth } from "../providers/AuthProvider";
+import { router, useRootNavigationState, useSegments } from "expo-router";
 import { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
 import { ActivityIndicator, MD2Colors } from "react-native-paper";
-import { View, StyleSheet, Text } from "react-native";
+import { useAuth } from "../providers/AuthProvider";
 
 const Index = () => {
   const segments = useSegments();

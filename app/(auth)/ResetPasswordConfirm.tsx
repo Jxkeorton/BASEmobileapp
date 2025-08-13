@@ -1,15 +1,15 @@
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
 import {
-  View,
-  StyleSheet,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
   Alert,
   Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { useState } from "react";
-import { Button, TextInput, ActivityIndicator, Text } from "react-native-paper";
-import { router, useLocalSearchParams } from "expo-router";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { useKyClient } from "../../services/kyClient";
 

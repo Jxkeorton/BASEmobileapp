@@ -1,13 +1,13 @@
+import { router } from "expo-router";
 import React from "react";
 import {
-  View,
-  Text,
   FlatList,
-  TouchableOpacity,
   ListRenderItem,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { useAuth } from "../../../../providers/AuthProvider";
-import { router } from "expo-router";
 
 type SettingsItemKey =
   | "contactUs"

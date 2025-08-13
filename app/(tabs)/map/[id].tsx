@@ -1,24 +1,30 @@
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Platform,
-  Linking,
-  ActivityIndicator,
-} from "react-native";
-import { useLocalSearchParams, Stack } from "expo-router";
-import { useState, useMemo } from "react";
-import MapView, { Marker } from "react-native-maps";
-import { Button, Text, Divider, IconButton } from "react-native-paper";
-import type { Location } from "./Map";
 import Clipboard from "@react-native-clipboard/clipboard";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
+import MapView, { Marker } from "react-native-maps";
+import {
+  Button,
+  Divider,
+  IconButton,
+  PaperProvider,
+  Portal,
+  Text,
+} from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { useAuth } from "../../../providers/AuthProvider";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useKyClient } from "../../../services/kyClient";
-import { Portal, PaperProvider } from "react-native-paper";
 import SubmitDetailsModal from "../../../components/SubmitDetailsModal";
 import { useUnitSystem } from "../../../context/UnitSystemContext";
+import { useAuth } from "../../../providers/AuthProvider";
+import { useKyClient } from "../../../services/kyClient";
+import type { Location } from "./Map";
 
 export default function Location() {
   const [isCopied, setIsCopied] = useState(false);

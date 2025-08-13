@@ -1,18 +1,22 @@
-import React, { useState } from "react";
-import { useLocalSearchParams, useFocusEffect, Stack } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
+  router,
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
+import React, { useState } from "react";
+import {
   ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from "react-native";
-import { Card, Title, Paragraph, Button } from "react-native-paper";
-import { router } from "expo-router";
+import { Button, Card, Paragraph, Title } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useKyClient } from "../../../services/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
+import { useKyClient } from "../../../services/kyClient";
 
 const jumpDetails = () => {
   const [jump, setJump] = useState<any>(null);

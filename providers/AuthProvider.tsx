@@ -1,11 +1,11 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   createContext,
-  useContext,
-  useState,
-  useEffect,
   ReactNode,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define a type for the user object. You can expand this as needed.
 export interface AuthUser {

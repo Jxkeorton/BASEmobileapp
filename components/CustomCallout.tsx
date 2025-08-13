@@ -1,15 +1,14 @@
+import { router } from "expo-router";
 import {
+  Platform,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  Linking,
-  Platform,
+  View,
 } from "react-native";
 import { Callout } from "react-native-maps";
-import { router } from "expo-router";
-import { useUnitSystem } from "../context/UnitSystemContext";
 import type { Location } from "../app/(tabs)/map/Map";
+import { useUnitSystem } from "../context/UnitSystemContext";
 
 export default function CustomCallout({ info }: { info: Location }) {
   const { isMetric } = useUnitSystem();

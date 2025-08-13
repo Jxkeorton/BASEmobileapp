@@ -1,4 +1,17 @@
 import { useState } from "react";
+import {
+  Keyboard,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import Toast from "react-native-toast-message";
 
 interface ModalContentProps {
   visible: boolean;
@@ -11,19 +24,6 @@ interface ModalContentProps {
   minRockDrop: string;
   maxRockDrop: string;
 }
-import {
-  Modal,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Switch,
-} from "react-native";
-import Toast from "react-native-toast-message";
 
 const ModalContent = ({
   visible,

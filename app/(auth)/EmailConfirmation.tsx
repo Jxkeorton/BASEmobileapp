@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
-import { Button } from "react-native-paper";
 import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import { Alert, StyleSheet, Text, View } from "react-native";
+import { Button } from "react-native-paper";
 import { useKyClient } from "../../services/kyClient";
 
 const EmailConfirmation = () => {

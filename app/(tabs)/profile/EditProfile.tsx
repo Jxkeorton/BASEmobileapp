@@ -1,19 +1,19 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, useFocusEffect } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
   Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { router, useFocusEffect } from "expo-router";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import { PaperProvider, ActivityIndicator } from "react-native-paper";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useKyClient } from "../../../services/kyClient";
-import { useAuth } from "../../../providers/AuthProvider";
+import { ActivityIndicator, PaperProvider } from "react-native-paper";
 import Toast from "react-native-toast-message";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
+import { useAuth } from "../../../providers/AuthProvider";
+import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 
 type UpdateProfileData = NonNullable<

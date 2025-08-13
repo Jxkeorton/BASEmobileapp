@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
 import { router } from "expo-router";
+import { useState } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
+import { CustomerInfo, PurchasesPackage } from "react-native-purchases";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../providers/AuthProvider";
-import { CustomerInfo, PurchasesPackage } from "react-native-purchases";
 
 const PackageList = () => {
   const { user, loading } = useAuth();

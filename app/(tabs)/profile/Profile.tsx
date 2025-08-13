@@ -1,18 +1,18 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import Toast from "react-native-toast-message";
-import { useAuth } from "../../../providers/AuthProvider";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Text, TouchableRipple, ActivityIndicator } from "react-native-paper";
 import {
-  View,
-  StyleSheet,
   SafeAreaView,
-  Share,
   ScrollView,
+  Share,
+  StyleSheet,
+  View,
 } from "react-native";
-import SavedLocationsCard from "../../../components/SavedLocationsCard";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import SavedLocationsCard from "../../../components/SavedLocationsCard";
+import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 

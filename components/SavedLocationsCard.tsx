@@ -1,8 +1,8 @@
-import { Button, Card, Text as Text2 } from "react-native-paper";
-import { View, StyleSheet, Text } from "react-native";
 import { router } from "expo-router";
-import { useUnitSystem } from "../context/UnitSystemContext";
+import { StyleSheet, Text, View } from "react-native";
+import { Button, Card, Text as Text2 } from "react-native-paper";
 import { SavedLocationsArray } from "../app/(tabs)/profile/Profile";
+import { useUnitSystem } from "../context/UnitSystemContext";
 
 interface SavedLocationsCardProps {
   data: SavedLocationsArray;

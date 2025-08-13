@@ -64,7 +64,7 @@
     "@types/react": "^19.1.9",
     "@types/react-native-vector-icons": "^6.4.16",
     "@types/uuid": "^9.0.6",
-    "eslint": "^8.57.1",
+    "eslint": "^9.33.0",
     "eslint-config-expo": "~8.0.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-expo": "^0.1.4",

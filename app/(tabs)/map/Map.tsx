@@ -1,28 +1,28 @@
+import { FontAwesome } from "@expo/vector-icons";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableWithoutFeedback,
   Keyboard,
+  StyleSheet,
   Text,
+  TextInput,
   TouchableHighlight,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import {
-  Switch,
-  Portal,
-  PaperProvider,
-  ActivityIndicator,
-} from "react-native-paper";
-import { useState, useMemo } from "react";
 import MapView from "react-native-map-clustering";
 import { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import {
+  ActivityIndicator,
+  PaperProvider,
+  Portal,
+  Switch,
+} from "react-native-paper";
 import CustomCallout from "../../../components/CustomCallout";
-import { FontAwesome } from "@expo/vector-icons";
 import ModalContent from "../../../components/ModalContent";
 import { useUnitSystem } from "../../../context/UnitSystemContext";
-import { useQuery } from "@tanstack/react-query";
-import type { paths } from "../../../types/api";
 import { useKyClient } from "../../../services/kyClient";
+import type { paths } from "../../../types/api";
 
 type LocationsResponse =
   paths["/locations"]["get"]["responses"][200]["content"]["application/json"];

@@ -1,21 +1,21 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
-  View,
-  TextInput,
-  Text,
-  StyleSheet,
-  TouchableWithoutFeedback,
   Keyboard,
   KeyboardAvoidingView,
   ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { Switch, PaperProvider, ActivityIndicator } from "react-native-paper";
-import { router } from "expo-router";
+import { ActivityIndicator, PaperProvider, Switch } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useKyClient } from "../../../services/kyClient";
 import { useAuth } from "../../../providers/AuthProvider";
+import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 
 export type SubmitLocationData = NonNullable<
