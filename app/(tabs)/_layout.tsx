@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router'
 import { Entypo } from '@expo/vector-icons';
-import { FontAwesome } from '@expo/vector-icons';
+    import { FontAwesome } from '@expo/vector-icons';
 
 export default () => {
-    return( 
+    return (
         <Tabs screenOptions={{ tabBarShowLabel: false, tabBarActiveTintColor: '#00ABF0', tabBarStyle: { backgroundColor: 'black', height: 100,} }}>
             <Tabs.Screen 
                 name="map" 
