@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { HTTPError } from "ky";
 import { useState } from "react";
 import {
   Alert,
@@ -16,6 +15,7 @@ import {
 import { ActivityIndicator, Button, Checkbox, Text } from "react-native-paper";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
+import { ErrorResponse } from "../../types/error-response";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -78,28 +78,17 @@ const Register = () => {
         }
       }
     },
-    onError: async (error: HTTPError) => {
-      let message = "An unexpected error occurred. Please try again later.";
+    onError: async (error: any) => {
+      let errorBody: ErrorResponse | undefined;
+      try {
+        errorBody = await error.response.json();
+      } catch {}
 
-      if (error.response) {
-        const status = error.response.status;
-
-        if (status === 400) {
-          message =
-            "Registration Error. Please check your input and try again.";
-        } else if (status === 409) {
-          message =
-            "Email already exists. Please use a different email or try logging in.";
-        } else if (status === 403) {
-          message = "Invalid API key. Please contact support.";
-        } else if (status === 500) {
-          message = message;
-        }
+      if (errorBody && errorBody.error) {
+        Alert.alert("Error", errorBody.error);
       } else {
-        message = "Network Error. Please check your connection and try again.";
+        Alert.alert("Error", "An unexpected error occurred.");
       }
-
-      Alert.alert("Error", message);
     },
   });
 
