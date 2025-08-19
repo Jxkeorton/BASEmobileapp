@@ -3,10 +3,18 @@ import ky from "ky";
 import createClient from "openapi-fetch";
 import { paths } from "../types/api";
 
-let baseUrl = "";
-if (process.env.EXPO_PUBLIC_API_BASE_URL !== undefined) {
-  baseUrl = process.env.EXPO_PUBLIC_API_BASE_URL;
-}
+const getBaseUrl = () => {
+  // Check if we're in development mode
+  if (__DEV__) {
+    // In development, use localhost
+    return "http://localhost:3000";
+  }
+
+  // In production, use the environment variable or fallback to empty string
+  return process.env.EXPO_PUBLIC_API_BASE_URL || "";
+};
+
+let baseUrl = getBaseUrl();
 
 // Create Ky instance with base configuration
 export const kyInstance = (timeout: number) =>
