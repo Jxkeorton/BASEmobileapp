@@ -72,7 +72,8 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "openapi-typescript": "^7.8.0",
     "prettier": "^3.6.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "zod": "^4.0.17"
   },
   "overrides": {
     "metro": "0.76.0",

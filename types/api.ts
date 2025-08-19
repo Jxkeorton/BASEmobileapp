@@ -866,7 +866,23 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                user?: {
+                                    id?: string;
+                                    /** Format: email */
+                                    email?: string;
+                                };
+                                session?: {
+                                    access_token?: string;
+                                    refresh_token?: string;
+                                    expires_at?: number;
+                                };
+                            };
+                        };
+                    };
                 };
             };
         };
@@ -914,7 +930,49 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                user?: {
+                                    id?: string;
+                                    /** Format: email */
+                                    email?: string;
+                                    /** @description Email confirmation timestamp or null */
+                                    email_confirmed_at?: null | string;
+                                };
+                                /** @description Session object or null */
+                                session?: null | Record<string, never>;
+                                requiresEmailConfirmation?: boolean;
+                                message?: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                            details?: Record<string, never>[] | null;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };
@@ -958,7 +1016,37 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                            details?: Record<string, never>[] | null;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };
@@ -1003,7 +1091,37 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                            details?: Record<string, never>[] | null;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };
@@ -1033,8 +1151,12 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
+                        /** @description Confirmation token from email */
                         token: string;
-                        /** @enum {string} */
+                        /**
+                         * @description Type of confirmation
+                         * @enum {string}
+                         */
                         type: "signup" | "recovery" | "email_change";
                     };
                 };
@@ -1045,7 +1167,49 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            data: {
+                                user: {
+                                    id: string;
+                                    /** Format: email */
+                                    email: string;
+                                    email_confirmed_at?: string | null;
+                                };
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
+                                };
+                                message: string;
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };
@@ -1089,7 +1253,48 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };
@@ -1123,7 +1328,24 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };
@@ -1174,8 +1396,8 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success?: boolean;
-                            message?: string;
+                            success: boolean;
+                            message: string;
                         };
                     };
                 };
@@ -1186,8 +1408,9 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success?: boolean;
-                            error?: string;
+                            success: boolean;
+                            error: string;
+                            details?: Record<string, never>[] | null;
                         };
                     };
                 };
@@ -1198,8 +1421,20 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success?: boolean;
-                            error?: string;
+                            success: boolean;
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
                         };
                     };
                 };
@@ -1241,7 +1476,55 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content?: never;
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            data: {
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
+                                };
+                            };
+                        };
+                    };
+                };
+                /** @description Default Response */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                            details?: Record<string, never>[] | null;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
+                };
+                /** @description Default Response */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success: boolean;
+                            error: string;
+                        };
+                    };
                 };
             };
         };

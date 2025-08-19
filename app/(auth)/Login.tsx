@@ -36,19 +36,23 @@ const Login = () => {
       });
     },
     onSuccess: async (response) => {
+      const user = response.data?.data?.user;
+
       if (response.response.status === 200) {
         // Store token and user data using simple storage
         await AsyncStorage.setItem(
           "auth_token",
-          response.data?.session?.access_token || ""
+          response.data?.data?.session?.access_token || ""
         );
         await AsyncStorage.setItem(
           "refresh_token",
-          response.data?.session?.refresh_token || ""
+          response.data?.data?.session?.refresh_token || ""
         );
 
+        if (user != undefined && user.id && user.email) {
+          updateUser({ id: user.id, email: user.email });
+        }
         // Update auth context
-        updateUser(response.data.user);
 
         // Navigate to main app
         router.replace("/(tabs)/map");
@@ -59,7 +63,7 @@ const Login = () => {
         );
       }
     },
-    onError: async (error) => {
+    onError: async (error: any) => {
       try {
         const errorData = await error.response.json();
         console.error("Sign in error data:", errorData);
