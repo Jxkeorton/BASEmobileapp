@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -9,14 +8,22 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, TextInput } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Snackbar,
+  TextInput,
+} from "react-native-paper";
 import Toast from "react-native-toast-message";
+import APIErrorHandler from "../../components/APIErrorHandler";
 import { useKyClient } from "../../services/kyClient";
 
 const Reset = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const client = useKyClient();
+  const [apiError, setApiError] = useState<any>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const resetPasswordPost = async (email: string) => {
     try {
@@ -32,20 +39,19 @@ const Reset = () => {
         return { success: true };
       }
     } catch (error: any) {
-      console.error("Reset password error:", error);
-      return { success: false, error: error.message };
+      setApiError(error);
     }
   };
 
   const handlePasswordReset = async () => {
     // Validation
     if (!email) {
-      Alert.alert("Error", "Please enter your email address");
+      setValidationError("Email is required.");
       return;
     }
 
     if (!email.includes("@")) {
-      Alert.alert("Error", "Please enter a valid email address");
+      setValidationError("Please enter a valid email address");
       return;
     }
 
@@ -53,7 +59,7 @@ const Reset = () => {
     const resp = await resetPasswordPost(email);
     setLoading(false);
 
-    if (resp?.success) {
+    if (resp?.success === true) {
       router.replace("/(auth)/Login");
       Toast.show({
         type: "success",
@@ -62,7 +68,7 @@ const Reset = () => {
         position: "top",
       });
     } else {
-      Alert.alert("Error", resp?.error || "Failed to send reset email");
+      setApiError(new Error("Failed to send reset email"));
     }
   };
 
@@ -106,6 +112,22 @@ const Reset = () => {
             </>
           )}
         </KeyboardAvoidingView>
+        {apiError && (
+          <APIErrorHandler
+            error={apiError}
+            onDismiss={() => setApiError(null)}
+          />
+        )}
+        {validationError && (
+          <Snackbar
+            visible={!!validationError}
+            onDismiss={() => setValidationError(null)}
+            duration={4000}
+            style={{ backgroundColor: "#d32f2f" }}
+          >
+            {validationError}
+          </Snackbar>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );

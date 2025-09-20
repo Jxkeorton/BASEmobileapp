@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -12,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button } from "react-native-paper";
+import { ActivityIndicator, Button, Snackbar } from "react-native-paper";
+import APIErrorHandler from "../../components/APIErrorHandler";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
 
@@ -20,6 +20,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const client = useKyClient();
+  const [apiError, setApiError] = useState<any>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const { updateUser, loading } = useAuth();
 
@@ -52,73 +54,23 @@ const Login = () => {
         if (user != undefined && user.id && user.email) {
           updateUser({ id: user.id, email: user.email });
         }
-        // Update auth context
 
         // Navigate to main app
         router.replace("/(tabs)/map");
       } else {
-        Alert.alert(
-          "Login Error",
+        setValidationError(
           response.error || "Invalid email or password. Please try again."
         );
       }
     },
     onError: async (error: any) => {
-      try {
-        const errorData = await error.response.json();
-        console.error("Sign in error data:", errorData);
-
-        // Handle different error types
-        if (errorData.emailUnconfirmed === true) {
-          Alert.alert(
-            "Check Your Email",
-            errorData.error ||
-              "Please check your email and click the confirmation link to activate your account.",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.replace({
-                    pathname: "/(auth)/EmailConfirmation",
-                    params: { email: email },
-                  });
-                },
-              },
-            ]
-          );
-          return;
-        }
-
-        // Handle other error types
-        if (error.response?.status === 401) {
-          Alert.alert(
-            "Login Error",
-            "Invalid email or password. Please try again."
-          );
-        } else if (error.response?.status === 400) {
-          Alert.alert(
-            "Invalid Input",
-            "Please check your email and password format."
-          );
-        } else {
-          Alert.alert(
-            "Network Error",
-            "Please check your connection and try again."
-          );
-        }
-      } catch (parseError) {
-        console.error("Error parsing response:", parseError);
-        Alert.alert(
-          "Network Error",
-          "Please check your connection and try again."
-        );
-      }
+      setApiError(error);
     },
   });
 
   const handleSignIn = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      setValidationError("Email and password are required.");
       return;
     }
 
@@ -189,6 +141,22 @@ const Login = () => {
             Privacy Policy
           </Button>
         </KeyboardAvoidingView>
+        {apiError && (
+          <APIErrorHandler
+            error={apiError}
+            onDismiss={() => setApiError(null)}
+          />
+        )}
+        {validationError && (
+          <Snackbar
+            visible={!!validationError}
+            onDismiss={() => setValidationError(null)}
+            duration={4000}
+            style={{ backgroundColor: "#d32f2f" }}
+          >
+            {validationError}
+          </Snackbar>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );

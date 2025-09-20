@@ -12,10 +12,16 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, Checkbox, Text } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Checkbox,
+  Snackbar,
+  Text,
+} from "react-native-paper";
+import APIErrorHandler from "../../components/APIErrorHandler";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
-import { ErrorResponse } from "../../types/error-response";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -23,6 +29,8 @@ const Register = () => {
   const [name, setDisplayName] = useState("");
   const [termsChecked, setTermsChecked] = useState(false);
   const client = useKyClient();
+  const [apiError, setApiError] = useState<any>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const { updateUser } = useAuth();
 
@@ -79,29 +87,19 @@ const Register = () => {
       }
     },
     onError: async (error: any) => {
-      let errorBody: ErrorResponse | undefined;
-      try {
-        errorBody = await error.response.json();
-      } catch {}
-
-      if (errorBody && errorBody.error) {
-        Alert.alert("Error", errorBody.error);
-      } else {
-        Alert.alert("Error", "An unexpected error occurred.");
-      }
+      setApiError(error);
     },
   });
 
   const handleSignUp = async () => {
     // Validation
     if (!email || !password || !name) {
-      Alert.alert("Error", "Please fill in all required fields");
+      setValidationError("Please fill in all required fields");
       return;
     }
 
     if (!termsChecked) {
-      Alert.alert(
-        "Terms and Conditions",
+      setValidationError(
         "You must agree to the Terms and Conditions to register."
       );
       return;
@@ -110,13 +108,13 @@ const Register = () => {
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      Alert.alert("Invalid Email", "Please enter a valid email address");
+      setValidationError("Please enter a valid email address.");
       return;
     }
 
     // Basic password validation
     if (password.length < 6) {
-      Alert.alert("Invalid Password", "Password must be at least 6 characters");
+      setValidationError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -208,6 +206,22 @@ const Register = () => {
             Privacy Policy
           </Button>
         </KeyboardAvoidingView>
+        {apiError && (
+          <APIErrorHandler
+            error={apiError}
+            onDismiss={() => setApiError(null)}
+          />
+        )}
+        {validationError && (
+          <Snackbar
+            visible={!!validationError}
+            onDismiss={() => setValidationError(null)}
+            duration={4000}
+            style={{ backgroundColor: "#d32f2f" }}
+          >
+            {validationError}
+          </Snackbar>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );

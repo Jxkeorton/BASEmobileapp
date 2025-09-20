@@ -1,7 +1,6 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -9,14 +8,24 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
+import {
+  ActivityIndicator,
+  Button,
+  Snackbar,
+  Text,
+  TextInput,
+} from "react-native-paper";
 import Toast from "react-native-toast-message";
+import APIErrorHandler from "../../components/APIErrorHandler";
 import { useKyClient } from "../../services/kyClient";
 
 const ResetPasswordConfirm = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<any>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
+
   const params = useLocalSearchParams();
   const access_token: string = params.access_token as string;
   const refresh_token: string = params.refresh_token as string;
@@ -24,25 +33,22 @@ const ResetPasswordConfirm = () => {
 
   const handlePasswordReset = async () => {
     if (!newPassword || !confirmPassword) {
-      Alert.alert("Error", "Please fill in both password fields");
+      setValidationError("Please fill in both password fields");
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      setValidationError("Passwords do not match");
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert("Error", "Password must be at least 6 characters");
+      setValidationError("Password must be at least 6 characters");
       return;
     }
 
     if (!access_token || !refresh_token || typeof access_token !== "string") {
-      Alert.alert(
-        "Error",
-        "Invalid reset link. Please request a new password reset."
-      );
+      setApiError(new Error("Invalid reset link"));
       return;
     }
 
@@ -71,11 +77,11 @@ const ResetPasswordConfirm = () => {
         // Navigate to login screen
         router.replace("/(auth)/Login");
       } else {
-        Alert.alert("Error", response.error || "Failed to reset password");
+        setApiError(new Error("Failed to reset password"));
       }
     } catch (error) {
       console.error("Password reset error:", error);
-      Alert.alert("Error", "Failed to reset password. Please try again.");
+      setApiError(error);
     } finally {
       setLoading(false);
     }
@@ -137,6 +143,22 @@ const ResetPasswordConfirm = () => {
             Cancel
           </Button>
         </KeyboardAvoidingView>
+        {apiError && (
+          <APIErrorHandler
+            error={apiError}
+            onDismiss={() => setApiError(null)}
+          />
+        )}
+        {validationError && (
+          <Snackbar
+            visible={!!validationError}
+            onDismiss={() => setValidationError(null)}
+            duration={4000}
+            style={{ backgroundColor: "#d32f2f" }}
+          >
+            {validationError}
+          </Snackbar>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );

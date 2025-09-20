@@ -1,20 +1,21 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
-import { Button } from "react-native-paper";
+import { StyleSheet, Text, View } from "react-native";
+import { Button, Snackbar } from "react-native-paper";
+import Toast from "react-native-toast-message";
+import APIErrorHandler from "../../components/APIErrorHandler";
 import { useKyClient } from "../../services/kyClient";
 
 const EmailConfirmation = () => {
   const [isResending, setIsResending] = useState(false);
   const { email } = useLocalSearchParams();
   const client = useKyClient();
+  const [apiError, setApiError] = useState<any>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   const resendConfirmation = async () => {
     if (!email) {
-      Alert.alert(
-        "Error",
-        "Email address not found. Please try registering again."
-      );
+      setValidationError("Email is required.");
       return;
     }
 
@@ -25,46 +26,18 @@ const EmailConfirmation = () => {
       });
 
       if (response.response.status === 200) {
-        Alert.alert(
-          "Email Sent",
-          "Confirmation email has been resent. Please check your inbox."
-        );
+        Toast.show({
+          type: "success",
+          text1: "Email Sent",
+          text2: "Confirmation email has been resent. Please check your inbox.",
+        });
       } else {
-        Alert.alert(
-          "Error",
+        setValidationError(
           "Failed to resend confirmation email. Please try again."
         );
       }
     } catch (error: any) {
-      console.error("Resend error:", error);
-
-      // Handle different error responses
-      if (error.response?.status === 429) {
-        Alert.alert(
-          "Too Many Requests",
-          "Please wait before requesting another confirmation email."
-        );
-      } else if (error.response?.status === 400) {
-        error.response
-          .json()
-          .then((errorData: any) => {
-            Alert.alert(
-              "Error",
-              errorData.error || "Failed to resend confirmation email."
-            );
-          })
-          .catch(() => {
-            Alert.alert(
-              "Error",
-              "Failed to resend confirmation email. Please try again."
-            );
-          });
-      } else {
-        Alert.alert(
-          "Error",
-          "Failed to resend confirmation email. Please try again."
-        );
-      }
+      setApiError(error);
     } finally {
       setIsResending(false);
     }
@@ -99,6 +72,19 @@ const EmailConfirmation = () => {
       >
         Back to Login
       </Button>
+      {apiError && (
+        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
+      )}
+      {validationError && (
+        <Snackbar
+          visible={!!validationError}
+          onDismiss={() => setValidationError(null)}
+          duration={4000}
+          style={{ backgroundColor: "#d32f2f" }}
+        >
+          {validationError}
+        </Snackbar>
+      )}
     </View>
   );
 };
