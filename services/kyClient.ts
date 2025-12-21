@@ -7,6 +7,7 @@ const getBaseUrl = () => {
   // Check if we're in development mode
   if (__DEV__) {
     // In development, use localhost
+    console.log("In dev mode");
     return "http://localhost:3000";
   }
 

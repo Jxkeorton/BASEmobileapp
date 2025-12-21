@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "lib": ["dom", "esnext"],
+    "lib": [
+      "dom",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -19,7 +22,7 @@
   },
   "include": [
     "app/**/*",
-    "providers/**/*", 
+    "providers/**/*",
     "components/**/*",
     "services/**/*",
     "context/**/*",
@@ -33,5 +36,6 @@
     "metro.config.js",
     "**/*.test.ts",
     "**/*.test.tsx"
-  ]
+  ],
+  "extends": "expo/tsconfig.base"
 }

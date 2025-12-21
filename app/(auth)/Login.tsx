@@ -64,6 +64,7 @@ const Login = () => {
       }
     },
     onError: async (error: any) => {
+      console.log("Sign-in error:", error);
       setApiError(error);
     },
   });
