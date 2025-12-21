@@ -12,7 +12,9 @@ const getBaseUrl = () => {
   }
 
   // In production, use the environment variable or fallback to empty string
-  return process.env.EXPO_PUBLIC_API_BASE_URL || "";
+  const prodBaseURL = process.env.EXPO_PUBLIC_API_BASE_URL || "";
+  console.log("In prod mode, base URL:", prodBaseURL);
+  return prodBaseURL;
 };
 
 let baseUrl = getBaseUrl();
