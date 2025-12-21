@@ -33,9 +33,18 @@ const Login = () => {
       email: string;
       password: string;
     }) => {
-      return client.POST("/signin", {
-        body: { email, password },
-      });
+      try {
+        const result = await client.POST("/signin", {
+          body: { email, password },
+        });
+        console.log("=== LOGIN RESPONSE ===");
+        console.log("Status:", result.response.status);
+        console.log("Data:", JSON.stringify(result.data, null, 2));
+        console.log("Error:", JSON.stringify(result.error, null, 2));
+        return result;
+      } catch (err) {
+        throw err;
+      }
     },
     onSuccess: async (response) => {
       const user = response.data?.data?.user;

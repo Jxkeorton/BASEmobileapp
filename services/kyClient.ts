@@ -6,9 +6,11 @@ import { paths } from "../types/api";
 const getBaseUrl = () => {
   // Check if we're in development mode
   if (__DEV__) {
-    // In development, use localhost
-    console.log("In dev mode");
-    return "http://localhost:3000";
+    // Use production API during development
+    const devUrl = "https://basemapapi-production.up.railway.app";
+    console.log("In dev mode, using:", devUrl);
+    console.log("API Key present:", !!process.env.EXPO_PUBLIC_API_KEY);
+    return devUrl;
   }
 
   // In production, use the environment variable or fallback to empty string
