@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "basemobile-app",
   "version": "1.0.0",
   "main": "expo-router/entry",
@@ -6,8 +7,10 @@
     "start": "expo start --tunnel",
     "build": "eas build --profile development",
     "dev": "expo start --dev-client",
-    "android": "expo run:android",
-    "ios": "expo run:ios"
+    "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts",
+    "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",
+    "types:all": "pnpm run types:generate && npm run openapi:generate",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@babel/plugin-transform-class-properties": "^7.22.5",
@@ -35,7 +38,6 @@
     "expo-updates": "~0.27.4",
     "ky": "^1.8.2",
     "openapi-fetch": "^0.14.0",
-    "openapi-typescript": "^7.8.0",
     "pullstate": "^1.25.0",
     "punycode": "^2.3.1",
     "react": "18.3.1",
@@ -58,8 +60,20 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/node": "^24.2.0",
+    "@types/react": "^19.1.9",
     "@types/react-native-vector-icons": "^6.4.16",
-    "@types/uuid": "^9.0.6"
+    "@types/uuid": "^9.0.6",
+    "eslint": "^9.33.0",
+    "eslint-config-expo": "~8.0.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-expo": "^0.1.4",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "openapi-typescript": "^7.8.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3",
+    "zod": "^4.0.17"
   },
   "overrides": {
     "metro": "0.76.0",
