@@ -13,10 +13,10 @@ const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
   useEffect(() => {
     setVisible(!!error);
 
-    if (error.success === false && error.error) {
-      setMessage(error.error);
-    } else if (error.message) {
+    if (error?.message) {
       setMessage(error.message);
+    } else if (error?.error) {
+      setMessage(error.error);
     } else {
       setMessage("An unexpected error occurred.");
     }
@@ -31,6 +31,7 @@ const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
       }}
       duration={4000}
       style={{ backgroundColor: "#d32f2f" }}
+      wrapperStyle={{ top: 0 }}
     >
       {message}
     </Snackbar>
