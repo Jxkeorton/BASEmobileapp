@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 import MapView from "react-native-map-clustering";
-import { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { Marker } from "react-native-maps";
 import {
   ActivityIndicator,
   PaperProvider,
@@ -113,7 +113,6 @@ export default function Map() {
 
   // Handle loading and error states
   if (error) {
-    console.error("Locations API Error:", error);
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.errorText}>
@@ -159,7 +158,6 @@ export default function Map() {
               clusterColor="black"
               clusterTextColor="white"
               clusteringEnabled={true}
-              provider={PROVIDER_GOOGLE}
             >
               {locations &&
                 locations
