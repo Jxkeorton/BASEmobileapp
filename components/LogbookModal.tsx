@@ -49,19 +49,25 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
   // TanStack mutation for submitting jump data
   const submitJumpMutation = useMutation({
     mutationFn: async (jumpData: LogbookPostBody) => {
+      const requestBody: any = {
+        location_name: jumpData.location_name,
+        exit_type: jumpData.exit_type ?? "Earth",
+        delay_seconds: jumpData.delay_seconds ? jumpData.delay_seconds : NaN,
+        details: jumpData.details ?? "",
+      };
+
+      // Only include jump_date if it's not empty
+      if (jumpData.jump_date && jumpData.jump_date.trim() !== "") {
+        requestBody.jump_date = jumpData.jump_date;
+      }
+
       const response = await client.POST("/logbook", {
-        body: {
-          location_name: jumpData.location_name,
-          exit_type: jumpData.exit_type ?? "Earth",
-          delay_seconds: jumpData.delay_seconds ? jumpData.delay_seconds : NaN,
-          jump_date: jumpData.jump_date ?? "",
-          details: jumpData.details ?? "",
-        },
+        body: requestBody,
       });
       return response.response;
     },
     onSuccess: (response) => {
-      if (response.status === 200) {
+      if (response.status === 201) {
         // Invalidate and refetch logbook queries to update the UI
         queryClient.invalidateQueries({ queryKey: ["logbook"] });
         queryClient.invalidateQueries({ queryKey: ["profile"] }); // Update jump count

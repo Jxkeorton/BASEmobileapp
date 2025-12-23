@@ -54,7 +54,7 @@ const EditProfile = () => {
     mutationFn: async (profileData: UpdateProfileData) => {
       return client
         .PATCH("/profile", {
-          json: profileData,
+          body: profileData,
         })
         .then((res) => {
           if (res.error) {

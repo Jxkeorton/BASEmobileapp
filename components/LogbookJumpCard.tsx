@@ -31,19 +31,17 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
   const {
     data: logbookResponse,
     isLoading: loadingLogbook,
-    error: error,
+    isError,
+    error,
   } = useQuery({
     queryKey: ["logbook", user?.id],
     queryFn: async () => {
-      return client.GET("/logbook").then((res) => {
-        if (res.error) {
-          throw new Error("Failed to fetch locations");
-        }
-        return res.data;
-      });
+      const res = await client.GET("/logbook");
+      if ("error" in res) throw res.error;
+      return res.data;
     },
     enabled: !!user?.id,
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
     retry: 3,
   });
 
@@ -84,7 +82,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     });
   };
 
-  if (error) {
+  if (isError) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingText}>

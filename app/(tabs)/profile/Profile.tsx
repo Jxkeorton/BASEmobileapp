@@ -225,7 +225,7 @@ const Profile = () => {
         </View>
 
         {locationsLoading ? (
-          <p>Loading</p>
+          <Text>Loading</Text>
         ) : (
           <>
             {locationsError ? (

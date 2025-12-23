@@ -30,6 +30,8 @@ const LogBook = () => {
 
   const { user, loading } = useAuth();
 
+  console.log("user object in LogBook:", user);
+
   // TanStack Query - profile data for jump number
   const {
     data: profileResponse,
@@ -42,6 +44,7 @@ const LogBook = () => {
         if (res.error) {
           throw new Error("Failed to fetch profile");
         }
+
         return res.data;
       });
     },
