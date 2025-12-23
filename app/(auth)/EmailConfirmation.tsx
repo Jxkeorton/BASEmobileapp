@@ -1,46 +1,66 @@
+import { useMutation } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Button, Snackbar } from "react-native-paper";
+import { Button } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useKyClient } from "../../services/kyClient";
 
 const EmailConfirmation = () => {
-  const [isResending, setIsResending] = useState(false);
   const { email } = useLocalSearchParams();
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const resendConfirmation = async () => {
-    if (!email) {
-      setValidationError("Email is required.");
-      return;
-    }
-
-    setIsResending(true);
-    try {
-      const response = await client.POST("/resend-confirmation", {
-        body: { email: typeof email === "string" ? email : email?.[0] || "" },
+  const resendConfirmationMutation = useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      const result = await client.POST("/resend-confirmation", {
+        body: { email },
       });
 
+      return result;
+    },
+    onSuccess: async (response) => {
       if (response.response.status === 200) {
         Toast.show({
           type: "success",
           text1: "Email Sent",
           text2: "Confirmation email has been resent. Please check your inbox.",
         });
-      } else {
-        setValidationError(
-          "Failed to resend confirmation email. Please try again."
-        );
       }
-    } catch (error: any) {
-      setApiError(error);
-    } finally {
-      setIsResending(false);
-    }
+    },
+    onError: async (error: any) => {
+      // Parse Ky HTTPError response body
+      if (error.response) {
+        try {
+          const errorBody = await error.response.json();
+          // Normalize error format
+          if (errorBody.message && !errorBody.success) {
+            setApiError({
+              success: false,
+              error: errorBody.message,
+            });
+          } else {
+            setApiError(errorBody);
+          }
+        } catch (parseError) {
+          setApiError({
+            success: false,
+            error: "An unexpected error occurred",
+          });
+        }
+      } else {
+        setApiError({
+          success: false,
+          error: error.message || "An error occurred",
+        });
+      }
+    },
+  });
+
+  const resendConfirmation = async () => {
+    const emailString = typeof email === "string" ? email : email?.[0] || "";
+    resendConfirmationMutation.mutate({ email: emailString });
   };
 
   return (
@@ -58,7 +78,7 @@ const EmailConfirmation = () => {
       <Button
         mode="contained"
         onPress={resendConfirmation}
-        loading={isResending}
+        loading={resendConfirmationMutation.isPending}
         style={styles.button}
         disabled={!email}
       >
@@ -74,16 +94,6 @@ const EmailConfirmation = () => {
       </Button>
       {apiError && (
         <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
-      )}
-      {validationError && (
-        <Snackbar
-          visible={!!validationError}
-          onDismiss={() => setValidationError(null)}
-          duration={4000}
-          style={{ backgroundColor: "#d32f2f" }}
-        >
-          {validationError}
-        </Snackbar>
       )}
     </View>
   );

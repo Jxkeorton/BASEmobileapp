@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
@@ -8,13 +9,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Snackbar,
-  Text,
-  TextInput,
-} from "react-native-paper";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useKyClient } from "../../services/kyClient";
@@ -22,50 +17,34 @@ import { useKyClient } from "../../services/kyClient";
 const ResetPasswordConfirm = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
   const params = useLocalSearchParams();
   const access_token: string = params.access_token as string;
   const refresh_token: string = params.refresh_token as string;
   const client = useKyClient();
 
-  const handlePasswordReset = async () => {
-    if (!newPassword || !confirmPassword) {
-      setValidationError("Please fill in both password fields");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setValidationError("Passwords do not match");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setValidationError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (!access_token || !refresh_token || typeof access_token !== "string") {
-      setApiError(new Error("Invalid reset link"));
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Call your API to reset the password
-      const response = await client.POST("/reset-password-confirm", {
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({
+      access_token,
+      refresh_token,
+      new_password,
+    }: {
+      access_token: string;
+      refresh_token: string;
+      new_password: string;
+    }) => {
+      const result = await client.POST("/reset-password-confirm", {
         body: {
-          access_token: Array.isArray(access_token)
-            ? access_token[0]
-            : access_token,
+          access_token,
           refresh_token,
-          new_password: newPassword,
+          new_password,
         },
       });
 
+      return result;
+    },
+    onSuccess: async (response) => {
       if (response.response.status === 200) {
         Toast.show({
           type: "success",
@@ -74,17 +53,48 @@ const ResetPasswordConfirm = () => {
           position: "top",
         });
 
-        // Navigate to login screen
         router.replace("/(auth)/Login");
-      } else {
-        setApiError(new Error("Failed to reset password"));
       }
-    } catch (error) {
-      console.error("Password reset error:", error);
-      setApiError(error);
-    } finally {
-      setLoading(false);
-    }
+    },
+    onError: async (error: any) => {
+      // Parse Ky HTTPError response body
+      if (error.response) {
+        try {
+          const errorBody = await error.response.json();
+          // Normalize error format
+          if (errorBody.message && !errorBody.success) {
+            setApiError({
+              success: false,
+              error: errorBody.message,
+            });
+          } else {
+            setApiError(errorBody);
+          }
+        } catch (parseError) {
+          setApiError({
+            success: false,
+            error: "An unexpected error occurred",
+          });
+        }
+      } else {
+        setApiError({
+          success: false,
+          error: error.message || "An error occurred",
+        });
+      }
+    },
+  });
+
+  const handlePasswordReset = async () => {
+    resetPasswordMutation.mutate({
+      access_token: Array.isArray(access_token)
+        ? access_token[0]
+        : access_token,
+      refresh_token: Array.isArray(refresh_token)
+        ? refresh_token[0]
+        : refresh_token,
+      new_password: newPassword,
+    });
   };
 
   return (
@@ -119,7 +129,7 @@ const ResetPasswordConfirm = () => {
             onChangeText={(text) => setConfirmPassword(text)}
           />
 
-          {loading ? (
+          {resetPasswordMutation.isPending ? (
             <ActivityIndicator
               size="small"
               color="#007AFF"
@@ -148,16 +158,6 @@ const ResetPasswordConfirm = () => {
             error={apiError}
             onDismiss={() => setApiError(null)}
           />
-        )}
-        {validationError && (
-          <Snackbar
-            visible={!!validationError}
-            onDismiss={() => setValidationError(null)}
-            duration={4000}
-            style={{ backgroundColor: "#d32f2f" }}
-          >
-            {validationError}
-          </Snackbar>
         )}
       </View>
     </TouchableWithoutFeedback>

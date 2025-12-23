@@ -12,13 +12,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Checkbox,
-  Snackbar,
-  Text,
-} from "react-native-paper";
+import { ActivityIndicator, Button, Checkbox, Text } from "react-native-paper";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
@@ -30,7 +24,6 @@ const Register = () => {
   const [termsChecked, setTermsChecked] = useState(false);
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
   const { updateUser } = useAuth();
 
@@ -87,37 +80,35 @@ const Register = () => {
       }
     },
     onError: async (error: any) => {
-      setApiError(error);
+      // Parse Ky HTTPError response body
+      if (error.response) {
+        try {
+          const errorBody = await error.response.json();
+          // Normalize error format
+          if (errorBody.message && !errorBody.success) {
+            setApiError({
+              success: false,
+              error: errorBody.message,
+            });
+          } else {
+            setApiError(errorBody);
+          }
+        } catch (parseError) {
+          setApiError({
+            success: false,
+            error: "An unexpected error occurred",
+          });
+        }
+      } else {
+        setApiError({
+          success: false,
+          error: error.message || "An error occurred",
+        });
+      }
     },
   });
 
   const handleSignUp = async () => {
-    // Validation
-    if (!email || !password || !name) {
-      setValidationError("Please fill in all required fields");
-      return;
-    }
-
-    if (!termsChecked) {
-      setValidationError(
-        "You must agree to the Terms and Conditions to register."
-      );
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setValidationError("Please enter a valid email address.");
-      return;
-    }
-
-    // Basic password validation
-    if (password.length < 6) {
-      setValidationError("Password must be at least 6 characters long.");
-      return;
-    }
-
     // Note: Username will need to be set later via profile update
     signUpMutation.mutate({ email, password, name: name });
   };
@@ -211,16 +202,6 @@ const Register = () => {
             error={apiError}
             onDismiss={() => setApiError(null)}
           />
-        )}
-        {validationError && (
-          <Snackbar
-            visible={!!validationError}
-            onDismiss={() => setValidationError(null)}
-            duration={4000}
-            style={{ backgroundColor: "#d32f2f" }}
-          >
-            {validationError}
-          </Snackbar>
         )}
       </View>
     </TouchableWithoutFeedback>

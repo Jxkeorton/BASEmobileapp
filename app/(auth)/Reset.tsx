@@ -1,3 +1,4 @@
+import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -8,68 +9,66 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Snackbar,
-  TextInput,
-} from "react-native-paper";
+import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useKyClient } from "../../services/kyClient";
 
 const Reset = () => {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
-  const resetPasswordPost = async (email: string) => {
-    try {
-      const response = await client
-        .POST("/reset-password", {
-          body: { email },
-        })
-        .then((res) => {
-          return res;
-        });
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      const result = await client.POST("/reset-password", {
+        body: { email },
+      });
 
+      return result;
+    },
+    onSuccess: async (response) => {
       if (response.response.status === 200) {
-        return { success: true };
+        router.replace("/(auth)/Login");
+        Toast.show({
+          type: "success",
+          text1: "Reset password email sent",
+          text2: "Check your email for the reset link",
+          position: "top",
+        });
       }
-    } catch (error: any) {
-      setApiError(error);
-    }
-  };
+    },
+    onError: async (error: any) => {
+      // Parse Ky HTTPError response body
+      if (error.response) {
+        try {
+          const errorBody = await error.response.json();
+          // Normalize error format
+          if (errorBody.message && !errorBody.success) {
+            setApiError({
+              success: false,
+              error: errorBody.message,
+            });
+          } else {
+            setApiError(errorBody);
+          }
+        } catch (parseError) {
+          setApiError({
+            success: false,
+            error: "An unexpected error occurred",
+          });
+        }
+      } else {
+        setApiError({
+          success: false,
+          error: error.message || "An error occurred",
+        });
+      }
+    },
+  });
 
   const handlePasswordReset = async () => {
-    // Validation
-    if (!email) {
-      setValidationError("Email is required.");
-      return;
-    }
-
-    if (!email.includes("@")) {
-      setValidationError("Please enter a valid email address");
-      return;
-    }
-
-    setLoading(true);
-    const resp = await resetPasswordPost(email);
-    setLoading(false);
-
-    if (resp?.success === true) {
-      router.replace("/(auth)/Login");
-      Toast.show({
-        type: "success",
-        text1: "Reset password email sent",
-        text2: "Check your email for the reset link",
-        position: "top",
-      });
-    } else {
-      setApiError(new Error("Failed to send reset email"));
-    }
+    resetPasswordMutation.mutate({ email });
   };
 
   return (
@@ -91,7 +90,7 @@ const Reset = () => {
             onChangeText={(text) => setEmail(text)}
           />
 
-          {loading ? (
+          {resetPasswordMutation.isPending ? (
             <ActivityIndicator size="small" color="#007AFF" />
           ) : (
             <>
@@ -117,16 +116,6 @@ const Reset = () => {
             error={apiError}
             onDismiss={() => setApiError(null)}
           />
-        )}
-        {validationError && (
-          <Snackbar
-            visible={!!validationError}
-            onDismiss={() => setValidationError(null)}
-            duration={4000}
-            style={{ backgroundColor: "#d32f2f" }}
-          >
-            {validationError}
-          </Snackbar>
         )}
       </View>
     </TouchableWithoutFeedback>
