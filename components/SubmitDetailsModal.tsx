@@ -12,11 +12,11 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import { Location } from "../app/(tabs)/map/Map";
 import { SubmitLocationData } from "../app/(tabs)/profile/SubmitLocation";
 import { useAuth } from "../providers/AuthProvider";
 import { useKyClient } from "../services/kyClient";
+import APIErrorHandler from "./APIErrorHandler";
 
 interface SubmitDetailsModalProps {
   visible: boolean;
@@ -39,6 +39,7 @@ const SubmitDetailsModal = ({
   const [notes, setNotes] = useState("");
   const [openedByName, setOpenedByName] = useState("");
   const [openedDate, setOpenedDate] = useState("");
+  const [error, setError] = useState<any>(null);
 
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
@@ -64,55 +65,17 @@ const SubmitDetailsModal = ({
       if (response.success) {
         onClose();
 
-        Toast.show({
-          type: "success",
-          text1: "Details submitted successfully",
-          text2: "Your submission is under review",
-          position: "top",
-        });
-
         // Clear form
         clearForm();
 
         // Optionally invalidate related queries
         queryClient.invalidateQueries({ queryKey: ["submissions"] });
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Error submitting details",
-          text2: "Unknown error occurred",
-          position: "top",
-        });
+        setError({ message: "Error submitting details" });
       }
     },
     onError: (error: any) => {
-      console.error("Submit details error:", error);
-
-      let errorMessage = "Failed to submit details";
-      let errorDetails = "";
-
-      // Handle different types of errors
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data?.validation) {
-          errorMessage = "Validation Error";
-          errorDetails = error.response.data.validation
-            .map((err: any) => err.message)
-            .join(", ");
-        } else if (error.response.status === 429) {
-          errorMessage = "Submission Limit Reached";
-          errorDetails = error.response.data?.error || "Too many submissions";
-        } else if (error.response.data?.error) {
-          errorMessage = "Submission Failed";
-          errorDetails = error.response.data.error;
-        }
-      }
-
-      Toast.show({
-        type: "error",
-        text1: errorMessage,
-        text2: errorDetails,
-        position: "top",
-      });
+      setError(error);
     },
   });
 
@@ -131,21 +94,15 @@ const SubmitDetailsModal = ({
 
   const handleSubmit = async () => {
     if (!isAuthenticated) {
-      Toast.show({
-        type: "error",
-        text1: "Authentication required",
-        text2: "Please log in to submit details",
-        position: "top",
+      setError({
+        message: "Authentication required: Please log in to submit details",
       });
       return;
     }
 
     if (!location?.id) {
-      Toast.show({
-        type: "error",
-        text1: "Invalid location",
-        text2: "Cannot submit details for this location",
-        position: "top",
+      setError({
+        message: "Invalid location: Cannot submit details for this location",
       });
       return;
     }
@@ -164,56 +121,42 @@ const SubmitDetailsModal = ({
       openedDate;
 
     if (!hasUpdates) {
-      Toast.show({
-        type: "error",
-        text1: "No updates provided",
-        text2: "Please fill in at least one field",
-        position: "top",
+      setError({
+        message: "No updates provided: Please fill in at least one field",
       });
       return;
     }
 
-    try {
-      // Prepare submission data for the API
-      const submissionData = {
-        submission_type: "update",
-        existing_location_id: location.id,
-        name: newLocationName || location.name,
-        country: location.country || "",
-        latitude: location.latitude,
-        longitude: location.longitude,
-        // Only include height fields if they're provided and valid
-        ...(rockDropHeight &&
-          !isNaN(parseInt(rockDropHeight)) && {
-            rock_drop_ft: parseInt(rockDropHeight),
-          }),
-        ...(totalHeight &&
-          !isNaN(parseInt(totalHeight)) && {
-            total_height_ft: parseInt(totalHeight),
-          }),
-        // Only include other fields if they're provided
-        ...(cliffAspect && { cliff_aspect: cliffAspect }),
-        ...(anchorInfo && { anchor_info: anchorInfo }),
-        ...(accessInfo && { access_info: accessInfo }),
-        ...(notes && { notes: notes }),
-        ...(openedByName && { opened_by_name: openedByName }),
-        ...(openedDate && { opened_date: openedDate }),
-      } satisfies SubmitLocationData;
+    const submissionData = {
+      submission_type: "update",
+      existing_location_id: location.id,
+      name: newLocationName || location.name,
+      country: location.country || "",
+      latitude: location.latitude,
+      longitude: location.longitude,
+      // Only include height fields if they're provided and valid
+      ...(rockDropHeight &&
+        !isNaN(parseInt(rockDropHeight)) && {
+          rock_drop_ft: parseInt(rockDropHeight),
+        }),
+      ...(totalHeight &&
+        !isNaN(parseInt(totalHeight)) && {
+          total_height_ft: parseInt(totalHeight),
+        }),
+      // Only include other fields if they're provided
+      ...(cliffAspect && { cliff_aspect: cliffAspect }),
+      ...(anchorInfo && { anchor_info: anchorInfo }),
+      ...(accessInfo && { access_info: accessInfo }),
+      ...(notes && { notes: notes }),
+      ...(openedByName && { opened_by_name: openedByName }),
+      ...(openedDate && { opened_date: openedDate }),
+    } satisfies SubmitLocationData;
 
-      await submitUpdateMutation.mutateAsync(submissionData);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-    }
+    await submitUpdateMutation.mutateAsync(submissionData);
   };
 
   const handleCancel = () => {
     onClose();
-
-    Toast.show({
-      type: "info",
-      text1: "Submission cancelled",
-      position: "top",
-    });
 
     clearForm();
   };
@@ -367,6 +310,7 @@ const SubmitDetailsModal = ({
             </ScrollView>
           </View>
         </TouchableWithoutFeedback>
+        <APIErrorHandler error={error} onDismiss={() => setError(null)} />
       </View>
     </Modal>
   );

@@ -20,6 +20,7 @@ import LogbookModal from "../../../components/LogbookModal";
 import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
 
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import { useAuth } from "../../../providers/AuthProvider";
 
 const LogBook = () => {
@@ -30,7 +31,6 @@ const LogBook = () => {
 
   const { user, loading } = useAuth();
 
-  // TanStack Query - profile data for jump number
   const {
     data: profileResponse,
     isLoading: profileLoading,
@@ -64,20 +64,6 @@ const LogBook = () => {
     );
   }
 
-  if (profileError) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <Text>Error loading profile: {profileError.message}</Text>
-      </View>
-    );
-  }
-
-  // Extract data from API responses
   const profile = profileResponse?.success
     ? profileResponse.data
     : ({} as ProfileData);
@@ -125,6 +111,7 @@ const LogBook = () => {
 
             <LogbookJumpCard jumpNumber={profile?.jump_number || 0} />
           </View>
+          <APIErrorHandler error={profileError} />
         </TouchableWithoutFeedback>
       </ScrollView>
     </PaperProvider>

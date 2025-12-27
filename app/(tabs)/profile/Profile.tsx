@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { useState } from "react";
+
 import {
   SafeAreaView,
   ScrollView,
@@ -8,9 +10,9 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationsCard from "../../../components/SavedLocationsCard";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
@@ -27,6 +29,7 @@ const Profile = () => {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
+  const [error, setError] = useState<any>(null);
 
   // Get profile data
   const {
@@ -85,19 +88,10 @@ const Profile = () => {
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
-        Toast.show({
-          type: "info",
-          text1: "Location unsaved from profile",
-          position: "top",
-        });
       }
     },
-    onError: (error) => {
-      Toast.show({
-        type: "error",
-        text1: "Error could not delete location",
-        position: "top",
-      });
+    onError: (err) => {
+      setError({ message: "Error could not delete location" });
     },
   });
 
@@ -242,6 +236,10 @@ const Profile = () => {
           </>
         )}
       </ScrollView>
+      <APIErrorHandler
+        error={error || profileError || locationsError}
+        onDismiss={() => setError(null)}
+      />
     </SafeAreaView>
   );
 };

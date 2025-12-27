@@ -10,8 +10,8 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
@@ -25,6 +25,7 @@ const EditProfile = () => {
   const [email, setEmail] = useState("");
   const [jumpNumber, setJumpNumber] = useState("");
   const [username, setUsername] = useState("");
+  const [error, setError] = useState<any>(null);
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
@@ -65,30 +66,13 @@ const EditProfile = () => {
     },
     onSuccess: (response) => {
       if (response.success) {
-        // Invalidate and refetch profile queries
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         router.back();
-
-        Toast.show({
-          type: "success",
-          text1: "Profile updated successfully",
-          position: "top",
-        });
       }
     },
-    onError: (error) => {
-      console.error("Update profile error:", error);
-
-      let errorMessage = "Failed to update profile";
-      let errorDetails = "";
-
-      Toast.show({
-        type: "error",
-        text1: errorMessage,
-        text2: errorDetails,
-        position: "top",
-      });
+    onError: (err) => {
+      setError(err);
     },
   });
 
@@ -102,74 +86,36 @@ const EditProfile = () => {
         setUsername(profile.username || "");
         setJumpNumber(profile.jump_number?.toString() || "0");
       }
-    }, [profileResponse])
+    }, [profileResponse]),
   );
 
   const handleSubmit = async () => {
-    if (!isAuthenticated) {
-      Toast.show({
-        type: "error",
-        text1: "Authentication required",
-        text2: "Please log in to update profile",
-        position: "top",
-      });
+    // Prepare update data (only include fields that have values)
+    const profileData: UpdateProfileData = {
+      name: profileResponse?.data?.name || "",
+      username: profileResponse?.data?.username || "",
+      jump_number: profileResponse?.data?.jump_number || 0,
+    };
+
+    if (name.trim() !== profileResponse?.data?.name) {
+      profileData.name = name.trim();
+    }
+
+    if (username.trim() !== profileResponse?.data?.username) {
+      profileData.username = username.trim();
+    }
+
+    const jumpNum = parseInt(jumpNumber) || 0;
+    if (jumpNum !== profileResponse?.data?.jump_number) {
+      profileData.jump_number = jumpNum;
+    }
+
+    // Only submit if there are actual changes
+    if (Object.keys(profileData).length === 0) {
       return;
     }
 
-    // Basic validation
-    if (!name.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Name is required",
-        position: "top",
-      });
-      return;
-    }
-
-    if (jumpNumber && isNaN(parseInt(jumpNumber))) {
-      Toast.show({
-        type: "error",
-        text1: "Jump number must be a valid number",
-        position: "top",
-      });
-      return;
-    }
-
-    try {
-      // Prepare update data (only include fields that have values)
-      const profileData: UpdateProfileData = {
-        name: profileResponse?.data?.name || "",
-        username: profileResponse?.data?.username || "",
-        jump_number: profileResponse?.data?.jump_number || 0,
-      };
-
-      if (name.trim() !== profileResponse?.data?.name) {
-        profileData.name = name.trim();
-      }
-
-      if (username.trim() !== profileResponse?.data?.username) {
-        profileData.username = username.trim();
-      }
-
-      const jumpNum = parseInt(jumpNumber) || 0;
-      if (jumpNum !== profileResponse?.data?.jump_number) {
-        profileData.jump_number = jumpNum;
-      }
-
-      // Only submit if there are actual changes
-      if (Object.keys(profileData).length === 0) {
-        Toast.show({
-          type: "info",
-          text1: "No changes to save",
-          position: "top",
-        });
-        return;
-      }
-
-      await updateProfileMutation.mutateAsync(profileData);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-    }
+    await updateProfileMutation.mutateAsync(profileData);
   };
 
   // Loading state
@@ -273,6 +219,10 @@ const EditProfile = () => {
           )}
         </View>
       </View>
+      <APIErrorHandler
+        error={error || profileError}
+        onDismiss={() => setError(null)}
+      />
     </PaperProvider>
   );
 };

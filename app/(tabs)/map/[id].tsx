@@ -19,15 +19,16 @@ import {
   Portal,
   Text,
 } from "react-native-paper";
-import Toast from "react-native-toast-message";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import SubmitDetailsModal from "../../../components/SubmitDetailsModal";
 import { useUnitSystem } from "../../../context/UnitSystemContext";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
-import type { Location } from "./Map";
+import type { Location as LocationType } from "./Map";
 
 export default function Location() {
   const [isCopied, setIsCopied] = useState(false);
+  const [error, setError] = useState<any>(null);
   const { id } = useLocalSearchParams();
   const { isMetric } = useUnitSystem();
   const { user, isAuthenticated } = useAuth();
@@ -57,10 +58,8 @@ export default function Location() {
       });
     },
   });
-  const locations = locationsResponse?.success ? locationsResponse.data : [];
 
-  // Get user's saved locations
-  const { data: savedLocationsResponse, isLoading: savedLoading } = useQuery({
+  const { data: savedLocationsResponse } = useQuery({
     queryKey: ["savedLocations", user?.id],
     queryFn: async () => {
       return client.GET("/locations/saved").then((res) => {
@@ -74,7 +73,6 @@ export default function Location() {
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
-  // Get user's saved locations
   const saveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
       const res = await client.POST("/locations/save", {
@@ -87,20 +85,11 @@ export default function Location() {
     onSuccess: (response) => {
       if (response?.success) {
         queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
-        Toast.show({
-          type: "success",
-          text1: "Location saved",
-          position: "top",
-        });
       }
     },
-    onError: (error: any) => {
-      const errorMessage = error.message || "Failed to save location";
-      Toast.show({
-        type: "error",
-        text1: errorMessage,
-        position: "top",
-      });
+    onError: (err: any) => {
+      const errorMessage = err.message || "Failed to save location";
+      setError({ message: errorMessage });
     },
   });
 
@@ -117,25 +106,18 @@ export default function Location() {
     onSuccess: (response) => {
       if (response?.success) {
         queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
-        Toast.show({
-          type: "success",
-          text1: "Location unsaved",
-          position: "top",
-        });
       }
     },
-    onError: (error: any) => {
-      const errorMessage = error.message || "Failed to unsave location";
-      Toast.show({
-        type: "error",
-        text1: errorMessage,
-        position: "top",
-      });
+    onError: (err: any) => {
+      const errorMessage = err.message || "Failed to unsave location";
+      setError({ message: errorMessage });
     },
   });
 
   // Find the specific location from the cached data
-  const location: Location | undefined = useMemo(() => {
+  const location: LocationType | undefined = useMemo(() => {
+    const locations = locationsResponse?.success ? locationsResponse.data : [];
+
     if (!locations) {
       return undefined;
     }
@@ -145,7 +127,7 @@ export default function Location() {
     }
 
     return undefined;
-  }, [locations, locationId]);
+  }, [locationsResponse, locationId]);
 
   // Check if location is saved
   const isSaved = useMemo(() => {
@@ -156,7 +138,7 @@ export default function Location() {
       return false;
     }
     return savedLocationsResponse.data.saved_locations.some(
-      (savedLoc) => savedLoc.location?.id === locationId
+      (savedLoc) => savedLoc.location?.id === locationId,
     );
   }, [savedLocationsResponse, locationId]);
 
@@ -167,32 +149,18 @@ export default function Location() {
 
     Clipboard.setString(coordinatesText);
     setIsCopied(true);
-
-    Toast.show({
-      type: "success",
-      text1: "Coordinates Copied",
-      position: "top",
-    });
   };
 
   const onSave = async () => {
     if (!isAuthenticated) {
-      Toast.show({
-        type: "error",
-        text1: "Please log in to save locations",
-        position: "top",
-      });
+      setError({ message: "Please log in to save locations" });
       return;
     }
 
-    try {
-      if (isSaved) {
-        await unsaveLocationMutation.mutateAsync(locationId);
-      } else {
-        await saveLocationMutation.mutateAsync(locationId);
-      }
-    } catch (error) {
-      // Error handling is done in the mutation callbacks
+    if (isSaved) {
+      await unsaveLocationMutation.mutateAsync(locationId);
+    } else {
+      await saveLocationMutation.mutateAsync(locationId);
     }
   };
 
@@ -215,9 +183,7 @@ export default function Location() {
     });
 
     if (url) {
-      Linking.openURL(url).catch((err) => {
-        console.error("Failed to open URL:", err);
-      });
+      Linking.openURL(url);
     }
   };
 
@@ -251,7 +217,6 @@ export default function Location() {
     );
   }
 
-  // Location not found
   if (!location) {
     return (
       <View style={styles.loadingContainer}>
@@ -381,6 +346,10 @@ export default function Location() {
           <Text style={styles.subtitleText}>Notes: </Text>
           <Text style={styles.text}>{location.notes || "?"}</Text>
         </ScrollView>
+        <APIErrorHandler
+          error={error || locationsError}
+          onDismiss={() => setError(null)}
+        />
       </View>
     </PaperProvider>
   );
