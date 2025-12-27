@@ -31,7 +31,6 @@ const Profile = () => {
   const client = useKyClient();
   const [error, setError] = useState<any>(null);
 
-  // Get profile data
   const {
     data: profileResponse,
     isLoading: profileLoading,
@@ -51,7 +50,6 @@ const Profile = () => {
     retry: 3,
   });
 
-  // Get saved locations
   const {
     data: savedLocationsResponse,
     isLoading: locationsLoading,
@@ -71,7 +69,6 @@ const Profile = () => {
     retry: 3,
   });
 
-  // Unsave location mutation
   const unsaveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
       return client
@@ -91,17 +88,12 @@ const Profile = () => {
       }
     },
     onError: (err) => {
-      setError({ message: "Error could not delete location" });
+      setError(err);
     },
   });
 
   const onDelete = async (locationId: number) => {
-    try {
-      await unsaveLocationMutation.mutateAsync(locationId);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-      throw error;
-    }
+    await unsaveLocationMutation.mutateAsync(locationId);
   };
 
   const myCustomShare = async () => {
@@ -110,11 +102,10 @@ const Profile = () => {
         message: "BASE world map, virtual logbook and more !",
       });
     } catch (error) {
-      alert((error as Error)?.message || "An unknown error occurred");
+      setError(error);
     }
   };
 
-  // Extract profile data
   const profile = profileResponse?.success ? profileResponse.data : undefined;
   const savedLocations = savedLocationsResponse?.success
     ? (savedLocationsResponse.data?.saved_locations ??
@@ -126,15 +117,6 @@ const Profile = () => {
       <SafeAreaView style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color="#00ABF0" />
         <Text style={styles.loadingText}>Loading profile...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (profileError) {
-    return (
-      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
-        <Text style={styles.errorText}>Error loading profile</Text>
-        <Text style={styles.errorDetails}>{profileError.message}</Text>
       </SafeAreaView>
     );
   }

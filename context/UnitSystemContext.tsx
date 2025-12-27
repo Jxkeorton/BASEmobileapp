@@ -6,7 +6,7 @@ type UnitSystemContextType = {
 };
 
 const UnitSystemContext = createContext<UnitSystemContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const useUnitSystem = () => {

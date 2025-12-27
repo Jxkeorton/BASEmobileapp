@@ -19,7 +19,6 @@ const SavedLocationsCard = ({ data, onDelete }: SavedLocationsCardProps) => {
     return value ? `${Math.round(value * 0.3048)} meters` : "?";
   };
 
-  // Check if data is empty
   if (data.length === 0) {
     return (
       <View style={styles.container}>

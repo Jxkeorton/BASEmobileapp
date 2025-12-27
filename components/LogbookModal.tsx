@@ -39,8 +39,7 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
   const client = useKyClient();
   const queryClient = useQueryClient();
 
-  // Valid exit types as per API validation
-  const exitTypes: LogbookJump["exit_type"][] = [
+  const validExitTypes: LogbookJump["exit_type"][] = [
     "Building",
     "Antenna",
     "Span",
@@ -68,9 +67,8 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
     },
     onSuccess: (response) => {
       if (response.status === 201) {
-        // Invalidate and refetch logbook queries to update the UI
         queryClient.invalidateQueries({ queryKey: ["logbook"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] }); // Update jump count
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         onClose();
         router.replace("/(tabs)/logbook/LogBook");
@@ -103,17 +101,6 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
   } as LogbookPostBody;
 
   const handleSubmit = async () => {
-    // Enhanced validation
-    if (!location.trim()) {
-      setError({ message: "Location is required" });
-      return;
-    }
-
-    if (delay && (isNaN(delay) || delay < 0)) {
-      setError({ message: "Invalid delay: Delay must be a positive number" });
-      return;
-    }
-
     await submitJumpMutation.mutateAsync(formData);
   };
 
@@ -162,7 +149,7 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
 
               {showExitTypes && (
                 <View style={styles.exitTypesList}>
-                  {exitTypes.map((type) => (
+                  {validExitTypes.map((type) => (
                     <TouchableOpacity
                       key={type}
                       style={[

@@ -32,7 +32,6 @@ const settingsItems: SettingsItem[] = [
 const Settings: React.FC = () => {
   const { signOut } = useAuth();
 
-  // Function to handle item presses
   const handlePress = (key: SettingsItemKey) => {
     switch (key) {
       case "contactUs":
@@ -56,7 +55,6 @@ const Settings: React.FC = () => {
     }
   };
 
-  // Function to render each item in the FlatList
   const renderItem: ListRenderItem<SettingsItem> = ({ item }) => (
     <TouchableOpacity
       onPress={() => handlePress(item.key)}

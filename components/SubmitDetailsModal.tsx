@@ -14,7 +14,6 @@ import {
 import { ActivityIndicator } from "react-native-paper";
 import { Location } from "../app/(tabs)/map/Map";
 import { SubmitLocationData } from "../app/(tabs)/profile/SubmitLocation";
-import { useAuth } from "../providers/AuthProvider";
 import { useKyClient } from "../services/kyClient";
 import APIErrorHandler from "./APIErrorHandler";
 
@@ -41,13 +40,11 @@ const SubmitDetailsModal = ({
   const [openedDate, setOpenedDate] = useState("");
   const [error, setError] = useState<any>(null);
 
-  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
 
   // TODO: add user to submissions
 
-  // Submit location update mutation
   const submitUpdateMutation = useMutation({
     mutationFn: async (submissionData: SubmitLocationData) => {
       return client
@@ -65,10 +62,8 @@ const SubmitDetailsModal = ({
       if (response.success) {
         onClose();
 
-        // Clear form
         clearForm();
 
-        // Optionally invalidate related queries
         queryClient.invalidateQueries({ queryKey: ["submissions"] });
       } else {
         setError({ message: "Error submitting details" });
@@ -93,21 +88,6 @@ const SubmitDetailsModal = ({
   };
 
   const handleSubmit = async () => {
-    if (!isAuthenticated) {
-      setError({
-        message: "Authentication required: Please log in to submit details",
-      });
-      return;
-    }
-
-    if (!location?.id) {
-      setError({
-        message: "Invalid location: Cannot submit details for this location",
-      });
-      return;
-    }
-
-    // Basic validation
     const hasUpdates =
       newLocationName ||
       exitType ||

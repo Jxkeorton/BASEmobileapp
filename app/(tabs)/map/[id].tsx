@@ -28,21 +28,20 @@ import type { Location as LocationType } from "./Map";
 
 export default function Location() {
   const [isCopied, setIsCopied] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [error, setError] = useState<any>(null);
+
+  const showModal = () => setVisible(true);
+  const hideModal = () => setVisible(false);
+
   const { id } = useLocalSearchParams();
   const { isMetric } = useUnitSystem();
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
 
-  //Modal
-  const [visible, setVisible] = useState(false);
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
-
   const locationId = id && !Array.isArray(id) ? parseInt(id) : NaN;
 
-  // TanStack Query cache (should be cached from map.js)
   const {
     data: locationsResponse,
     isLoading: locationsLoading,
@@ -88,12 +87,10 @@ export default function Location() {
       }
     },
     onError: (err: any) => {
-      const errorMessage = err.message || "Failed to save location";
-      setError({ message: errorMessage });
+      setError(err);
     },
   });
 
-  // Unsave location mutation
   const unsaveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
       const res = await client.DELETE("/locations/unsave", {
@@ -109,12 +106,10 @@ export default function Location() {
       }
     },
     onError: (err: any) => {
-      const errorMessage = err.message || "Failed to unsave location";
-      setError({ message: errorMessage });
+      setError(err);
     },
   });
 
-  // Find the specific location from the cached data
   const location: LocationType | undefined = useMemo(() => {
     const locations = locationsResponse?.success ? locationsResponse.data : [];
 
@@ -129,7 +124,6 @@ export default function Location() {
     return undefined;
   }, [locationsResponse, locationId]);
 
-  // Check if location is saved
   const isSaved = useMemo(() => {
     if (
       !savedLocationsResponse?.success ||
@@ -164,7 +158,6 @@ export default function Location() {
     }
   };
 
-  // Open location in maps app
   const openMaps = () => {
     if (!location?.latitude || !location?.longitude) return;
 
@@ -187,7 +180,6 @@ export default function Location() {
     }
   };
 
-  // Convert height values based on unit system
   const convertHeight = (heightStr: number | undefined | null) => {
     if (!heightStr) return "?";
     if (isMetric) {
@@ -197,7 +189,6 @@ export default function Location() {
     return `${heightStr} ft`;
   };
 
-  // Loading state
   if (locationsLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -207,7 +198,6 @@ export default function Location() {
     );
   }
 
-  // Error state
   if (locationsError) {
     return (
       <View style={styles.loadingContainer}>

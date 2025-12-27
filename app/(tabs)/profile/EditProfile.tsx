@@ -30,7 +30,6 @@ const EditProfile = () => {
   const queryClient = useQueryClient();
   const client = useKyClient();
 
-  // Get profile data
   const {
     data: profileResponse,
     isLoading: profileLoading,
@@ -50,7 +49,6 @@ const EditProfile = () => {
     retry: 3,
   });
 
-  // Update profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData: UpdateProfileData) => {
       return client
@@ -76,7 +74,6 @@ const EditProfile = () => {
     },
   });
 
-  // Load profile data when component focuses
   useFocusEffect(
     React.useCallback(() => {
       if (profileResponse?.success && profileResponse?.data) {
@@ -90,7 +87,6 @@ const EditProfile = () => {
   );
 
   const handleSubmit = async () => {
-    // Prepare update data (only include fields that have values)
     const profileData: UpdateProfileData = {
       name: profileResponse?.data?.name || "",
       username: profileResponse?.data?.username || "",
@@ -110,7 +106,7 @@ const EditProfile = () => {
       profileData.jump_number = jumpNum;
     }
 
-    // Only submit if there are actual changes
+    // Only submit if there are changes
     if (Object.keys(profileData).length === 0) {
       return;
     }
@@ -118,25 +114,12 @@ const EditProfile = () => {
     await updateProfileMutation.mutateAsync(profileData);
   };
 
-  // Loading state
   if (profileLoading) {
     return (
       <PaperProvider>
         <View style={[styles.container, styles.loadingContainer]}>
           <ActivityIndicator size="large" color="#00ABF0" />
           <Text style={styles.loadingText}>Loading profile...</Text>
-        </View>
-      </PaperProvider>
-    );
-  }
-
-  // Error state
-  if (profileError) {
-    return (
-      <PaperProvider>
-        <View style={[styles.container, styles.loadingContainer]}>
-          <Text style={styles.errorText}>Error loading profile</Text>
-          <Text style={styles.errorDetails}>{profileError.message}</Text>
         </View>
       </PaperProvider>
     );

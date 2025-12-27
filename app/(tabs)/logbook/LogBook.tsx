@@ -15,13 +15,12 @@ import {
   Portal,
   Text,
 } from "react-native-paper";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import LogbookJumpCard from "../../../components/LogbookJumpCard";
 import LogbookModal from "../../../components/LogbookModal";
+import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
-
-import APIErrorHandler from "../../../components/APIErrorHandler";
-import { useAuth } from "../../../providers/AuthProvider";
 
 const LogBook = () => {
   const [visible, setVisible] = useState(false);

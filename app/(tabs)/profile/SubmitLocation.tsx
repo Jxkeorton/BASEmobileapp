@@ -14,7 +14,6 @@ import {
 } from "react-native";
 import { ActivityIndicator, PaperProvider, Switch } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 
@@ -38,13 +37,12 @@ const SubmitLocation = () => {
   const [selectedUnit, setSelectedUnit] = useState<"Meters" | "Feet">("Meters");
   const [error, setError] = useState<any>(null);
 
-  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
 
   // TODO: add user to submissions
+  // TODO: add react form for better form handling and validation
 
-  // Submit location mutation
   const submitLocationMutation = useMutation({
     mutationFn: async (locationData: SubmitLocationData) => {
       return client
@@ -58,18 +56,13 @@ const SubmitLocation = () => {
           return res.data;
         });
     },
-    onSuccess: (response) => {
-      if (response.success) {
-        router.replace("/(tabs)/profile/Profile");
+    onSuccess: () => {
+      router.replace("/(tabs)/profile/Profile");
 
-        // Clear form
-        clearForm();
+      // Clear form
+      clearForm();
 
-        // Optionally invalidate related queries
-        queryClient.invalidateQueries({ queryKey: ["submissions"] });
-      } else {
-        setError({ message: "Error trying to send submission" });
-      }
+      queryClient.invalidateQueries({ queryKey: ["submissions"] });
     },
     onError: (error: any) => {
       setError(error);
@@ -91,7 +84,6 @@ const SubmitLocation = () => {
     setCountry("");
   };
 
-  // Parse coordinates string into latitude and longitude
   const parseCoordinates = (coordsString: string) => {
     if (!coordsString) return null;
 
@@ -108,7 +100,6 @@ const SubmitLocation = () => {
     return { latitude: lat, longitude: lng };
   };
 
-  // Convert height to feet (API expects feet)
   const convertHeight = (value: string, unit: "Meters" | "Feet") => {
     const numValue = parseFloat(value);
     return unit === "Meters"
@@ -117,35 +108,12 @@ const SubmitLocation = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isAuthenticated) {
-      setError({
-        message: "Authentication required: Please log in to submit a location",
-      });
-      return;
-    }
-
-    // Validation
-    if (!exitName.trim()) {
-      setError({ message: "Exit name is required" });
-      return;
-    }
-
-    if (!coordinates.trim()) {
-      setError({ message: "Coordinates are required" });
-      return;
-    }
-
     const parsedCoords = parseCoordinates(coordinates);
     if (!parsedCoords) {
       setError({
         message:
           "Invalid coordinates: Please use format: latitude, longitude (e.g., 60.140582, -2.111822)",
       });
-      return;
-    }
-
-    if (!rockDrop.trim()) {
-      setError({ message: "Rock drop height is required" });
       return;
     }
 

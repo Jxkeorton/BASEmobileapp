@@ -27,7 +27,6 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
   const { user } = useAuth();
   const client = useKyClient();
 
-  // TanStack Query for logbook data
   const {
     data: logbookResponse,
     isLoading: loadingLogbook,
@@ -45,11 +44,12 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     retry: 3,
   });
 
-  const jumps = logbookResponse?.success
-    ? logbookResponse.data?.entries
-    : ([] as LogbookJump[]);
+  const jumps = useMemo(() => {
+    return logbookResponse?.success
+      ? logbookResponse.data?.entries
+      : ([] as LogbookJump[]);
+  }, [logbookResponse]);
 
-  // Memoized processed jumps data
   const processedJumps = useMemo(() => {
     if (jumps && !jumps.length) return [];
 
@@ -61,7 +61,6 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     }));
   }, [jumps, jumpNumber]);
 
-  // Filtered jumps based on search term
   const filteredJumps = useMemo(() => {
     if (!searchTerm) return processedJumps;
 
@@ -137,7 +136,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
         <View style={styles.emptyMessage}>
           {searchTerm ? (
             <Text style={styles.emptyMessageText}>
-              No jumps found matching "{searchTerm}"
+              No jumps found matching &quot;{searchTerm}&quot;
             </Text>
           ) : (
             <>

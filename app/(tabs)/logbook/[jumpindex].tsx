@@ -30,7 +30,6 @@ const JumpDetails = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // TanStack Query
   const {
     data: logbookResponse,
     isLoading: loadingJumps,
@@ -120,16 +119,6 @@ const JumpDetails = () => {
     );
   }
 
-  if (jumpsError) {
-    return (
-      <View style={styles.noJumpContainer}>
-        <Text style={{ fontSize: 25 }}>
-          Error loading jump data. Please try again.
-        </Text>
-      </View>
-    );
-  }
-
   if (!jump) {
     return (
       <View style={styles.noJumpContainer}>
@@ -150,7 +139,6 @@ const JumpDetails = () => {
 
       <Card style={{ alignItems: "center" }}>
         <Card.Content>
-          {/* Updated field mapping for new API structure */}
           {jump.location_name && (
             <View>
               <Title style={styles.title}>
@@ -190,7 +178,10 @@ const JumpDetails = () => {
       >
         {deleteJumpMutation.isPending ? "Deleting..." : "Delete Jump"}
       </Button>
-      <APIErrorHandler error={error} onDismiss={() => setError(null)} />
+      <APIErrorHandler
+        error={error || jumpsError}
+        onDismiss={() => setError(null)}
+      />
     </ScrollView>
   );
 };

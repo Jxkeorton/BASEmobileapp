@@ -13,12 +13,11 @@ import { useUnitSystem } from "../context/UnitSystemContext";
 export default function CustomCallout({ info }: { info: Location }) {
   const { isMetric } = useUnitSystem();
 
-  // function to direct to the locations details page
   const onDetailsPress = () => {
     router.push(`/(tabs)/map/${info.id}`);
   };
 
-  // Function to convert feet to meters when isMetric is true
+  // TODO: Move this to a utility file - it is reused in multiple places
   const convertToMeters = (value: number) => {
     return value ? `${Math.round(value * 0.3048)} meters` : "?";
   };

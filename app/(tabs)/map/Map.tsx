@@ -18,6 +18,7 @@ import {
   Portal,
   Switch,
 } from "react-native-paper";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import CustomCallout from "../../../components/CustomCallout";
 import ModalContent from "../../../components/ModalContent";
 import { useUnitSystem } from "../../../context/UnitSystemContext";
@@ -35,7 +36,6 @@ export default function Map() {
   const [satelliteActive, setSatelliteActive] = useState(false);
   const client = useKyClient();
 
-  // Loading states for UI interactions
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
   const [filterIconLoading, setFilterIconLoading] = useState(false);
 
@@ -50,7 +50,6 @@ export default function Map() {
 
   const { isMetric } = useUnitSystem();
 
-  // Build API filters based on current search and filters
   const apiFilters: LocationsFilters = useMemo(() => {
     const filters: LocationsFilters = {};
 
@@ -58,7 +57,6 @@ export default function Map() {
       filters.search = searchTerm.trim();
     }
 
-    // Convert height filters to API format (assuming your API uses total_height_ft)
     if (minRockDrop !== "") {
       const minHeightFt = isMetric
         ? parseFloat(minRockDrop) / 0.3048
@@ -76,7 +74,6 @@ export default function Map() {
     return filters;
   }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
 
-  // TanStack Query
   const {
     data: locationsResponse,
     isLoading: loadingMap,
@@ -110,17 +107,6 @@ export default function Map() {
 
     return true;
   };
-
-  // Handle loading and error states
-  if (error) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.errorText}>
-          Error loading locations: {error.message}
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <PaperProvider>
@@ -165,11 +151,6 @@ export default function Map() {
                   .map((event, index) => {
                     const latitude = event.latitude;
                     const longitude = event.longitude;
-
-                    if (!latitude || !longitude) {
-                      console.warn("Invalid coordinates for event:", event);
-                      return null;
-                    }
 
                     return (
                       <Marker
@@ -239,7 +220,7 @@ export default function Map() {
               </Text>
               <Switch
                 value={isMetric}
-                onValueChange={() => {}} // This should be handled by UnitSystemContext
+                onValueChange={() => {}} // TODO: This should be handled by UnitSystemContext
                 color="#00ABF0"
               />
               <Text style={styles.switchLabel}>Metric</Text>
@@ -255,6 +236,7 @@ export default function Map() {
               </Text>
             </View>
           )}
+          <APIErrorHandler error={error} />
         </View>
       </TouchableWithoutFeedback>
     </PaperProvider>

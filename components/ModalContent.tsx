@@ -19,7 +19,7 @@ interface ModalContentProps {
   onApplyFilter: (
     minRockDrop: string,
     maxRockDrop: string,
-    unknownRockdrop: boolean
+    unknownRockdrop: boolean,
   ) => void;
   minRockDrop: string;
   maxRockDrop: string;
@@ -36,13 +36,15 @@ const ModalContent = ({
   const [tempMaxRockDrop, setTempMaxRockDrop] = useState(maxRockDrop);
   const [tempUnknownRockdrop, setTempUnknownRockDrop] = useState(false);
 
+  // TODO: Add improved validation with react forms
+
   const clearFilter = () => {
     setTempMinRockDrop("");
     setTempMaxRockDrop("");
     setTempUnknownRockDrop(false);
 
     Toast.show({
-      type: "info", // You can customize the type (success, info, error, etc.)
+      type: "info",
       text1: "Filter cleared",
       position: "top",
     });
@@ -54,13 +56,12 @@ const ModalContent = ({
       tempMaxRockDrop !== "" &&
       parseFloat(tempMinRockDrop) > parseFloat(tempMaxRockDrop)
     ) {
-      // Display an error message or handle the validation error as you prefer
       alert("Min Rock Drop cannot be greater than Max Rock Drop");
     } else {
       onClose();
       onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
       Toast.show({
-        type: "success", // You can customize the type (success, info, error, etc.)
+        type: "success",
         text1: "Filter applied",
         position: "top",
       });

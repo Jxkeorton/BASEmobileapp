@@ -12,12 +12,10 @@ const Index = () => {
 
   useEffect(() => {
     if (!navigationState?.key) {
-      console.log("⏳ Waiting for navigation to be ready...");
       return;
     }
 
     if (loading) {
-      console.log("⏳ Waiting for auth check...");
       return;
     }
     const inAuthGroup = segments[0] === "(auth)";
@@ -29,7 +27,6 @@ const Index = () => {
     }
   }, [segments, navigationState?.key, isAuthenticated, loading, user]);
 
-  // Show loading while initializing
   if (!navigationState?.key || loading) {
     return (
       <View style={styles.loadingContainer}>
