@@ -60,19 +60,19 @@ const Register = () => {
                   });
                 },
               },
-            ]
+            ],
           );
         } else {
           // Auto-login if session exists (no confirmation required)
           await AsyncStorage.setItem(
             "auth_token",
-            response.data?.data?.session?.access_token || ""
+            response.data?.data?.session?.access_token || "",
           );
           await AsyncStorage.setItem(
             "refresh_token",
-            response.data?.data?.session?.refresh_token || ""
+            response.data?.data?.session?.refresh_token || "",
           );
-          if (user != undefined && user.id && user.email) {
+          if (user !== undefined && user.id && user.email) {
             updateUser({ id: user.id, email: user.email });
           }
           router.replace("/(tabs)/map");
@@ -80,36 +80,12 @@ const Register = () => {
       }
     },
     onError: async (error: any) => {
-      // Parse Ky HTTPError response body
-      if (error.response) {
-        try {
-          const errorBody = await error.response.json();
-          // Normalize error format
-          if (errorBody.message && !errorBody.success) {
-            setApiError({
-              success: false,
-              error: errorBody.message,
-            });
-          } else {
-            setApiError(errorBody);
-          }
-        } catch (parseError) {
-          setApiError({
-            success: false,
-            error: "An unexpected error occurred",
-          });
-        }
-      } else {
-        setApiError({
-          success: false,
-          error: error.message || "An error occurred",
-        });
-      }
+      setApiError(error);
     },
   });
 
   const handleSignUp = async () => {
-    // Note: Username will need to be set later via profile update
+    // TODO: Username will need to be set later via profile update
     signUpMutation.mutate({ email, password, name: name });
   };
 
@@ -197,12 +173,7 @@ const Register = () => {
             Privacy Policy
           </Button>
         </KeyboardAvoidingView>
-        {apiError && (
-          <APIErrorHandler
-            error={apiError}
-            onDismiss={() => setApiError(null)}
-          />
-        )}
+        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
       </View>
     </TouchableWithoutFeedback>
   );

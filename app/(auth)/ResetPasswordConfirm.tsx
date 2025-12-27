@@ -57,31 +57,7 @@ const ResetPasswordConfirm = () => {
       }
     },
     onError: async (error: any) => {
-      // Parse Ky HTTPError response body
-      if (error.response) {
-        try {
-          const errorBody = await error.response.json();
-          // Normalize error format
-          if (errorBody.message && !errorBody.success) {
-            setApiError({
-              success: false,
-              error: errorBody.message,
-            });
-          } else {
-            setApiError(errorBody);
-          }
-        } catch (parseError) {
-          setApiError({
-            success: false,
-            error: "An unexpected error occurred",
-          });
-        }
-      } else {
-        setApiError({
-          success: false,
-          error: error.message || "An error occurred",
-        });
-      }
+      setApiError(error);
     },
   });
 
@@ -153,12 +129,7 @@ const ResetPasswordConfirm = () => {
             Cancel
           </Button>
         </KeyboardAvoidingView>
-        {apiError && (
-          <APIErrorHandler
-            error={apiError}
-            onDismiss={() => setApiError(null)}
-          />
-        )}
+        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
       </View>
     </TouchableWithoutFeedback>
   );

@@ -44,11 +44,11 @@ const Login = () => {
       // Store token and user data
       await AsyncStorage.setItem(
         "auth_token",
-        response.data?.data?.session?.access_token || ""
+        response.data?.data?.session?.access_token || "",
       );
       await AsyncStorage.setItem(
         "refresh_token",
-        response.data?.data?.session?.refresh_token || ""
+        response.data?.data?.session?.refresh_token || "",
       );
 
       if (user?.id && user.email) {
@@ -59,17 +59,7 @@ const Login = () => {
       router.replace("/(tabs)/map");
     },
     onError: async (error: any) => {
-      // TODO: Improve error structure returned from API (currently inconsistent)
-      if (error.response) {
-        try {
-          const errorBody = await error.response.json();
-          setApiError(errorBody);
-        } catch (parseError) {
-          setApiError({ error: "An unexpected error occurred" });
-        }
-      } else {
-        setApiError(error);
-      }
+      setApiError(error);
     },
   });
 
@@ -141,12 +131,7 @@ const Login = () => {
             Privacy Policy
           </Button>
         </KeyboardAvoidingView>
-        {apiError && (
-          <APIErrorHandler
-            error={apiError}
-            onDismiss={() => setApiError(null)}
-          />
-        )}
+        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
       </View>
     </TouchableWithoutFeedback>
   );

@@ -32,9 +32,9 @@ const TermsAndConditionsScreen = () => {
       <Text>
         - <Text style={styles.strongText}>Affiliate</Text> means an entity that
         controls, is controlled by or is under common control with a party,
-        where "control" means ownership of 50% or more of the shares, equity
-        interest or other securities entitled to vote for election of directors
-        or other managing authority.
+        where &quot;control&quot; means ownership of 50% or more of the shares,
+        equity interest or other securities entitled to vote for election of
+        directors or other managing authority.
       </Text>
       <Text>
         - <Text style={styles.strongText}>Account</Text> means a unique account
@@ -46,8 +46,8 @@ const TermsAndConditionsScreen = () => {
       </Text>
       <Text>
         - <Text style={styles.strongText}>Company</Text> (referred to as either
-        "the Company", "We", "Us" or "Our" in this Agreement) refers to BASE
-        map.
+        &quot;the Company&quot;, &quot;We&quot;, &quot;Us&quot; or
+        &quot;Our&quot; in this Agreement) refers to BASE map.
       </Text>
       <Text>
         - <Text style={styles.strongText}>Device</Text> means any device that
@@ -70,9 +70,9 @@ const TermsAndConditionsScreen = () => {
       </Text>
       <Text>
         - <Text style={styles.strongText}>Terms and Conditions</Text> (also
-        referred as "Terms") mean these Terms and Conditions that form the
-        entire agreement between You and the Company regarding the use of the
-        Service.
+        referred as &quot;Terms&quot;) mean these Terms and Conditions that form
+        the entire agreement between You and the Company regarding the use of
+        the Service.
       </Text>
       <Text>
         -{" "}
