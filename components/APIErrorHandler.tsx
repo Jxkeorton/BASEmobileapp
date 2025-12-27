@@ -1,9 +1,21 @@
 import { useEffect, useState } from "react";
 import { Snackbar } from "react-native-paper";
+import { ErrorResponse } from "../types/error-response";
 
 interface APIErrorHandlerProps {
   error: any;
   onDismiss?: () => void;
+}
+
+function isErrorResponse(error: any): error is ErrorResponse {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "success" in error &&
+    error.success === false &&
+    "message" in error &&
+    typeof error.message === "string"
+  );
 }
 
 const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
@@ -13,10 +25,8 @@ const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
   useEffect(() => {
     setVisible(!!error);
 
-    if (error?.message) {
+    if (isErrorResponse(error)) {
       setMessage(error.message);
-    } else if (error?.error) {
-      setMessage(error.error);
     } else {
       setMessage("An unexpected error occurred.");
     }
