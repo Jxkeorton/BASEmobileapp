@@ -93,7 +93,6 @@ const Profile = () => {
       }
     },
     onError: (error) => {
-      console.error("Unsave location error:", error);
       Toast.show({
         type: "error",
         text1: "Error could not delete location",
@@ -107,7 +106,7 @@ const Profile = () => {
       await unsaveLocationMutation.mutateAsync(locationId);
     } catch (error) {
       // Error handling is done in the mutation's onError callback
-      console.error("Unsave location failed");
+      throw error;
     }
   };
 

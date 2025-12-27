@@ -1,9 +1,0 @@
-/.expo
-node_modules
-build
-bin
-expo-env.d.ts
-nativewind-env.d.ts
-pnpm-lock.yaml
-ios
-android
