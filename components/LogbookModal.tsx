@@ -236,10 +236,10 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
                   </TouchableOpacity>
                 </>
               )}
+              <APIErrorHandler error={error} onDismiss={() => setError(null)} />
             </ScrollView>
           </View>
-        </TouchableWithoutFeedback>{" "}
-        <APIErrorHandler error={error} onDismiss={() => setError(null)} />{" "}
+        </TouchableWithoutFeedback>
       </View>
     </Modal>
   );
