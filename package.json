@@ -4,9 +4,8 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start --tunnel",
-    "build": "eas build --profile development",
     "dev": "expo start --dev-client",
+    "build": "eas build --profile development",
     "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts",
     "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",
     "types:all": "pnpm run types:generate && npm run openapi:generate",
