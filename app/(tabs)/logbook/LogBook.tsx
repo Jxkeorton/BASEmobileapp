@@ -109,8 +109,8 @@ const LogBook = () => {
             </View>
 
             <LogbookJumpCard jumpNumber={profile?.jump_number || 0} />
+            <APIErrorHandler error={profileError} />
           </View>
-          <APIErrorHandler error={profileError} />
         </TouchableWithoutFeedback>
       </ScrollView>
     </PaperProvider>
