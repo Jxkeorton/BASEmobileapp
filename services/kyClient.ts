@@ -5,8 +5,7 @@ import { paths } from "../types/api";
 
 const getBaseUrl = () => {
   if (__DEV__) {
-    // TODO: create dev environment
-    const devUrl = "https://basemapapi-production.up.railway.app";
+    const devUrl = "http://192.168.1.171:3000";
     return devUrl;
   }
 
