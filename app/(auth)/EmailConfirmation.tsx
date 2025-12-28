@@ -55,7 +55,7 @@ const EmailConfirmation = () => {
         mode="contained"
         onPress={resendConfirmation}
         loading={resendConfirmationMutation.isPending}
-        style={styles.button}
+        style={styles.resendButton}
         disabled={!email}
       >
         Resend Confirmation Email
@@ -64,7 +64,8 @@ const EmailConfirmation = () => {
       <Button
         mode="text"
         onPress={() => router.replace("/(auth)/Login")}
-        style={styles.button}
+        style={styles.backButton}
+        textColor="#007AFF"
       >
         Back to Login
       </Button>
@@ -101,7 +102,14 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: "white",
   },
-  button: {
+  resendButton: {
+    backgroundColor: "#007AFF",
+    marginVertical: 10,
+  },
+  backButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#007AFF",
     marginVertical: 10,
   },
 });

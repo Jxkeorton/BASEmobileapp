@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setUser(JSON.parse(userData));
       }
     } catch (error) {
-      console.error("Auth check error:", error);
+      console.error("Error checking auth status:", error);
     } finally {
       setLoading(false);
     }

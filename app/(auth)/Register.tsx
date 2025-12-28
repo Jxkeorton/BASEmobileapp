@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -35,33 +34,21 @@ const Register = () => {
 
   const signUpMutation = useMutation({
     mutationFn: async ({ email, password, name }: SignUpBody) => {
-      return client.POST("/signup", {
+      const result = await client.POST("/signup", {
         body: { email, password, name },
       });
+      return result;
     },
     onSuccess: async (response) => {
       const user = response.data?.data?.user;
 
       if (response.response.status === 200) {
-        const res = response.response;
         // Check if email confirmation is required
-        if (!res.headers) {
-          Alert.alert(
-            "Check Your Email",
-            response.data?.data?.message ||
-              "Please check your email and click the confirmation link to activate your account.",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.replace({
-                    pathname: "/(auth)/EmailConfirmation",
-                    params: { email: email },
-                  });
-                },
-              },
-            ],
-          );
+        if (response.data?.data?.requiresEmailConfirmation) {
+          router.replace({
+            pathname: "/(auth)/EmailConfirmation",
+            params: { email: email },
+          });
         } else {
           // Auto-login if session exists (no confirmation required)
           await AsyncStorage.setItem(
