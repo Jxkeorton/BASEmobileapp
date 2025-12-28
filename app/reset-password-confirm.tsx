@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Keyboard,
@@ -11,17 +12,70 @@ import {
 } from "react-native";
 import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import APIErrorHandler from "../../components/APIErrorHandler";
-import { useKyClient } from "../../services/kyClient";
+import APIErrorHandler from "../components/APIErrorHandler";
+import { useKyClient } from "../services/kyClient";
 
 const ResetPasswordConfirm = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [apiError, setApiError] = useState<any>(null);
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [refreshToken, setRefreshToken] = useState<string>("");
 
   const params = useLocalSearchParams();
-  const access_token: string = params.access_token as string;
-  const refresh_token: string = params.refresh_token as string;
+
+  useEffect(() => {
+    const parseHashParams = (url: string) => {
+      // Extract hash fragment (after #)
+      const hashIndex = url.indexOf("#");
+      if (hashIndex === -1) return {};
+
+      const hashFragment = url.substring(hashIndex + 1);
+      const params: Record<string, string> = {};
+
+      hashFragment.split("&").forEach((part) => {
+        const [key, value] = part.split("=");
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      });
+
+      return params;
+    };
+
+    const getInitialURL = async () => {
+      const url = await Linking.getInitialURL();
+
+      if (url) {
+        const hashParams = parseHashParams(url);
+
+        const access = hashParams.access_token;
+        const refresh = hashParams.refresh_token;
+
+        if (access) setAccessToken(access);
+        if (refresh) setRefreshToken(refresh);
+      }
+    };
+
+    getInitialURL();
+
+    // Also listen for URL changes
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      const hashParams = parseHashParams(url);
+
+      const access = hashParams.access_token;
+      const refresh = hashParams.refresh_token;
+
+      if (access) setAccessToken(access);
+      if (refresh) setRefreshToken(refresh);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  const access_token: string = (params.access_token as string) || accessToken;
+  const refresh_token: string =
+    (params.refresh_token as string) || refreshToken;
   const client = useKyClient();
 
   const resetPasswordMutation = useMutation({
@@ -34,7 +88,7 @@ const ResetPasswordConfirm = () => {
       refresh_token: string;
       new_password: string;
     }) => {
-      const result = await client.POST("/reset-password-confirm", {
+      const result = await client.POST("/reset-password/confirm", {
         body: {
           access_token,
           refresh_token,
@@ -79,7 +133,7 @@ const ResetPasswordConfirm = () => {
         <KeyboardAvoidingView behavior="padding">
           <View style={styles.imageContainer}>
             <Image
-              source={require("../../assets/bitmap.png")}
+              source={require("../assets/bitmap.png")}
               style={styles.image}
             />
           </View>
@@ -124,12 +178,16 @@ const ResetPasswordConfirm = () => {
           <Button
             mode="text"
             style={styles.cancelButton}
+            textColor="#007AFF"
             onPress={() => router.replace("/(auth)/Login")}
           >
             Cancel
           </Button>
+          <APIErrorHandler
+            error={apiError}
+            onDismiss={() => setApiError(null)}
+          />
         </KeyboardAvoidingView>
-        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
       </View>
     </TouchableWithoutFeedback>
   );
@@ -174,7 +232,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#007AFF",
   },
   cancelButton: {
-    marginTop: 10,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#007AFF",
+    marginVertical: 10,
   },
   loader: {
     marginTop: 20,
