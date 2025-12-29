@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, Text } from "react-native";
 
 const PrivacyPolicy = () => {
   const openContactPage = () => {
-    // Replace 'your-privacy-policy-link' with the actual URL of your privacy policy.
     router.replace("/app/(tabs)/profile/settings/Contact.js");
   };
 
@@ -22,8 +21,8 @@ const PrivacyPolicy = () => {
         you create an account.
       </Text>
       <Text>
-        Location Information: We may collect your device's precise location when
-        you enable location-based services.
+        Location Information: We may collect your device&#39;s precise location
+        when you enable location-based services.
       </Text>
       <Text>
         Usage Information: We collect information about your interactions with

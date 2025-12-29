@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, Snackbar } from "react-native-paper";
+import { ActivityIndicator, Button } from "react-native-paper";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
@@ -21,7 +21,6 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
   const { updateUser, loading } = useAuth();
 
@@ -33,57 +32,38 @@ const Login = () => {
       email: string;
       password: string;
     }) => {
-      try {
-        const result = await client.POST("/signin", {
-          body: { email, password },
-        });
-        console.log("=== LOGIN RESPONSE ===");
-        console.log("Status:", result.response.status);
-        console.log("Data:", JSON.stringify(result.data, null, 2));
-        console.log("Error:", JSON.stringify(result.error, null, 2));
-        return result;
-      } catch (err) {
-        throw err;
-      }
+      const result = await client.POST("/signin", {
+        body: { email, password },
+      });
+
+      return result;
     },
     onSuccess: async (response) => {
       const user = response.data?.data?.user;
 
-      if (response.response.status === 200) {
-        // Store token and user data using simple storage
-        await AsyncStorage.setItem(
-          "auth_token",
-          response.data?.data?.session?.access_token || ""
-        );
-        await AsyncStorage.setItem(
-          "refresh_token",
-          response.data?.data?.session?.refresh_token || ""
-        );
+      // Store token and user data
+      await AsyncStorage.setItem(
+        "auth_token",
+        response.data?.data?.session?.access_token || "",
+      );
+      await AsyncStorage.setItem(
+        "refresh_token",
+        response.data?.data?.session?.refresh_token || "",
+      );
 
-        if (user != undefined && user.id && user.email) {
-          updateUser({ id: user.id, email: user.email });
-        }
-
-        // Navigate to main app
-        router.replace("/(tabs)/map");
-      } else {
-        setValidationError(
-          response.error || "Invalid email or password. Please try again."
-        );
+      if (user?.id && user.email) {
+        updateUser({ id: user.id, email: user.email });
       }
+
+      // Navigate to main app
+      router.replace("/(tabs)/map");
     },
     onError: async (error: any) => {
-      console.log("Sign-in error:", error);
       setApiError(error);
     },
   });
 
   const handleSignIn = async () => {
-    if (!email || !password) {
-      setValidationError("Email and password are required.");
-      return;
-    }
-
     signInMutation.mutate({ email, password });
   };
 
@@ -151,22 +131,7 @@ const Login = () => {
             Privacy Policy
           </Button>
         </KeyboardAvoidingView>
-        {apiError && (
-          <APIErrorHandler
-            error={apiError}
-            onDismiss={() => setApiError(null)}
-          />
-        )}
-        {validationError && (
-          <Snackbar
-            visible={!!validationError}
-            onDismiss={() => setValidationError(null)}
-            duration={4000}
-            style={{ backgroundColor: "#d32f2f" }}
-          >
-            {validationError}
-          </Snackbar>
-        )}
+        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
       </View>
     </TouchableWithoutFeedback>
   );

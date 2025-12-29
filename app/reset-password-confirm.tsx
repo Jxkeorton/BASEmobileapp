@@ -1,5 +1,7 @@
+import { useMutation } from "@tanstack/react-query";
+import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Keyboard,
@@ -8,64 +10,95 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Snackbar,
-  Text,
-  TextInput,
-} from "react-native-paper";
+import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import APIErrorHandler from "../../components/APIErrorHandler";
-import { useKyClient } from "../../services/kyClient";
+import APIErrorHandler from "../components/APIErrorHandler";
+import { useKyClient } from "../services/kyClient";
 
 const ResetPasswordConfirm = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string>("");
+  const [refreshToken, setRefreshToken] = useState<string>("");
 
   const params = useLocalSearchParams();
-  const access_token: string = params.access_token as string;
-  const refresh_token: string = params.refresh_token as string;
+
+  useEffect(() => {
+    const parseHashParams = (url: string) => {
+      // Extract hash fragment (after #)
+      const hashIndex = url.indexOf("#");
+      if (hashIndex === -1) return {};
+
+      const hashFragment = url.substring(hashIndex + 1);
+      const params: Record<string, string> = {};
+
+      hashFragment.split("&").forEach((part) => {
+        const [key, value] = part.split("=");
+        if (key && value) {
+          params[key] = decodeURIComponent(value);
+        }
+      });
+
+      return params;
+    };
+
+    const getInitialURL = async () => {
+      const url = await Linking.getInitialURL();
+
+      if (url) {
+        const hashParams = parseHashParams(url);
+
+        const access = hashParams.access_token;
+        const refresh = hashParams.refresh_token;
+
+        if (access) setAccessToken(access);
+        if (refresh) setRefreshToken(refresh);
+      }
+    };
+
+    getInitialURL();
+
+    // Also listen for URL changes
+    const subscription = Linking.addEventListener("url", ({ url }) => {
+      const hashParams = parseHashParams(url);
+
+      const access = hashParams.access_token;
+      const refresh = hashParams.refresh_token;
+
+      if (access) setAccessToken(access);
+      if (refresh) setRefreshToken(refresh);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  const access_token: string = (params.access_token as string) || accessToken;
+  const refresh_token: string =
+    (params.refresh_token as string) || refreshToken;
   const client = useKyClient();
 
-  const handlePasswordReset = async () => {
-    if (!newPassword || !confirmPassword) {
-      setValidationError("Please fill in both password fields");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setValidationError("Passwords do not match");
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setValidationError("Password must be at least 6 characters");
-      return;
-    }
-
-    if (!access_token || !refresh_token || typeof access_token !== "string") {
-      setApiError(new Error("Invalid reset link"));
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Call your API to reset the password
-      const response = await client.POST("/reset-password-confirm", {
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({
+      access_token,
+      refresh_token,
+      new_password,
+    }: {
+      access_token: string;
+      refresh_token: string;
+      new_password: string;
+    }) => {
+      const result = await client.POST("/reset-password/confirm", {
         body: {
-          access_token: Array.isArray(access_token)
-            ? access_token[0]
-            : access_token,
+          access_token,
           refresh_token,
-          new_password: newPassword,
+          new_password,
         },
       });
 
+      return result;
+    },
+    onSuccess: async (response) => {
       if (response.response.status === 200) {
         Toast.show({
           type: "success",
@@ -74,17 +107,24 @@ const ResetPasswordConfirm = () => {
           position: "top",
         });
 
-        // Navigate to login screen
         router.replace("/(auth)/Login");
-      } else {
-        setApiError(new Error("Failed to reset password"));
       }
-    } catch (error) {
-      console.error("Password reset error:", error);
+    },
+    onError: async (error: any) => {
       setApiError(error);
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handlePasswordReset = async () => {
+    resetPasswordMutation.mutate({
+      access_token: Array.isArray(access_token)
+        ? access_token[0]
+        : access_token,
+      refresh_token: Array.isArray(refresh_token)
+        ? refresh_token[0]
+        : refresh_token,
+      new_password: newPassword,
+    });
   };
 
   return (
@@ -93,7 +133,7 @@ const ResetPasswordConfirm = () => {
         <KeyboardAvoidingView behavior="padding">
           <View style={styles.imageContainer}>
             <Image
-              source={require("../../assets/bitmap.png")}
+              source={require("../assets/bitmap.png")}
               style={styles.image}
             />
           </View>
@@ -119,7 +159,7 @@ const ResetPasswordConfirm = () => {
             onChangeText={(text) => setConfirmPassword(text)}
           />
 
-          {loading ? (
+          {resetPasswordMutation.isPending ? (
             <ActivityIndicator
               size="small"
               color="#007AFF"
@@ -138,27 +178,16 @@ const ResetPasswordConfirm = () => {
           <Button
             mode="text"
             style={styles.cancelButton}
+            textColor="#007AFF"
             onPress={() => router.replace("/(auth)/Login")}
           >
             Cancel
           </Button>
-        </KeyboardAvoidingView>
-        {apiError && (
           <APIErrorHandler
             error={apiError}
             onDismiss={() => setApiError(null)}
           />
-        )}
-        {validationError && (
-          <Snackbar
-            visible={!!validationError}
-            onDismiss={() => setValidationError(null)}
-            duration={4000}
-            style={{ backgroundColor: "#d32f2f" }}
-          >
-            {validationError}
-          </Snackbar>
-        )}
+        </KeyboardAvoidingView>
       </View>
     </TouchableWithoutFeedback>
   );
@@ -203,7 +232,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#007AFF",
   },
   cancelButton: {
-    marginTop: 10,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#007AFF",
+    marginVertical: 10,
   },
   loader: {
     marginTop: 20,

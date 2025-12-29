@@ -30,6 +30,12 @@ const PublicLayout = () => {
         }}
       ></Stack.Screen>
       <Stack.Screen
+        name="EmailConfirmation"
+        options={{
+          headerTitle: "Confirm Email",
+        }}
+      ></Stack.Screen>
+      <Stack.Screen
         name="AuthTerms"
         options={{
           headerTitle: "Terms and Conditions",

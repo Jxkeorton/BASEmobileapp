@@ -71,7 +71,6 @@ export interface paths {
                         opened_date?: string;
                         /** Format: uri */
                         video_link?: string;
-                        /** @default false */
                         is_hidden?: boolean;
                     };
                 };
@@ -179,19 +178,12 @@ export interface paths {
         get: {
             parameters: {
                 query?: {
-                    /** @description Filter by submission status */
                     status?: "pending" | "approved" | "rejected";
-                    /** @description Filter by submission type */
                     submission_type?: "new" | "update";
-                    /** @description Filter by user ID */
                     user_id?: string;
-                    /** @description Number of submissions to return */
                     limit?: number;
-                    /** @description Number of submissions to skip */
                     offset?: number;
-                    /** @description Field to sort by */
                     sort_by?: "created_at" | "name" | "status";
-                    /** @description Sort order */
                     sort_order?: "asc" | "desc";
                 };
                 header?: never;
@@ -257,14 +249,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /**
-                         * @description Review decision
-                         * @enum {string}
-                         */
                         status: "approved" | "rejected";
-                        /** @description Optional admin notes/feedback */
                         admin_notes?: string;
-                        /** @description Optional data overrides for approved submissions */
                         override_data?: {
                             name?: string;
                             country?: string;
@@ -532,11 +518,7 @@ export interface paths {
                         opened_date?: string;
                         /** Format: uri */
                         video_link?: string;
-                        /**
-                         * @default new
-                         * @enum {string}
-                         */
-                        submission_type?: "new" | "update";
+                        submission_type: "new" | "update";
                         existing_location_id?: number;
                         image_urls?: string[];
                     };
@@ -680,18 +662,6 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            error?: string;
-                        };
-                    };
-                };
             };
         };
         delete?: never;
@@ -736,18 +706,6 @@ export interface paths {
                         "application/json": {
                             success?: boolean;
                             message?: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            error?: string;
                         };
                     };
                 };
@@ -850,12 +808,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /**
-                         * Format: email
-                         * @description User email
-                         */
+                        /** Format: email */
                         email: string;
-                        /** @description User password */
                         password: string;
                     };
                 };
@@ -868,17 +822,19 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success?: boolean;
-                            data?: {
-                                user?: {
-                                    id?: string;
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                user: {
+                                    /** Format: uuid */
+                                    id: string;
                                     /** Format: email */
-                                    email?: string;
+                                    email: string;
                                 };
-                                session?: {
-                                    access_token?: string;
-                                    refresh_token?: string;
-                                    expires_at?: number;
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
                                 };
                             };
                         };
@@ -912,14 +868,9 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /**
-                         * Format: email
-                         * @description User email
-                         */
+                        /** Format: email */
                         email: string;
-                        /** @description User password */
                         password: string;
-                        /** @description User display name */
                         name?: string;
                     };
                 };
@@ -932,45 +883,18 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success?: boolean;
-                            data?: {
-                                user?: {
-                                    id?: string;
-                                    /** Format: email */
-                                    email?: string;
-                                    /** @description Email confirmation timestamp or null */
-                                    email_confirmed_at?: null | string;
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                user: {
+                                    id: string;
+                                    email: string | null;
+                                    email_confirmed_at: string | null;
                                 };
-                                /** @description Session object or null */
-                                session?: null | Record<string, never>;
-                                requiresEmailConfirmation?: boolean;
-                                message?: string;
+                                session: Record<string, never> | null;
+                                requiresEmailConfirmation: boolean;
+                                message: string;
                             };
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                            details?: Record<string, never>[] | null;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1002,10 +926,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /**
-                         * Format: email
-                         * @description User email address
-                         */
+                        /** Format: email */
                         email: string;
                     };
                 };
@@ -1018,33 +939,9 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             message: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                            details?: Record<string, never>[] | null;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1056,7 +953,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/reset-password-confirm": {
+    "/reset-password/confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -1076,11 +973,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Access token from reset email */
                         access_token: string;
-                        /** @description Refresh token from reset email */
                         refresh_token: string;
-                        /** @description New password */
                         new_password: string;
                     };
                 };
@@ -1093,33 +987,9 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             message: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                            details?: Record<string, never>[] | null;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1151,12 +1021,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Confirmation token from email */
                         token: string;
-                        /**
-                         * @description Type of confirmation
-                         * @enum {string}
-                         */
                         type: "signup" | "recovery" | "email_change";
                     };
                 };
@@ -1169,13 +1034,14 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             data: {
                                 user: {
                                     id: string;
                                     /** Format: email */
                                     email: string;
-                                    email_confirmed_at?: string | null;
+                                    email_confirmed_at: string | null;
                                 };
                                 session: {
                                     access_token: string;
@@ -1184,30 +1050,6 @@ export interface paths {
                                 };
                                 message: string;
                             };
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1239,10 +1081,7 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /**
-                         * Format: email
-                         * @description User email
-                         */
+                        /** Format: email */
                         email: string;
                     };
                 };
@@ -1255,44 +1094,9 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             message: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                429: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1330,20 +1134,9 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             message: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1376,14 +1169,8 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Must contain "DELETE" to confirm account deletion */
                         confirmation: string;
-                        /** @description Password for verification (required for email/password users) */
                         password?: string;
-                        /**
-                         * @description Method used to verify user identity
-                         * @enum {string}
-                         */
                         verification_method?: "password" | "reauthentication" | "trusted_session";
                     };
                 };
@@ -1396,45 +1183,9 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             message: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                            details?: Record<string, never>[] | null;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1465,7 +1216,6 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Refresh token from signin */
                         refresh_token: string;
                     };
                 };
@@ -1478,7 +1228,8 @@ export interface paths {
                     };
                     content: {
                         "application/json": {
-                            success: boolean;
+                            /** @enum {boolean} */
+                            success: true;
                             data: {
                                 session: {
                                     access_token: string;
@@ -1486,43 +1237,6 @@ export interface paths {
                                     expires_at: number;
                                 };
                             };
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                            details?: Record<string, never>[] | null;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
-                        };
-                    };
-                };
-                /** @description Default Response */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success: boolean;
-                            error: string;
                         };
                     };
                 };
@@ -1600,11 +1314,8 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        /** @description Display name */
                         name?: string;
-                        /** @description Unique username */
                         username?: string;
-                        /** @description Total BASE jumps completed */
                         jump_number?: number;
                     };
                 };
@@ -1626,19 +1337,6 @@ export interface paths {
                                 jump_number?: number;
                                 updated_at?: string;
                             };
-                        };
-                    };
-                };
-                /** @description Default Response */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            error?: string;
-                            details?: unknown[];
                         };
                     };
                 };
@@ -1668,9 +1366,7 @@ export interface paths {
                     "application/json": {
                         api_version: string;
                         event: {
-                            /** @description Event type from RevenueCat */
                             type: string;
-                            /** @description User ID from your app */
                             app_user_id: string;
                             product_id?: string;
                             period_type?: string;
@@ -1719,19 +1415,10 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description RevenueCat customer ID */
                         revenuecat_customer_id: string;
-                        /**
-                         * @description Current subscription status
-                         * @enum {string}
-                         */
                         subscription_status: "free" | "trial" | "active" | "expired";
-                        /**
-                         * Format: date-time
-                         * @description Subscription expiration date
-                         */
+                        /** Format: date-time */
                         subscription_expires_at?: string;
-                        /** @description Product ID (monthly/annual) */
                         subscription_product_id?: string;
                     };
                 };
@@ -1828,21 +1515,11 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description Name of the jump location */
                         location_name: string;
-                        /**
-                         * @description Type of BASE jump
-                         * @enum {string}
-                         */
                         exit_type?: "Building" | "Antenna" | "Span" | "Earth";
-                        /** @description Freefall delay time in seconds */
                         delay_seconds?: number;
-                        /**
-                         * Format: date
-                         * @description Date of the jump (YYYY-MM-DD)
-                         */
+                        /** Format: date */
                         jump_date?: string;
-                        /** @description Additional notes and details */
                         details?: string;
                     };
                 };
@@ -1930,22 +1607,11 @@ export interface paths {
             requestBody?: {
                 content: {
                     "application/json": {
-                        /** @description Name of the jump location */
                         location_name?: string;
-                        /**
-                         * @description Type of BASE jump
-                         * @enum {string}
-                         */
-                        exit_type?: "Building" | "Antenna" | "Span" | "Earth";
-                        /** @description Freefall delay time in seconds */
-                        delay_seconds?: number;
-                        /**
-                         * Format: date
-                         * @description Date of the jump (YYYY-MM-DD)
-                         */
-                        jump_date?: string;
-                        /** @description Additional notes and details */
-                        details?: string;
+                        exit_type?: "Building" | "Antenna" | "Span" | "Earth" | null;
+                        delay_seconds?: number | null;
+                        jump_date?: string | null;
+                        details?: string | null;
                     };
                 };
             };

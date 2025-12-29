@@ -13,8 +13,7 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider, Switch } from "react-native-paper";
-import Toast from "react-native-toast-message";
-import { useAuth } from "../../../providers/AuthProvider";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 
@@ -36,14 +35,14 @@ const SubmitLocation = () => {
   const [openedDate, setOpenedDate] = useState("");
   const [country, setCountry] = useState("");
   const [selectedUnit, setSelectedUnit] = useState<"Meters" | "Feet">("Meters");
+  const [error, setError] = useState<any>(null);
 
-  const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
 
   // TODO: add user to submissions
+  // TODO: add react form for better form handling and validation
 
-  // Submit location mutation
   const submitLocationMutation = useMutation({
     mutationFn: async (locationData: SubmitLocationData) => {
       return client
@@ -57,59 +56,16 @@ const SubmitLocation = () => {
           return res.data;
         });
     },
-    onSuccess: (response) => {
-      if (response.success) {
-        router.replace("/(tabs)/profile/Profile");
-        Toast.show({
-          type: "success",
-          text1: "Successfully sent submission",
-          text2: "Your submission is under review",
-          position: "top",
-        });
+    onSuccess: () => {
+      router.replace("/(tabs)/profile/Profile");
 
-        // Clear form
-        clearForm();
+      // Clear form
+      clearForm();
 
-        // Optionally invalidate related queries
-        queryClient.invalidateQueries({ queryKey: ["submissions"] });
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Error trying to send submission",
-          text2: "Unknown error occurred",
-          position: "top",
-        });
-      }
+      queryClient.invalidateQueries({ queryKey: ["submissions"] });
     },
     onError: (error: any) => {
-      console.error("Submit location error:", error);
-
-      let errorMessage = "Failed to submit location";
-      let errorDetails = "";
-
-      // Handle different types of errors
-      if (error.response) {
-        if (error.response.status === 400 && error.response.data?.validation) {
-          errorMessage = "Validation Error";
-          errorDetails = error.response.data.validation
-            .map((err: any) => err.message)
-            .join(", ");
-        } else if (error.response.status === 429) {
-          errorMessage = "Submission Limit Reached";
-          errorDetails =
-            error.response.data?.error || "Too many submissions today";
-        } else if (error.response.data?.error) {
-          errorMessage = "Submission Failed";
-          errorDetails = error.response.data.error;
-        }
-      }
-
-      Toast.show({
-        type: "error",
-        text1: errorMessage,
-        text2: errorDetails,
-        position: "top",
-      });
+      setError(error);
     },
   });
 
@@ -128,7 +84,6 @@ const SubmitLocation = () => {
     setCountry("");
   };
 
-  // Parse coordinates string into latitude and longitude
   const parseCoordinates = (coordsString: string) => {
     if (!coordsString) return null;
 
@@ -145,7 +100,6 @@ const SubmitLocation = () => {
     return { latitude: lat, longitude: lng };
   };
 
-  // Convert height to feet (API expects feet)
   const convertHeight = (value: string, unit: "Meters" | "Feet") => {
     const numValue = parseFloat(value);
     return unit === "Meters"
@@ -154,80 +108,34 @@ const SubmitLocation = () => {
   };
 
   const handleSubmit = async () => {
-    if (!isAuthenticated) {
-      Toast.show({
-        type: "error",
-        text1: "Authentication required",
-        text2: "Please log in to submit a location",
-        position: "top",
-      });
-      return;
-    }
-
-    // Validation
-    if (!exitName.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Exit name is required",
-        position: "top",
-      });
-      return;
-    }
-
-    if (!coordinates.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Coordinates are required",
-        position: "top",
-      });
-      return;
-    }
-
     const parsedCoords = parseCoordinates(coordinates);
     if (!parsedCoords) {
-      Toast.show({
-        type: "error",
-        text1: "Invalid coordinates",
-        text2:
-          "Please use format: latitude, longitude (e.g., 60.140582, -2.111822)",
-        position: "top",
+      setError({
+        message:
+          "Invalid coordinates: Please use format: latitude, longitude (e.g., 60.140582, -2.111822)",
       });
       return;
     }
 
-    if (!rockDrop.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Rock drop height is required",
-        position: "top",
-      });
-      return;
-    }
+    const locationData = {
+      submission_type: "new",
+      name: exitName.trim(),
+      country: country.trim() || "",
+      latitude: parsedCoords.latitude,
+      longitude: parsedCoords.longitude,
+      rock_drop_ft: convertHeight(rockDrop, selectedUnit),
+      // Only include optional fields if they have values
+      ...(total && { total_height_ft: convertHeight(total, selectedUnit) }),
+      ...(cliffAspect && { cliff_aspect: cliffAspect.trim() }),
+      ...(anchor && { anchor_info: anchor.trim() }),
+      ...(access && { access_info: access.trim() }),
+      ...(notes && { notes: notes.trim() }),
+      ...(openedBy && { opened_by_name: openedBy.trim() }),
+      ...(openedDate && { opened_date: openedDate.trim() }),
+      ...(videoLink && { video_link: videoLink.trim() }),
+    } satisfies SubmitLocationData;
 
-    try {
-      // Prepare submission data for the API
-      const locationData = {
-        submission_type: "new",
-        name: exitName.trim(),
-        country: country.trim() || "",
-        latitude: parsedCoords.latitude,
-        longitude: parsedCoords.longitude,
-        rock_drop_ft: convertHeight(rockDrop, selectedUnit),
-        // Only include optional fields if they have values
-        ...(total && { total_height_ft: convertHeight(total, selectedUnit) }),
-        ...(cliffAspect && { cliff_aspect: cliffAspect.trim() }),
-        ...(anchor && { anchor_info: anchor.trim() }),
-        ...(access && { access_info: access.trim() }),
-        ...(notes && { notes: notes.trim() }),
-        ...(openedBy && { opened_by_name: openedBy.trim() }),
-        ...(openedDate && { opened_date: openedDate.trim() }),
-        ...(videoLink && { video_link: videoLink.trim() }),
-      } satisfies SubmitLocationData;
-
-      await submitLocationMutation.mutateAsync(locationData);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-    }
+    await submitLocationMutation.mutateAsync(locationData);
   };
 
   return (
@@ -273,7 +181,7 @@ const SubmitLocation = () => {
                   value={selectedUnit === "Feet"}
                   onValueChange={() =>
                     setSelectedUnit(
-                      selectedUnit === "Meters" ? "Feet" : "Meters"
+                      selectedUnit === "Meters" ? "Feet" : "Meters",
                     )
                   }
                 />
@@ -379,6 +287,7 @@ const SubmitLocation = () => {
           </View>
         </ScrollView>
       </TouchableWithoutFeedback>
+      <APIErrorHandler error={error} onDismiss={() => setError(null)} />
     </PaperProvider>
   );
 };

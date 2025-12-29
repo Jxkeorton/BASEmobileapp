@@ -15,12 +15,12 @@ import {
   Portal,
   Text,
 } from "react-native-paper";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import LogbookJumpCard from "../../../components/LogbookJumpCard";
 import LogbookModal from "../../../components/LogbookModal";
+import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
-
-import { useAuth } from "../../../providers/AuthProvider";
 
 const LogBook = () => {
   const [visible, setVisible] = useState(false);
@@ -30,9 +30,6 @@ const LogBook = () => {
 
   const { user, loading } = useAuth();
 
-  console.log("user object in LogBook:", user);
-
-  // TanStack Query - profile data for jump number
   const {
     data: profileResponse,
     isLoading: profileLoading,
@@ -66,20 +63,6 @@ const LogBook = () => {
     );
   }
 
-  if (profileError) {
-    return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <Text>Error loading profile: {profileError.message}</Text>
-      </View>
-    );
-  }
-
-  // Extract data from API responses
   const profile = profileResponse?.success
     ? profileResponse.data
     : ({} as ProfileData);
@@ -126,6 +109,7 @@ const LogBook = () => {
             </View>
 
             <LogbookJumpCard jumpNumber={profile?.jump_number || 0} />
+            <APIErrorHandler error={profileError} />
           </View>
         </TouchableWithoutFeedback>
       </ScrollView>

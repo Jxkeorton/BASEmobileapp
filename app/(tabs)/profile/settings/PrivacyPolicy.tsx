@@ -22,8 +22,8 @@ const PrivacyPolicy = () => {
         you create an account.
       </Text>
       <Text>
-        Location Information: We may collect your device's precise location when
-        you enable location-based services.
+        Location Information: We may collect your device&apos;s precise location
+        when you enable location-based services.
       </Text>
       <Text>
         Usage Information: We collect information about your interactions with

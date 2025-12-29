@@ -14,12 +14,13 @@ import {
   View,
 } from "react-native";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
-import Toast from "react-native-toast-message";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 
-const jumpDetails = () => {
+const JumpDetails = () => {
   const [jump, setJump] = useState<any>(null);
+  const [error, setError] = useState<any>(null);
   const params = useLocalSearchParams();
   const client = useKyClient();
 
@@ -29,7 +30,6 @@ const jumpDetails = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // TanStack Query
   const {
     data: logbookResponse,
     isLoading: loadingJumps,
@@ -49,7 +49,6 @@ const jumpDetails = () => {
     retry: 3,
   });
 
-  // Delete jump mutation
   const deleteJumpMutation = useMutation({
     mutationFn: async (jumpId: string) => {
       return client
@@ -63,90 +62,50 @@ const jumpDetails = () => {
     },
     onSuccess: (response) => {
       if (response.success) {
-        // Invalidate and refetch logbook queries
         queryClient.invalidateQueries({ queryKey: ["logbook"] });
 
         router.back();
-        Toast.show({
-          type: "success",
-          text1: "Jump deleted successfully",
-          position: "top",
-        });
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Failed to delete jump",
-          position: "top",
-        });
+        setError({ message: "Failed to delete jump" });
       }
     },
-    onError: (error) => {
-      console.error("Error deleting jump:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error deleting jump",
-        text2: error.message,
-        position: "top",
-      });
+    onError: (err) => {
+      setError(err);
     },
   });
 
   useFocusEffect(
     React.useCallback(() => {
       const loadData = async () => {
-        try {
-          if (
-            logbookResponse?.success &&
-            logbookResponse?.data?.entries &&
-            typeof jumpindex === "number" &&
-            !isNaN(jumpindex)
-          ) {
-            const jumps = logbookResponse.data.entries;
+        if (
+          logbookResponse?.success &&
+          logbookResponse?.data?.entries &&
+          typeof jumpindex === "number" &&
+          !isNaN(jumpindex)
+        ) {
+          const jumps = logbookResponse.data.entries;
 
-            // Reverse the jumps array to match the original ordering
-            const reversedJumps = [...jumps].reverse();
+          // Reverse the jumps array to match the original ordering
+          const reversedJumps = [...jumps].reverse();
 
-            // Check if jumpindex is a valid index in the reversedJumps array
-            if (jumpindex >= 0 && jumpindex < reversedJumps.length) {
-              // Set the jump with the specified index to the jump state
-              const selectedJump = reversedJumps[jumpindex];
-              setJump(selectedJump);
-            }
+          // Check if jumpindex is a valid index in the reversedJumps array
+          if (jumpindex >= 0 && jumpindex < reversedJumps.length) {
+            const selectedJump = reversedJumps[jumpindex];
+            setJump(selectedJump);
           }
-        } catch (error: any) {
-          console.error("Error processing jump data:", error);
-          Toast.show({
-            type: "error",
-            text1: "Failed to load jump details",
-            position: "top",
-          });
         }
       };
 
       if (logbookResponse) {
         loadData();
       }
-    }, [jumpindex, logbookResponse])
+    }, [jumpindex, logbookResponse]),
   );
 
   const handleDeleteJump = async () => {
-    if (!jump || !jump.id) {
-      Toast.show({
-        type: "error",
-        text1: "Cannot delete jump - invalid jump data",
-        position: "top",
-      });
-      return;
-    }
-
-    try {
-      await deleteJumpMutation.mutateAsync(jump.id as string);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-    }
+    await deleteJumpMutation.mutateAsync(jump.id as string);
   };
 
-  // Loading state
   if (loadingJumps || deleteJumpMutation.isPending) {
     return (
       <View style={styles.loadingContainer}>
@@ -160,18 +119,6 @@ const jumpDetails = () => {
     );
   }
 
-  // Error state
-  if (jumpsError) {
-    return (
-      <View style={styles.noJumpContainer}>
-        <Text style={{ fontSize: 25 }}>
-          Error loading jump data. Please try again.
-        </Text>
-      </View>
-    );
-  }
-
-  // No jump found state
   if (!jump) {
     return (
       <View style={styles.noJumpContainer}>
@@ -192,7 +139,6 @@ const jumpDetails = () => {
 
       <Card style={{ alignItems: "center" }}>
         <Card.Content>
-          {/* Updated field mapping for new API structure */}
           {jump.location_name && (
             <View>
               <Title style={styles.title}>
@@ -232,6 +178,10 @@ const jumpDetails = () => {
       >
         {deleteJumpMutation.isPending ? "Deleting..." : "Delete Jump"}
       </Button>
+      <APIErrorHandler
+        error={error || jumpsError}
+        onDismiss={() => setError(null)}
+      />
     </ScrollView>
   );
 };
@@ -301,4 +251,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default jumpDetails;
+export default JumpDetails;

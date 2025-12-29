@@ -6,7 +6,7 @@ const DeleteAccount = () => {
   const deleteAccount = () => {};
 
   const handleDeleteAccount = async () => {
-    await deleteAccount();
+    deleteAccount();
   };
 
   return (

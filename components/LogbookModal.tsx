@@ -13,9 +13,9 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
+import APIErrorHandler from "./APIErrorHandler";
 import { LogbookJump } from "./LogbookJumpCard";
 
 type LogbookPostBody =
@@ -35,18 +35,17 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
   const [details, setDetails] = useState("");
   const [date, setDate] = useState("");
   const [showExitTypes, setShowExitTypes] = useState(false);
+  const [error, setError] = useState<any>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
 
-  // Valid exit types as per API validation
-  const exitTypes: LogbookJump["exit_type"][] = [
+  const validExitTypes: LogbookJump["exit_type"][] = [
     "Building",
     "Antenna",
     "Span",
     "Earth",
   ];
 
-  // TanStack mutation for submitting jump data
   const submitJumpMutation = useMutation({
     mutationFn: async (jumpData: LogbookPostBody) => {
       const requestBody: any = {
@@ -68,67 +67,20 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
     },
     onSuccess: (response) => {
       if (response.status === 201) {
-        // Invalidate and refetch logbook queries to update the UI
         queryClient.invalidateQueries({ queryKey: ["logbook"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] }); // Update jump count
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
 
         onClose();
         router.replace("/(tabs)/logbook/LogBook");
 
-        Toast.show({
-          type: "success",
-          text1: "New jump logged",
-          position: "top",
-        });
-
         // Clear the form fields
         clearForm();
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Failed to submit jump",
-          text2: "Unknown error occurred",
-          position: "top",
-        });
+        setError({ message: "Failed to submit jump" });
       }
     },
     onError: (error: any) => {
-      console.error("Submit jump error:", error);
-
-      let errorMessage = "Network error occurred";
-      let errorDetails = "";
-
-      // Handle different types of errors
-      if (error.response) {
-        // API validation errors
-        if (error.response.status === 400 && error.response.data?.validation) {
-          errorMessage = "Validation Error";
-          const validationErrors = error.response.data.validation;
-          errorDetails = validationErrors
-            .map((err: any) => {
-              if (err.instancePath === "/exit_type") {
-                return "Please select a valid exit type";
-              }
-              return err.message;
-            })
-            .join(", ");
-        } else if (error.response.data?.error) {
-          errorMessage = "Submission Failed";
-          errorDetails = error.response.data.error;
-        } else {
-          errorMessage = `Request failed (${error.response.status})`;
-        }
-      } else if (error.message) {
-        errorMessage = "Request Error";
-        errorDetails = error.message;
-      }
-
-      Toast.show({
-        type: "error",
-        text1: errorMessage,
-        text2: errorDetails,
-        position: "top",
-      });
+      setError(error);
     },
   });
 
@@ -149,41 +101,11 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
   } as LogbookPostBody;
 
   const handleSubmit = async () => {
-    // Enhanced validation
-    if (!location.trim()) {
-      Toast.show({
-        type: "error",
-        text1: "Location is required",
-        position: "top",
-      });
-      return;
-    }
-
-    if (delay && (isNaN(delay) || delay < 0)) {
-      Toast.show({
-        type: "error",
-        text1: "Invalid delay",
-        text2: "Delay must be a positive number",
-        position: "top",
-      });
-      return;
-    }
-
-    try {
-      await submitJumpMutation.mutateAsync(formData);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-    }
+    await submitJumpMutation.mutateAsync(formData);
   };
 
   const handleCancel = () => {
     onClose();
-
-    Toast.show({
-      type: "info",
-      text1: "Logging jump cancelled",
-      position: "top",
-    });
 
     // Clear state
     clearForm();
@@ -227,7 +149,7 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
 
               {showExitTypes && (
                 <View style={styles.exitTypesList}>
-                  {exitTypes.map((type) => (
+                  {validExitTypes.map((type) => (
                     <TouchableOpacity
                       key={type}
                       style={[
@@ -314,6 +236,7 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
                   </TouchableOpacity>
                 </>
               )}
+              <APIErrorHandler error={error} onDismiss={() => setError(null)} />
             </ScrollView>
           </View>
         </TouchableWithoutFeedback>

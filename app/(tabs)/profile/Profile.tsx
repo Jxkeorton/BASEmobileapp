@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { useState } from "react";
+
 import {
   SafeAreaView,
   ScrollView,
@@ -8,9 +10,9 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationsCard from "../../../components/SavedLocationsCard";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
@@ -27,8 +29,8 @@ const Profile = () => {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
+  const [error, setError] = useState<any>(null);
 
-  // Get profile data
   const {
     data: profileResponse,
     isLoading: profileLoading,
@@ -48,7 +50,6 @@ const Profile = () => {
     retry: 3,
   });
 
-  // Get saved locations
   const {
     data: savedLocationsResponse,
     isLoading: locationsLoading,
@@ -68,7 +69,6 @@ const Profile = () => {
     retry: 3,
   });
 
-  // Unsave location mutation
   const unsaveLocationMutation = useMutation({
     mutationFn: async (locationId: number) => {
       return client
@@ -85,30 +85,15 @@ const Profile = () => {
     onSuccess: (response) => {
       if (response.success) {
         queryClient.invalidateQueries({ queryKey: ["savedLocations"] });
-        Toast.show({
-          type: "info",
-          text1: "Location unsaved from profile",
-          position: "top",
-        });
       }
     },
-    onError: (error) => {
-      console.error("Unsave location error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Error could not delete location",
-        position: "top",
-      });
+    onError: (err) => {
+      setError(err);
     },
   });
 
   const onDelete = async (locationId: number) => {
-    try {
-      await unsaveLocationMutation.mutateAsync(locationId);
-    } catch (error) {
-      // Error handling is done in the mutation's onError callback
-      console.error("Unsave location failed");
-    }
+    await unsaveLocationMutation.mutateAsync(locationId);
   };
 
   const myCustomShare = async () => {
@@ -117,11 +102,10 @@ const Profile = () => {
         message: "BASE world map, virtual logbook and more !",
       });
     } catch (error) {
-      alert((error as Error)?.message || "An unknown error occurred");
+      setError(error);
     }
   };
 
-  // Extract profile data
   const profile = profileResponse?.success ? profileResponse.data : undefined;
   const savedLocations = savedLocationsResponse?.success
     ? (savedLocationsResponse.data?.saved_locations ??
@@ -133,15 +117,6 @@ const Profile = () => {
       <SafeAreaView style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color="#00ABF0" />
         <Text style={styles.loadingText}>Loading profile...</Text>
-      </SafeAreaView>
-    );
-  }
-
-  if (profileError) {
-    return (
-      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
-        <Text style={styles.errorText}>Error loading profile</Text>
-        <Text style={styles.errorDetails}>{profileError.message}</Text>
       </SafeAreaView>
     );
   }
@@ -243,6 +218,10 @@ const Profile = () => {
           </>
         )}
       </ScrollView>
+      <APIErrorHandler
+        error={error || profileError || locationsError}
+        onDismiss={() => setError(null)}
+      />
     </SafeAreaView>
   );
 };

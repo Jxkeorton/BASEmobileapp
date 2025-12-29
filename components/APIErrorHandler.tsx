@@ -1,9 +1,21 @@
 import { useEffect, useState } from "react";
 import { Snackbar } from "react-native-paper";
+import { ErrorResponse } from "../types/error-response";
 
 interface APIErrorHandlerProps {
   error: any;
   onDismiss?: () => void;
+}
+
+function isErrorResponse(error: any): error is ErrorResponse {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "success" in error &&
+    error.success === false &&
+    "message" in error &&
+    typeof error.message === "string"
+  );
 }
 
 const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
@@ -11,15 +23,33 @@ const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
-    setVisible(!!error);
+    const handleError = async () => {
+      setVisible(!!error);
 
-    if (error.success === false && error.error) {
-      setMessage(error.error);
-    } else if (error.message) {
-      setMessage(error.message);
-    } else {
-      setMessage("An unexpected error occurred.");
-    }
+      if (!error) {
+        return;
+      }
+
+      // Check if it's an ErrorResponse
+      if (isErrorResponse(error)) {
+        setMessage(error.message);
+        return;
+      }
+
+      // HTTPError from ky
+      if (error.response && typeof error.response.json === "function") {
+        const errorData = await error.response.json();
+        if (errorData.message) {
+          setMessage(errorData.message);
+        } else {
+          setMessage("An unexpected error occurred.");
+        }
+      } else {
+        setMessage("An unexpected error occurred.");
+      }
+    };
+
+    handleError();
   }, [error]);
 
   return (
@@ -31,6 +61,7 @@ const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
       }}
       duration={4000}
       style={{ backgroundColor: "#d32f2f" }}
+      wrapperStyle={{ top: 0 }}
     >
       {message}
     </Snackbar>

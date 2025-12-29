@@ -3,7 +3,6 @@ import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   Image,
   Keyboard,
   KeyboardAvoidingView,
@@ -12,13 +11,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Checkbox,
-  Snackbar,
-  Text,
-} from "react-native-paper";
+import { ActivityIndicator, Button, Checkbox, Text } from "react-native-paper";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
@@ -30,7 +23,6 @@ const Register = () => {
   const [termsChecked, setTermsChecked] = useState(false);
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-  const [validationError, setValidationError] = useState<string | null>(null);
 
   const { updateUser } = useAuth();
 
@@ -42,44 +34,32 @@ const Register = () => {
 
   const signUpMutation = useMutation({
     mutationFn: async ({ email, password, name }: SignUpBody) => {
-      return client.POST("/signup", {
+      const result = await client.POST("/signup", {
         body: { email, password, name },
       });
+      return result;
     },
     onSuccess: async (response) => {
       const user = response.data?.data?.user;
 
       if (response.response.status === 200) {
-        const res = response.response;
         // Check if email confirmation is required
-        if (!res.headers) {
-          Alert.alert(
-            "Check Your Email",
-            response.data?.data?.message ||
-              "Please check your email and click the confirmation link to activate your account.",
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.replace({
-                    pathname: "/(auth)/EmailConfirmation",
-                    params: { email: email },
-                  });
-                },
-              },
-            ]
-          );
+        if (response.data?.data?.requiresEmailConfirmation) {
+          router.replace({
+            pathname: "/(auth)/EmailConfirmation",
+            params: { email: email },
+          });
         } else {
           // Auto-login if session exists (no confirmation required)
           await AsyncStorage.setItem(
             "auth_token",
-            response.data?.data?.session?.access_token || ""
+            response.data?.data?.session?.access_token || "",
           );
           await AsyncStorage.setItem(
             "refresh_token",
-            response.data?.data?.session?.refresh_token || ""
+            response.data?.data?.session?.refresh_token || "",
           );
-          if (user != undefined && user.id && user.email) {
+          if (user !== undefined && user.id && user.email) {
             updateUser({ id: user.id, email: user.email });
           }
           router.replace("/(tabs)/map");
@@ -92,33 +72,7 @@ const Register = () => {
   });
 
   const handleSignUp = async () => {
-    // Validation
-    if (!email || !password || !name) {
-      setValidationError("Please fill in all required fields");
-      return;
-    }
-
-    if (!termsChecked) {
-      setValidationError(
-        "You must agree to the Terms and Conditions to register."
-      );
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setValidationError("Please enter a valid email address.");
-      return;
-    }
-
-    // Basic password validation
-    if (password.length < 6) {
-      setValidationError("Password must be at least 6 characters long.");
-      return;
-    }
-
-    // Note: Username will need to be set later via profile update
+    // TODO: Username will need to be set later via profile update
     signUpMutation.mutate({ email, password, name: name });
   };
 
@@ -206,22 +160,7 @@ const Register = () => {
             Privacy Policy
           </Button>
         </KeyboardAvoidingView>
-        {apiError && (
-          <APIErrorHandler
-            error={apiError}
-            onDismiss={() => setApiError(null)}
-          />
-        )}
-        {validationError && (
-          <Snackbar
-            visible={!!validationError}
-            onDismiss={() => setValidationError(null)}
-            duration={4000}
-            style={{ backgroundColor: "#d32f2f" }}
-          >
-            {validationError}
-          </Snackbar>
-        )}
+        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
       </View>
     </TouchableWithoutFeedback>
   );

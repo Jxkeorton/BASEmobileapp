@@ -4,17 +4,18 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
 import { CustomerInfo, PurchasesPackage } from "react-native-purchases";
-import Toast from "react-native-toast-message";
+import APIErrorHandler from "../components/APIErrorHandler";
 import { useAuth } from "../providers/AuthProvider";
 
 const PackageList = () => {
   const { user, loading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<any>(null);
 
   // TODO: Add back revenue cat logic
   const isProUser = true;
   const purchasePackage = async (
-    pkg: PurchasesPackage
+    pkg: PurchasesPackage,
   ): Promise<CustomerInfo> => {
     // Placeholder implementation
     return new Promise((resolve) => {
@@ -25,29 +26,18 @@ const PackageList = () => {
 
   const handlePurchase = async (pkg: PurchasesPackage) => {
     setIsLoading(true);
-    try {
-      const result: CustomerInfo = await purchasePackage(pkg);
 
-      if (isProUser) {
-        router.push("/(tabs)/map/Map");
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Failed to purchase package",
-          text2: "An error occurred during the purchase process.",
-          position: "top",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to purchase package:", error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to purchase package",
-        position: "top",
+    const result: CustomerInfo = await purchasePackage(pkg);
+
+    if (isProUser) {
+      router.push("/(tabs)/map/Map");
+    } else {
+      setError({
+        message:
+          "Failed to purchase package: An error occurred during the purchase process.",
       });
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   const userHasAccessToPackage = (pkg: PurchasesPackage) => {
@@ -165,6 +155,7 @@ const PackageList = () => {
           <Text style={styles.backToMapButtonText}>Back to Map</Text>
         </TouchableOpacity>
       )}
+      <APIErrorHandler error={error} onDismiss={() => setError(null)} />
     </View>
   );
 };
