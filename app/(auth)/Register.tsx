@@ -72,7 +72,6 @@ const Register = () => {
   });
 
   const handleSignUp = async () => {
-    // TODO: Username will need to be set later via profile update
     signUpMutation.mutate({ email, password, name: name });
   };
 

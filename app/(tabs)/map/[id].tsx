@@ -21,10 +21,11 @@ import {
 } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SubmitDetailsModal from "../../../components/SubmitDetailsModal";
-import { useUnitSystem } from "../../../context/UnitSystemContext";
 import { useProtectedRoute } from "../../../hooks/useProtectedRoute";
 import { useAuth } from "../../../providers/AuthProvider";
+import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
+import { getHeightInPreferredUnit } from "../../../utils/unitConversions";
 import type { Location as LocationType } from "./Map";
 
 export default function Location() {
@@ -178,15 +179,6 @@ export default function Location() {
     }
   };
 
-  const convertHeight = (heightStr: number | undefined | null) => {
-    if (!heightStr) return "?";
-    if (isMetric) {
-      const meters = Math.round(heightStr * 0.3048);
-      return `${meters} m`;
-    }
-    return `${heightStr} ft`;
-  };
-
   if (locationsLoading || revenueCatLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -314,10 +306,10 @@ export default function Location() {
             </View>
             <View>
               <Text style={styles.text}>
-                {convertHeight(location.rock_drop_ft)}
+                {getHeightInPreferredUnit(location.rock_drop_ft, isMetric)}
               </Text>
               <Text style={styles.text}>
-                {convertHeight(location.total_height_ft)}
+                {getHeightInPreferredUnit(location.total_height_ft, isMetric)}
               </Text>
               <Text style={styles.text}>{location.cliff_aspect || "?"}</Text>
               <Text style={styles.text}>{location.anchor_info || "?"}</Text>

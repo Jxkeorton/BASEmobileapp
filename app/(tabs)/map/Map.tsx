@@ -21,7 +21,7 @@ import {
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import CustomCallout from "../../../components/CustomCallout";
 import ModalContent from "../../../components/ModalContent";
-import { useUnitSystem } from "../../../context/UnitSystemContext";
+import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { paths } from "../../../types/api";
 
@@ -48,7 +48,7 @@ export default function Map() {
   const showModal = () => setVisible(true);
   const hideModal = () => setVisible(false);
 
-  const { isMetric } = useUnitSystem();
+  const { isMetric, toggleUnitSystem } = useUnitSystem();
 
   const apiFilters: LocationsFilters = useMemo(() => {
     const filters: LocationsFilters = {};
@@ -220,7 +220,7 @@ export default function Map() {
               </Text>
               <Switch
                 value={isMetric}
-                onValueChange={() => {}} // TODO: This should be handled by UnitSystemContext
+                onValueChange={toggleUnitSystem}
                 color="#00ABF0"
               />
               <Text style={styles.switchLabel}>Metric</Text>

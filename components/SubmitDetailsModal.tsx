@@ -43,8 +43,6 @@ const SubmitDetailsModal = ({
   const queryClient = useQueryClient();
   const client = useKyClient();
 
-  // TODO: add user to submissions
-
   const submitUpdateMutation = useMutation({
     mutationFn: async (submissionData: SubmitLocationData) => {
       return client

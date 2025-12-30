@@ -8,7 +8,8 @@ import {
 } from "react-native";
 import { Callout } from "react-native-maps";
 import type { Location } from "../app/(tabs)/map/Map";
-import { useUnitSystem } from "../context/UnitSystemContext";
+import { useUnitSystem } from "../providers/UnitSystemProvider";
+import { getHeightInPreferredUnit } from "../utils/unitConversions";
 
 export default function CustomCallout({ info }: { info: Location }) {
   const { isMetric } = useUnitSystem();
@@ -17,30 +18,15 @@ export default function CustomCallout({ info }: { info: Location }) {
     router.push(`/(tabs)/map/${info.id}`);
   };
 
-  // TODO: Move this to a utility file - it is reused in multiple places
-  const convertToMeters = (value: number) => {
-    return value ? `${Math.round(value * 0.3048)} meters` : "?";
-  };
-
   return (
     <Callout onPress={() => onDetailsPress()}>
       <View style={styles.calloutContainer}>
         <Text style={styles.calloutTitle}>{info.name.toUpperCase()}</Text>
         <Text style={styles.calloutCoordinates}>
-          Rock Drop:{" "}
-          {isMetric
-            ? convertToMeters(info.rock_drop_ft ?? 0)
-            : info.rock_drop_ft
-              ? `${info.rock_drop_ft} ft`
-              : "?"}
+          Rock Drop: {getHeightInPreferredUnit(info.rock_drop_ft, isMetric)}
         </Text>
         <Text style={styles.calloutCoordinates}>
-          Total:{" "}
-          {isMetric
-            ? convertToMeters(info.total_height_ft ?? 0)
-            : info.total_height_ft
-              ? `${info.total_height_ft} ft`
-              : "?"}
+          Total: {getHeightInPreferredUnit(info.total_height_ft, isMetric)}
         </Text>
         {Platform.OS === "ios" && (
           <TouchableOpacity

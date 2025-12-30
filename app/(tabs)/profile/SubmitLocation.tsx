@@ -40,7 +40,6 @@ const SubmitLocation = () => {
   const queryClient = useQueryClient();
   const client = useKyClient();
 
-  // TODO: add user to submissions
   // TODO: add react form for better form handling and validation
 
   const submitLocationMutation = useMutation({
