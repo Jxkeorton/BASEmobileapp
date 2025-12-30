@@ -6,7 +6,7 @@ Reusable controlled form components for React Hook Form with React Native and re
 
 ### ControlledTextInput
 
-Generic text input component that integrates with react-hook-form.
+Generic text input component for **standard React Native TextInput**. For Material Design styled inputs, use `ControlledPaperTextInput` instead.
 
 **Usage:**
 
@@ -25,7 +25,6 @@ const MyForm = () => {
       control={control}
       name="fieldName"
       label="Field Label"
-      placeholder="Enter value"
     />
   );
 };
@@ -35,16 +34,47 @@ const MyForm = () => {
 
 - `control` - React Hook Form control object (required)
 - `name` - Field name (required)
-- `label` - Field label/placeholder
+- `label` - Field placeholder text
 - `rules` - Validation rules (optional if using Zod)
 - `defaultValue` - Default value (default: "")
-- `usePaper` - Use react-native-paper TextInput (default: false)
 - `showError` - Show error message (default: true)
-- All standard TextInput props
+- All standard React Native TextInput props
+
+### ControlledPaperTextInput
+
+Generic text input component for **react-native-paper TextInput** with Material Design styling. Use this for forms that need the Paper UI design system.
+
+**Usage:**
+
+```tsx
+import { ControlledPaperTextInput } from "@/components/form";
+
+<ControlledPaperTextInput
+  control={control}
+  name="fieldName"
+  label="Field Label"
+  mode="outlined"
+/>;
+```
+
+**Props:**
+
+- `control` - React Hook Form control object (required)
+- `name` - Field name (required)
+- `label` - Field label (displays as floating label)
+- `rules` - Validation rules (optional if using Zod)
+- `defaultValue` - Default value (default: "")
+- `showError` - Show error message (default: true)
+- All react-native-paper TextInput props
+
+**Variants:**
+
+- `ControlledPaperEmailInput` - Email input with proper keyboard
+- `ControlledPaperSecureTextInput` - Password input with secure entry
 
 ### ControlledEmailInput
 
-Specialized text input for email fields with proper keyboard and validation settings.
+Specialized text input for email fields with proper keyboard and validation settings. **Standard React Native version.**
 
 **Usage:**
 
@@ -61,7 +91,7 @@ Specialized text input for email fields with proper keyboard and validation sett
 
 ### ControlledSecureTextInput
 
-Specialized text input for password fields.
+Specialized text input for password fields. **Standard React Native version.**
 
 **Usage:**
 
@@ -162,7 +192,9 @@ Displays validation error messages with consistent styling.
 - `error` - Error message string
 - `style` - Additional styles
 
-## Complete Form Example
+## Complete Form Examples
+
+### Standard React Native Form (Auth screens with custom styling)
 
 ```tsx
 import { useForm } from "react-hook-form";
@@ -171,6 +203,7 @@ import { useMutation } from "@tanstack/react-query";
 import { View, StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
 import {
+  ControlledTextInput,
   ControlledEmailInput,
   ControlledSecureTextInput,
   ControlledCheckbox,
@@ -181,7 +214,7 @@ const RegisterForm = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
     reset,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -244,9 +277,70 @@ const RegisterForm = () => {
 };
 ```
 
+### Paper Form (Material Design styling)
+
+```tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { View } from "react-native";
+import { Button } from "react-native-paper";
+import {
+  ControlledPaperTextInput,
+  ControlledPaperEmailInput,
+  ControlledPaperSecureTextInput,
+} from "@/components/form";
+import { loginSchema, LoginFormData } from "@/utils/validationSchemas";
+
+const PaperLoginForm = () => {
+  const { control, handleSubmit } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = handleSubmit((data) => {
+    console.log(data);
+  });
+
+  return (
+    <View>
+      <ControlledPaperEmailInput
+        control={control}
+        name="email"
+        label="Email Address"
+      />
+
+      <ControlledPaperSecureTextInput
+        control={control}
+        name="password"
+        label="Password"
+      />
+
+      <Button mode="contained" onPress={onSubmit}>
+        Sign In
+      </Button>
+    </View>
+  );
+};
+```
+
+## When to Use Which Component
+
+- **ControlledTextInput / ControlledEmailInput / ControlledSecureTextInput**
+  - ✅ Auth screens (Login, Register, Reset)
+  - ✅ Custom styled forms
+  - ✅ Dark/themed backgrounds
+  - ✅ Simple placeholders
+
+- **ControlledPaperTextInput / ControlledPaperEmailInput / ControlledPaperSecureTextInput**
+  - ✅ Profile edit forms
+  - ✅ Settings screens
+  - ✅ Material Design consistency
+  - ✅ Floating labels needed
+
 ## Styling
 
-All components include default styling that matches the app's design. You can override styles using the `style` prop:
+All components include default styling. You can override styles using the `style` prop:
+
+**Standard Components:**
 
 ```tsx
 <ControlledTextInput
@@ -257,12 +351,26 @@ All components include default styling that matches the app's design. You can ov
 />
 ```
 
+**Paper Components:**
+
+```tsx
+<ControlledPaperTextInput
+  control={control}
+  name="email"
+  label="Email"
+  style={styles.customInput}
+  mode="flat" // or "outlined"
+/>
+```
+
 ## Error Handling
 
-Components automatically display validation errors from react-hook-form. To disable error display:
+All components automatically display validation errors from react-hook-form. To disable error display:
 
 ```tsx
 <ControlledTextInput control={control} name="email" showError={false} />
+// or
+<ControlledPaperTextInput control={control} name="email" showError={false} />
 ```
 
 ## TypeScript Support
