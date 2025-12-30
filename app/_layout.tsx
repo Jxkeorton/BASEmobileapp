@@ -5,6 +5,7 @@ import Toast from "react-native-toast-message";
 import { UnitSystemProvider } from "../context/UnitSystemContext";
 import { AuthProvider } from "../providers/AuthProvider";
 import { QueryProvider } from "../providers/QueryProvider";
+import { RevenueCatProvider } from "../providers/RevenueCatProvider";
 
 export default function Layout() {
   return (
@@ -13,8 +14,10 @@ export default function Layout() {
         <PaperProvider>
           <UnitSystemProvider>
             <AuthProvider>
-              <Slot />
-              <Toast />
+              <RevenueCatProvider>
+                <Slot />
+                <Toast />
+              </RevenueCatProvider>
             </AuthProvider>
           </UnitSystemProvider>
         </PaperProvider>

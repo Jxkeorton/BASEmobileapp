@@ -5,7 +5,10 @@ import { paths } from "../types/api";
 
 const getBaseUrl = () => {
   if (__DEV__) {
-    const devUrl = "http://192.168.1.171:3000";
+    const devUrl =
+      process.env.EXPO_PUBLIC_API_DEV_BASE_URL ||
+      process.env.EXPO_PUBLIC_API_BASE_URL ||
+      "";
     return devUrl;
   }
 
