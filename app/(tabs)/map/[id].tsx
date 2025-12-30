@@ -77,8 +77,6 @@ export default function Location() {
       const res = await client.POST("/locations/save", {
         body: { location_id: locationId },
       });
-      if (res.error)
-        throw new Error(res.error.error || "Failed to save location");
       return res.data;
     },
     onSuccess: (response) => {
@@ -96,8 +94,6 @@ export default function Location() {
       const res = await client.DELETE("/locations/unsave", {
         body: { location_id: locationId },
       });
-      if (res.error)
-        throw new Error(res.error.error || "Failed to unsave location");
       return res.data;
     },
     onSuccess: (response) => {

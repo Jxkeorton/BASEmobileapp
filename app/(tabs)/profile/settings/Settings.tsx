@@ -41,14 +41,14 @@ const Settings: React.FC = () => {
         signOut();
         router.replace("/(auth)/Login");
         break;
-      case "deleteAccount":
-        router.navigate("/profile/settings/DeleteAccount");
-        break;
       case "privacypolicy":
         router.navigate("/profile/settings/PrivacyPolicy");
         break;
       case "terms":
         router.navigate("/profile/settings/Terms");
+        break;
+      case "deleteAccount":
+        router.navigate("/profile/settings/DeleteAccount");
         break;
       default:
         break;
