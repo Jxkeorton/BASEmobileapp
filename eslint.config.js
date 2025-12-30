@@ -32,7 +32,7 @@ module.exports = defineConfig([
       "unused-imports/no-unused-imports": "error",
       "expo/no-env-var-destructuring": "error",
       "expo/no-dynamic-env-var": "error",
-      "no-console": "warn",
+      // "no-console": "warn",
       "react/display-name": "off",
     },
   },

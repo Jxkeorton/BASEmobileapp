@@ -22,6 +22,7 @@ import {
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SubmitDetailsModal from "../../../components/SubmitDetailsModal";
 import { useUnitSystem } from "../../../context/UnitSystemContext";
+import { useProtectedRoute } from "../../../hooks/useProtectedRoute";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { Location as LocationType } from "./Map";
@@ -39,6 +40,7 @@ export default function Location() {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
+  const { loading: revenueCatLoading } = useProtectedRoute();
 
   const locationId = id && !Array.isArray(id) ? parseInt(id) : NaN;
 
@@ -185,7 +187,7 @@ export default function Location() {
     return `${heightStr} ft`;
   };
 
-  if (locationsLoading) {
+  if (locationsLoading || revenueCatLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#00ABF0" />

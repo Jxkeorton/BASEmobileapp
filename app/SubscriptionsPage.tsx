@@ -1,43 +1,36 @@
 import { router } from "expo-router";
-import { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
-import { CustomerInfo, PurchasesPackage } from "react-native-purchases";
-import APIErrorHandler from "../components/APIErrorHandler";
-import { useAuth } from "../providers/AuthProvider";
+import { PurchasesPackage } from "react-native-purchases";
+import { useRevenueCat } from "../providers/RevenueCatProvider";
 
 const PackageList = () => {
-  const { user, loading } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<any>(null);
-
-  // TODO: Add back revenue cat logic
-  const isProUser = true;
-  const purchasePackage = async (
-    pkg: PurchasesPackage,
-  ): Promise<CustomerInfo> => {
-    // Placeholder implementation
-    return new Promise((resolve) => {
-      resolve({} as CustomerInfo);
-    });
-  };
-  const packages = [] as PurchasesPackage[];
+  const {
+    packages,
+    isProUser,
+    loading,
+    purchasePackage,
+    restorePurchases,
+    customerInfo,
+  } = useRevenueCat();
 
   const handlePurchase = async (pkg: PurchasesPackage) => {
-    setIsLoading(true);
-
-    const result: CustomerInfo = await purchasePackage(pkg);
-
-    if (isProUser) {
-      router.push("/(tabs)/map/Map");
-    } else {
-      setError({
-        message:
-          "Failed to purchase package: An error occurred during the purchase process.",
-      });
+    try {
+      await purchasePackage(pkg);
+    } catch (error) {
+      // Error is already handled in the provider
+      console.error("Purchase error:", error);
     }
-    setIsLoading(false);
+  };
+
+  const handleRestore = async () => {
+    try {
+      await restorePurchases();
+    } catch (error) {
+      // Error is already handled in the provider
+      console.error("Restore error:", error);
+    }
   };
 
   const userHasAccessToPackage = (pkg: PurchasesPackage) => {
@@ -45,8 +38,10 @@ const PackageList = () => {
       return true;
     }
 
-    if (user?.entitlements?.active) {
-      return user.entitlements.active[pkg.product.identifier] !== undefined;
+    if (customerInfo?.entitlements?.active) {
+      return (
+        customerInfo.entitlements.active[pkg.product.identifier] !== undefined
+      );
     }
 
     return false;
@@ -61,13 +56,38 @@ const PackageList = () => {
     );
   }
 
-  const package1 = packages[0];
-  const package2 = packages[1];
+  if (isProUser) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <Image source={require("../assets/bitmap.png")} style={styles.image} />
+        <Text style={styles.title}>You&apos;re a Pro User!</Text>
+        <Text style={styles.text}>
+          You have access to all premium features.
+        </Text>
+        <TouchableOpacity
+          style={styles.backToMapButton}
+          onPress={() => router.push("/(tabs)/map/Map")}
+        >
+          <Text style={styles.backToMapButtonText}>Back to Map</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
-  if (!package1 || !package2) {
+  const monthlyPackage = packages.find((pkg) => pkg.packageType === "MONTHLY");
+  const yearlyPackage = packages.find((pkg) => pkg.packageType === "ANNUAL");
+
+  if (!monthlyPackage || !yearlyPackage) {
     return (
       <View style={[styles.container, { justifyContent: "center" }]}>
         <Text style={styles.title}>No packages available</Text>
+        <Text style={styles.text}>
+          We&apos;re having trouble loading subscription options. Please try
+          again later.
+        </Text>
+        <TouchableOpacity style={styles.restoreButton} onPress={handleRestore}>
+          <Text style={styles.restoreButtonText}>Restore Purchases</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.backToMapButton}
           onPress={() => router.push("/(tabs)/map/Map")}
@@ -83,50 +103,54 @@ const PackageList = () => {
       <Image source={require("../assets/bitmap.png")} style={styles.image} />
       <Text style={styles.title}>Unlock Pro Features</Text>
       <View style={styles.features}>
-        <Text style={styles.featureItem}>- Precise Coordinates</Text>
-        <Text style={styles.featureItem}>- Open Locations in Maps</Text>
-        <Text style={styles.featureItem}>- Create a Logbook</Text>
-        <Text style={styles.featureItem}>- More in depth Location Details</Text>
+        <Text style={styles.featureItem}>✓ Precise Coordinates</Text>
+        <Text style={styles.featureItem}>✓ Open Locations in Maps</Text>
+        <Text style={styles.featureItem}>✓ Create a Logbook</Text>
+        <Text style={styles.featureItem}>✓ More in depth Location Details</Text>
       </View>
       <View style={styles.bottomContainer}>
-        {/* First Package */}
+        {/* Monthly Package */}
         <LinearGradient colors={["#007AFF", "#00AFFF"]} style={styles.package}>
           <Text
             style={[styles.packageText, { fontSize: 20, textAlign: "center" }]}
           >
-            Monthly Subscription
+            {monthlyPackage.product.title}
           </Text>
-          <Text style={styles.packageText}>{package1.product.priceString}</Text>
-          {isLoading || loading ? (
+          <Text style={styles.packageText}>
+            {monthlyPackage.product.priceString}
+          </Text>
+          {loading ? (
             <ActivityIndicator color="white" size="small" />
-          ) : userHasAccessToPackage(package1) ? (
+          ) : userHasAccessToPackage(monthlyPackage) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
           ) : (
             <TouchableOpacity
               style={styles.button}
-              onPress={() => handlePurchase(package1)}
+              onPress={() => handlePurchase(monthlyPackage)}
             >
               <Text style={styles.buttonText}>Purchase</Text>
             </TouchableOpacity>
           )}
         </LinearGradient>
 
-        {/* Second Package */}
+        {/* Yearly Package */}
         <LinearGradient colors={["#007AFF", "#00AFFF"]} style={styles.package}>
           <Text
             style={[styles.packageText, { fontSize: 20, textAlign: "center" }]}
           >
-            Yearly Subscription
+            {yearlyPackage.product.title}
           </Text>
-          <Text style={styles.packageText}>{package2.product.priceString}</Text>
-          {isLoading || loading ? (
+          <Text style={styles.packageText}>
+            {yearlyPackage.product.priceString}
+          </Text>
+          {loading ? (
             <ActivityIndicator color="white" size="small" />
-          ) : userHasAccessToPackage(package2) ? (
+          ) : userHasAccessToPackage(yearlyPackage) ? (
             <Text style={styles.accessText}>Already Purchased</Text>
           ) : (
             <TouchableOpacity
               style={styles.button}
-              onPress={() => handlePurchase(package2)}
+              onPress={() => handlePurchase(yearlyPackage)}
             >
               <Text style={styles.buttonText}>Purchase</Text>
             </TouchableOpacity>
@@ -134,8 +158,7 @@ const PackageList = () => {
         </LinearGradient>
       </View>
 
-      {/* 7-day Trial Button with LinearGradient Effect */}
-      {!(isLoading || loading) && (
+      {!loading && (
         <View style={styles.trialContainer}>
           <Text style={styles.trialText}>
             A 7 Day Free trial will be applied if it is your first time
@@ -144,23 +167,20 @@ const PackageList = () => {
         </View>
       )}
 
-      {/* Back to Map Button */}
-      {isLoading || loading ? (
-        <Text style={styles.backToMapButtonText}>Please wait...</Text>
-      ) : (
-        <TouchableOpacity
-          style={styles.backToMapButton}
-          onPress={() => router.push("/(tabs)/map/Map")}
-        >
-          <Text style={styles.backToMapButtonText}>Back to Map</Text>
-        </TouchableOpacity>
-      )}
-      <APIErrorHandler error={error} onDismiss={() => setError(null)} />
+      <TouchableOpacity style={styles.restoreButton} onPress={handleRestore}>
+        <Text style={styles.restoreButtonText}>Restore Purchases</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.backToMapButton}
+        onPress={() => router.push("/(tabs)/map/Map")}
+      >
+        <Text style={styles.backToMapButtonText}>Back to Map</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-// Styles remain the same
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -174,6 +194,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: "white",
     fontWeight: "bold",
+  },
+  text: {
+    fontSize: 16,
+    color: "white",
+    textAlign: "center",
+    marginHorizontal: 40,
+    marginTop: 10,
   },
   bottomContainer: {
     flexDirection: "row",
@@ -200,7 +227,8 @@ const styles = StyleSheet.create({
   },
   accessText: {
     fontSize: 16,
-    color: "gray",
+    color: "lightgray",
+    fontStyle: "italic",
   },
   image: {
     width: 200,
@@ -226,12 +254,23 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "white",
     textAlign: "center",
+    fontWeight: "600",
+  },
+  restoreButton: {
+    marginTop: 15,
+    padding: 10,
+  },
+  restoreButtonText: {
+    color: "#007AFF",
+    fontSize: 16,
+    textAlign: "center",
+    textDecorationLine: "underline",
   },
   backToMapButton: {
     backgroundColor: "black",
     padding: 10,
     borderRadius: 8,
-    marginTop: 30,
+    marginTop: 20,
     width: "80%",
   },
   backToMapButtonText: {
