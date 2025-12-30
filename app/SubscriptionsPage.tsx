@@ -5,7 +5,7 @@ import { ActivityIndicator } from "react-native-paper";
 import { PurchasesPackage } from "react-native-purchases";
 import { useRevenueCat } from "../providers/RevenueCatProvider";
 
-const PackageList = () => {
+const PayWall = () => {
   const {
     packages,
     isProUser,
@@ -290,4 +290,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PackageList;
+export default PayWall;
