@@ -60,8 +60,8 @@ const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
         onDismiss?.();
       }}
       duration={4000}
-      style={{ backgroundColor: "#d32f2f" }}
-      wrapperStyle={{ top: 0 }}
+      style={{ backgroundColor: "#d32f2f", zIndex: 9999 }}
+      wrapperStyle={{ top: 0, zIndex: 9999, elevation: 9999 }}
     >
       {message}
     </Snackbar>
