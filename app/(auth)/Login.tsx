@@ -7,11 +7,10 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   StyleSheet,
-  TextInput,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button } from "react-native-paper";
+import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
