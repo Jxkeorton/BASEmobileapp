@@ -1,34 +1,58 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { router, useFocusEffect } from "expo-router";
-import React, { useState } from "react";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import {
+  KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import APIErrorHandler from "../../../components/APIErrorHandler";
+import {
+  ControlledPaperEmailInput,
+  ControlledPaperTextInput,
+} from "../../../components/form";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
+import {
+  editProfileSchema,
+  type EditProfileFormData,
+} from "../../../utils/validationSchemas";
 
 type UpdateProfileData = NonNullable<
   paths["/profile"]["patch"]["requestBody"]
 >["content"]["application/json"];
 
 const EditProfile = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [jumpNumber, setJumpNumber] = useState("");
-  const [username, setUsername] = useState("");
   const [error, setError] = useState<any>(null);
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const client = useKyClient();
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<EditProfileFormData>({
+    resolver: yupResolver(editProfileSchema) as any,
+    mode: "onBlur",
+    defaultValues: {
+      name: "",
+      email: "",
+    },
+  });
+
+  const name = watch("name");
 
   const {
     data: profileResponse,
@@ -74,45 +98,53 @@ const EditProfile = () => {
     },
   });
 
-  useFocusEffect(
-    React.useCallback(() => {
-      if (profileResponse?.success && profileResponse?.data) {
-        const profile = profileResponse.data;
-        setName(profile.name || "");
-        setEmail(profile.email || "");
-        setUsername(profile.username || "");
-        setJumpNumber(profile.jump_number?.toString() || "0");
+  useEffect(() => {
+    if (profileResponse?.success && profileResponse?.data) {
+      const profile = profileResponse.data;
+
+      console.log("Loaded profile data:", profile);
+      setValue("name", profile.name || "");
+      setValue("email", profile.email || "");
+      if (profile.username) {
+        setValue("username", profile.username);
       }
-    }, [profileResponse]),
-  );
+      if (profile.jump_number !== null && profile.jump_number !== undefined) {
+        setValue("jump_number", profile.jump_number.toString());
+      }
+    }
+  }, [profileResponse, setValue]);
 
-  const handleSubmit = async () => {
-    const profileData: UpdateProfileData = {
-      name: profileResponse?.data?.name || "",
-      username: profileResponse?.data?.username || "",
-      jump_number: profileResponse?.data?.jump_number || 0,
-    };
+  const onSubmit = handleSubmit(async (data) => {
+    const profileData: UpdateProfileData = {};
 
-    if (name.trim() !== profileResponse?.data?.name) {
-      profileData.name = name.trim();
+    if (data.name?.trim() !== profileResponse?.data?.name) {
+      profileData.name = data.name.trim();
     }
 
-    if (username.trim() !== profileResponse?.data?.username) {
-      profileData.username = username.trim();
+    if (data.username?.trim() !== profileResponse?.data?.username) {
+      profileData.username = data.username?.trim() || "";
     }
 
-    const jumpNum = parseInt(jumpNumber) || 0;
-    if (jumpNum !== profileResponse?.data?.jump_number) {
-      profileData.jump_number = jumpNum;
+    if (
+      data.jump_number !== undefined &&
+      data.jump_number !== profileResponse?.data?.jump_number
+    ) {
+      // Convert to number if it's a string
+      const jumpNumber =
+        typeof data.jump_number === "string"
+          ? parseInt(data.jump_number, 10)
+          : data.jump_number;
+      profileData.jump_number = jumpNumber;
     }
 
     // Only submit if there are changes
     if (Object.keys(profileData).length === 0) {
+      router.back();
       return;
     }
 
     await updateProfileMutation.mutateAsync(profileData);
-  };
+  });
 
   if (profileLoading) {
     return (
@@ -127,8 +159,16 @@ const EditProfile = () => {
 
   return (
     <PaperProvider>
-      <View style={styles.container}>
-        <View style={{ margin: 20 }}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <View style={{ alignItems: "center", marginBottom: 30 }}>
             <View style={styles.profilePlaceholder}>
               <FontAwesome name="user" size={40} color="#ccc" />
@@ -136,58 +176,71 @@ const EditProfile = () => {
             <Text style={styles.profileName}>{name || "No name set"}</Text>
           </View>
 
-          <View style={styles.action}>
-            <FontAwesome name="user-o" size={20} />
-            <TextInput
-              placeholder="Full Name"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              value={name}
-              style={styles.textInput}
-              onChangeText={setName}
-            />
+          <View style={styles.inputContainer}>
+            <FontAwesome name="user-o" size={20} style={styles.icon} />
+            <View style={styles.inputWrapper}>
+              <ControlledPaperTextInput
+                control={control}
+                name="name"
+                label="Full Name"
+                style={styles.textInput}
+                mode="flat"
+                autoCorrect={false}
+                textColor="black"
+                activeUnderlineColor="black"
+              />
+            </View>
           </View>
 
-          <View style={styles.action}>
-            <FontAwesome name="envelope-o" size={20} />
-            <TextInput
-              placeholder="Email (read-only)"
-              placeholderTextColor="#666666"
-              keyboardType="email-address"
-              autoCorrect={false}
-              value={email}
-              style={[styles.textInput, styles.readOnlyInput]}
-              editable={false}
-            />
+          <View style={styles.inputContainer}>
+            <FontAwesome name="envelope-o" size={20} style={styles.icon} />
+            <View style={styles.inputWrapper}>
+              <ControlledPaperEmailInput
+                control={control}
+                name="email"
+                label="Email (read-only)"
+                style={[styles.textInput, styles.readOnlyInput]}
+                mode="flat"
+                disabled
+                editable={false}
+              />
+            </View>
           </View>
 
-          <View style={styles.action}>
-            <FontAwesome name="at" size={20} />
-            <TextInput
-              placeholder="Username"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              autoCapitalize="none"
-              value={username}
-              style={styles.textInput}
-              onChangeText={setUsername}
-            />
+          <View style={styles.inputContainer}>
+            <FontAwesome name="at" size={20} style={styles.icon} />
+            <View style={styles.inputWrapper}>
+              <ControlledPaperTextInput
+                control={control}
+                name="username"
+                label="Username"
+                style={styles.textInput}
+                mode="flat"
+                autoCorrect={false}
+                autoCapitalize="none"
+                textColor="black"
+                activeUnderlineColor="black"
+              />
+            </View>
           </View>
 
-          <View style={styles.action}>
-            <FontAwesome name="plane" size={20} />
-            <TextInput
-              placeholder="Total BASE jumps"
-              placeholderTextColor="#666666"
-              autoCorrect={false}
-              value={jumpNumber}
-              style={styles.textInput}
-              keyboardType="numeric"
-              onChangeText={setJumpNumber}
-            />
+          <View style={styles.inputContainer}>
+            <FontAwesome name="plane" size={20} style={styles.icon} />
+            <View style={styles.inputWrapper}>
+              <ControlledPaperTextInput
+                control={control}
+                name="jump_number"
+                label="Total BASE jumps"
+                style={styles.textInput}
+                mode="flat"
+                keyboardType="numeric"
+                textColor="black"
+                activeUnderlineColor="black"
+              />
+            </View>
           </View>
 
-          {updateProfileMutation.isPending ? (
+          {updateProfileMutation.isPending || isSubmitting ? (
             <View style={styles.loadingButtonContainer}>
               <ActivityIndicator size="large" color="#00ABF0" />
               <Text style={styles.loadingText}>Updating profile...</Text>
@@ -195,13 +248,14 @@ const EditProfile = () => {
           ) : (
             <TouchableOpacity
               style={styles.commandButton}
-              onPress={handleSubmit}
+              onPress={onSubmit}
+              disabled={isSubmitting}
             >
               <Text style={styles.panelButtonTitle}>Update Profile</Text>
             </TouchableOpacity>
           )}
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <APIErrorHandler
         error={error || profileError}
         onDismiss={() => setError(null)}
@@ -216,6 +270,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
   },
   loadingContainer: {
     justifyContent: "center",
@@ -264,21 +324,22 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "white",
   },
-  action: {
+  inputContainer: {
     flexDirection: "row",
-    marginTop: 15,
-    marginBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f2f2f2",
-    paddingBottom: 10,
     alignItems: "center",
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  icon: {
+    marginTop: 10,
+    marginRight: 10,
+    color: "#666",
+  },
+  inputWrapper: {
+    flex: 1,
   },
   textInput: {
-    flex: 1,
-    marginTop: Platform.OS === "ios" ? 0 : -12,
-    paddingLeft: 15,
-    color: "#05375a",
-    fontSize: 16,
+    backgroundColor: "#fff",
   },
   readOnlyInput: {
     color: "#999",

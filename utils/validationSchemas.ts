@@ -116,14 +116,26 @@ export const editProfileSchema = yup.object({
     .notRequired(),
   jump_number: yup
     .number()
+    .transform((value, originalValue) => {
+      // Handle empty string or undefined
+      if (originalValue === "" || originalValue === undefined) return undefined;
+      // Transform string to number
+      return typeof originalValue === "string"
+        ? parseInt(originalValue, 10)
+        : value;
+    })
     .min(0, "Jump number cannot be negative")
-    .transform((value, originalValue) =>
-      typeof originalValue === "string" ? parseInt(originalValue, 10) : value,
-    )
     .notRequired(),
 });
 
-export type EditProfileFormData = yup.InferType<typeof editProfileSchema>;
+// Explicitly define the type with proper optional fields
+// Note: jump_number is string in the form (TextInput), but Yup transform converts it to number
+export type EditProfileFormData = {
+  name: string;
+  email: string;
+  username?: string;
+  jump_number?: string | number;
+};
 // // ============================================================================
 // ============================================================================
 // Location Submission Schemas
