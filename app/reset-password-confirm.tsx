@@ -1,7 +1,9 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Image,
   Keyboard,
@@ -10,17 +12,33 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, Text, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button, Text } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../components/APIErrorHandler";
+import { ControlledPaperSecureTextInput } from "../components/form";
 import { useKyClient } from "../services/kyClient";
+import {
+  type ResetPasswordConfirmFormData,
+  resetPasswordConfirmSchema,
+} from "../utils/validationSchemas";
 
 const ResetPasswordConfirm = () => {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [apiError, setApiError] = useState<any>(null);
   const [accessToken, setAccessToken] = useState<string>("");
   const [refreshToken, setRefreshToken] = useState<string>("");
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<ResetPasswordConfirmFormData>({
+    resolver: yupResolver(resetPasswordConfirmSchema),
+    mode: "onBlur",
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
   const params = useLocalSearchParams();
 
@@ -59,7 +77,7 @@ const ResetPasswordConfirm = () => {
 
     getInitialURL();
 
-    // Also listen for URL changes
+    // Listen for URL changes when app is already open
     const subscription = Linking.addEventListener("url", ({ url }) => {
       const hashParams = parseHashParams(url);
 
@@ -115,7 +133,7 @@ const ResetPasswordConfirm = () => {
     },
   });
 
-  const handlePasswordReset = async () => {
+  const onSubmit = handleSubmit((data) => {
     resetPasswordMutation.mutate({
       access_token: Array.isArray(access_token)
         ? access_token[0]
@@ -123,9 +141,9 @@ const ResetPasswordConfirm = () => {
       refresh_token: Array.isArray(refresh_token)
         ? refresh_token[0]
         : refresh_token,
-      new_password: newPassword,
+      new_password: data.newPassword,
     });
-  };
+  });
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -141,22 +159,22 @@ const ResetPasswordConfirm = () => {
           <Text style={styles.title}>Reset Your Password</Text>
           <Text style={styles.subtitle}>Enter your new password below</Text>
 
-          <TextInput
-            value={newPassword}
+          <ControlledPaperSecureTextInput
+            control={control}
+            name="newPassword"
+            label="New Password"
             style={styles.textInput}
-            placeholder="New Password"
-            secureTextEntry={true}
-            autoCapitalize="none"
-            onChangeText={(text) => setNewPassword(text)}
+            activeOutlineColor="black"
+            textColor="black"
           />
 
-          <TextInput
-            value={confirmPassword}
+          <ControlledPaperSecureTextInput
+            control={control}
+            name="confirmPassword"
+            label="Confirm New Password"
             style={styles.textInput}
-            placeholder="Confirm New Password"
-            secureTextEntry={true}
-            autoCapitalize="none"
-            onChangeText={(text) => setConfirmPassword(text)}
+            activeOutlineColor="black"
+            textColor="black"
           />
 
           {resetPasswordMutation.isPending ? (
@@ -169,7 +187,8 @@ const ResetPasswordConfirm = () => {
             <Button
               mode="contained"
               style={styles.resetButton}
-              onPress={handlePasswordReset}
+              onPress={onSubmit}
+              disabled={isSubmitting}
             >
               Reset Password
             </Button>
@@ -223,8 +242,11 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   textInput: {
-    marginBottom: 15,
-    backgroundColor: "#fff",
+    marginVertical: 5,
+    height: 50,
+    backgroundColor: "white",
+    borderRadius: 8,
+    padding: 10,
   },
   resetButton: {
     marginTop: 20,
