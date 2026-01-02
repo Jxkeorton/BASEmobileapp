@@ -19,7 +19,8 @@ export default () => {
           headerLeft: () => (
             <Button
               mode="contained-tonal"
-              buttonColor="white"
+              buttonColor="black"
+              textColor="white"
               onPress={() => router.back()}
             >
               Back

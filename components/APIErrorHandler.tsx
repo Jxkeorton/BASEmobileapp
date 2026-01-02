@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Snackbar } from "react-native-paper";
+import { useEffect } from "react";
+import Toast from "react-native-toast-message";
 import { ErrorResponse } from "../types/error-response";
 
 interface APIErrorHandlerProps {
@@ -19,53 +19,51 @@ function isErrorResponse(error: any): error is ErrorResponse {
 }
 
 const APIErrorHandler = ({ error, onDismiss }: APIErrorHandlerProps) => {
-  const [visible, setVisible] = useState(!!error);
-  const [message, setMessage] = useState<string>("");
-
   useEffect(() => {
     const handleError = async () => {
-      setVisible(!!error);
-
       if (!error) {
         return;
       }
 
+      let message = "An unexpected error occurred.";
+
       // Check if it's an ErrorResponse
       if (isErrorResponse(error)) {
-        setMessage(error.message);
-        return;
+        message = error.message;
+      }
+      // HTTPError from ky
+      else if (error.response && typeof error.response.json === "function") {
+        try {
+          const errorData = await error.response.json();
+          if (errorData.message) {
+            message = errorData.message;
+          }
+        } catch {
+          // If JSON parsing fails, use default message
+        }
+      }
+      // Generic error with message property
+      else if (error.message) {
+        message = error.message;
       }
 
-      // HTTPError from ky
-      if (error.response && typeof error.response.json === "function") {
-        const errorData = await error.response.json();
-        if (errorData.message) {
-          setMessage(errorData.message);
-        } else {
-          setMessage("An unexpected error occurred.");
-        }
-      } else {
-        setMessage("An unexpected error occurred.");
-      }
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: message,
+        visibilityTime: 4000,
+        position: "top",
+        topOffset: 60,
+      });
+
+      // Call onDismiss after showing toast
+      onDismiss?.();
     };
 
     handleError();
-  }, [error]);
+  }, [error, onDismiss]);
 
-  return (
-    <Snackbar
-      visible={visible}
-      onDismiss={() => {
-        setVisible(false);
-        onDismiss?.();
-      }}
-      duration={4000}
-      style={{ backgroundColor: "#d32f2f", zIndex: 9999 }}
-      wrapperStyle={{ top: 0, zIndex: 9999, elevation: 9999 }}
-    >
-      {message}
-    </Snackbar>
-  );
+  return null; // No UI needed, toast handles display
 };
 
 export default APIErrorHandler;

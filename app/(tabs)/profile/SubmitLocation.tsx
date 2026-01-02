@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider, Switch } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import { ControlledPaperTextInput } from "../../../components/form";
 import { useKyClient } from "../../../services/kyClient";
@@ -77,6 +78,12 @@ const SubmitLocation = () => {
     },
     onSuccess: () => {
       router.replace("/(tabs)/profile/Profile");
+      Toast.show({
+        type: "success",
+        text1: "Location submitted successfully",
+        position: "top",
+        visibilityTime: 0,
+      });
       reset();
       queryClient.invalidateQueries({ queryKey: ["submissions"] });
     },

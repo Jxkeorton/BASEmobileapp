@@ -254,6 +254,13 @@ const EditProfile = () => {
               <Text style={styles.panelButtonTitle}>Update Profile</Text>
             </TouchableOpacity>
           )}
+          <TouchableOpacity
+            style={styles.cancelButton}
+            onPress={() => router.replace("/(tabs)/profile/Profile")}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.panelButtonTitle}>Cancel</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
       <APIErrorHandler
@@ -316,6 +323,13 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     backgroundColor: "#00ABF0",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  cancelButton: {
+    padding: 15,
+    borderRadius: 10,
+    backgroundColor: "#FF0000",
     alignItems: "center",
     marginTop: 20,
   },
