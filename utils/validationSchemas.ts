@@ -148,9 +148,10 @@ const cliffAspectValues = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
 
 /**
  * Submit Location Form Schema
+ * Field names aligned with API expected values (SubmitLocationData)
  */
 export const submitLocationSchema = yup.object({
-  exitName: yup
+  name: yup
     .string()
     .required("Exit name is required")
     .max(200, "Exit name must be less than 200 characters")
@@ -182,26 +183,34 @@ export const submitLocationSchema = yup.object({
         );
       },
     ),
-  rockDrop: yup
+  rock_drop: yup
     .string()
     .required("Rock drop is required")
-    .matches(/^\d+(\.\d+)?$/, "Rock drop must be a valid number"),
-  total: yup
+    .test(
+      "is-valid-number",
+      "Rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    ),
+  total_height: yup
     .string()
-    .matches(/^\d+(\.\d+)?$/, "Total height must be a valid number")
+    .test(
+      "is-valid-number",
+      "Total height must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
     .notRequired(),
-  cliffAspect: yup
+  cliff_aspect: yup
     .string()
     .oneOf(
       [...cliffAspectValues, ""],
       "Cliff aspect must be one of: N, NE, E, SE, S, SW, W, NW",
     )
     .notRequired(),
-  anchor: yup
+  anchor_info: yup
     .string()
     .max(500, "Anchor info must be less than 500 characters")
     .notRequired(),
-  access: yup
+  access_info: yup
     .string()
     .max(1000, "Access info must be less than 1000 characters")
     .notRequired(),
@@ -209,12 +218,12 @@ export const submitLocationSchema = yup.object({
     .string()
     .max(1000, "Notes must be less than 1000 characters")
     .notRequired(),
-  openedBy: yup
+  opened_by_name: yup
     .string()
     .max(100, "Opened by must be less than 100 characters")
     .notRequired(),
-  openedDate: yup.string().notRequired(),
-  videoLink: yup.string().url("Video link must be a valid URL").notRequired(),
+  opened_date: yup.string().notRequired(),
+  video_link: yup.string().url("Video link must be a valid URL").notRequired(),
   selectedUnit: yup
     .string()
     .oneOf(["Meters", "Feet"])

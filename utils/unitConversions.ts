@@ -13,3 +13,10 @@ export const getHeightInPreferredUnit = (
     return `${heightInFeet} ft`;
   }
 };
+
+/**
+ * Convert height from user's input unit to feet for API submission
+ */
+export const convertToFeet = (value: number, isMetric: boolean): number => {
+  return isMetric ? Math.round(value * 3.28084) : Math.round(value);
+};
