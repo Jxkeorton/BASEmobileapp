@@ -35,8 +35,9 @@ export default () => {
           headerLeft: () => (
             <Button
               mode="contained-tonal"
-              buttonColor="white"
-              onPress={() => router.navigate("/profile/Profile")}
+              buttonColor="black"
+              textColor="white"
+              onPress={() => router.replace("/profile/Profile")}
             >
               Cancel
             </Button>
@@ -50,8 +51,9 @@ export default () => {
           headerLeft: () => (
             <Button
               mode="contained-tonal"
-              buttonColor="white"
-              onPress={() => router.navigate("/profile/Profile")}
+              buttonColor="black"
+              textColor="white"
+              onPress={() => router.replace("/profile/Profile")}
             >
               Cancel
             </Button>

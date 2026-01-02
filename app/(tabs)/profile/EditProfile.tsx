@@ -139,7 +139,7 @@ const EditProfile = () => {
 
     // Only submit if there are changes
     if (Object.keys(profileData).length === 0) {
-      router.back();
+      router.replace("/(tabs)/profile/Profile");
       return;
     }
 
