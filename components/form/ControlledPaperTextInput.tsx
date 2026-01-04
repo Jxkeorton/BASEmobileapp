@@ -42,7 +42,7 @@ export function ControlledPaperTextInput<T extends FieldValues>({
         field: { onChange, onBlur, value },
         fieldState: { error },
       }) => (
-        <View style={styles.container}>
+        <View>
           <PaperTextInput
             label={label}
             value={value}

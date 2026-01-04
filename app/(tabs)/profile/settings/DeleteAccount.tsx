@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { router } from "expo-router";
 import { useState } from "react";
 import {
   Keyboard,
@@ -55,7 +54,6 @@ const DeleteAccount = () => {
       });
 
       await signOut();
-      router.replace("/(auth)/Login");
     },
     onError: (error: any) => {
       setApiError(error);

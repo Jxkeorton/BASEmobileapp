@@ -19,10 +19,10 @@ export default () => {
           headerRight: () => (
             <Button
               mode="contained-tonal"
-              buttonColor="white"
+              buttonColor="black"
               onPress={() => router.navigate("/profile/settings")}
             >
-              <Icon name="cog" size={20} color="#000" />
+              <Icon name="cog" size={20} color="#fff" />
             </Button>
           ),
           headerTitle: "",
@@ -32,15 +32,6 @@ export default () => {
         name="EditProfile"
         options={{
           title: "Edit Profile",
-          headerLeft: () => (
-            <Button
-              mode="contained-tonal"
-              buttonColor="white"
-              onPress={() => router.navigate("/profile/Profile")}
-            >
-              Cancel
-            </Button>
-          ),
         }}
       />
       <Stack.Screen
@@ -50,8 +41,9 @@ export default () => {
           headerLeft: () => (
             <Button
               mode="contained-tonal"
-              buttonColor="white"
-              onPress={() => router.navigate("/profile/Profile")}
+              buttonColor="black"
+              textColor="white"
+              onPress={() => router.replace("/profile/Profile")}
             >
               Cancel
             </Button>

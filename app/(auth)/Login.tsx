@@ -1,7 +1,9 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Image,
   Keyboard,
@@ -10,29 +12,38 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button } from "react-native-paper";
 import APIErrorHandler from "../../components/APIErrorHandler";
+import {
+  ControlledPaperEmailInput,
+  ControlledPaperSecureTextInput,
+} from "../../components/form";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
+import { type LoginFormData, loginSchema } from "../../utils/validationSchemas";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Login() {
   const client = useKyClient();
+  const { updateUser, loading } = useAuth();
   const [apiError, setApiError] = useState<any>(null);
 
-  const { updateUser, loading } = useAuth();
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(loginSchema),
+    mode: "onBlur",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   const signInMutation = useMutation({
-    mutationFn: async ({
-      email,
-      password,
-    }: {
-      email: string;
-      password: string;
-    }) => {
+    mutationFn: async (data: LoginFormData) => {
       const result = await client.POST("/signin", {
-        body: { email, password },
+        body: { email: data.email, password: data.password },
       });
 
       return result;
@@ -62,79 +73,86 @@ const Login = () => {
     },
   });
 
-  const handleSignIn = async () => {
-    signInMutation.mutate({ email, password });
-  };
+  const onSubmit = handleSubmit((data) => {
+    signInMutation.mutate(data);
+  });
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <View style={styles.imageContainer}>
-          <Image
-            source={require("../../assets/bitmap.png")}
-            style={styles.image}
+    <>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <APIErrorHandler
+            error={apiError}
+            onDismiss={() => setApiError(null)}
           />
-        </View>
-        <KeyboardAvoidingView behavior="padding">
-          <TextInput
-            value={email}
-            style={styles.textInput}
-            placeholder="Email"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            onChangeText={(text) => setEmail(text.trim())}
-          />
-          <TextInput
-            secureTextEntry={true}
-            value={password}
-            style={styles.textInput}
-            placeholder="Password"
-            autoCapitalize="none"
-            onChangeText={(text) => setPassword(text)}
-          />
+          <View style={styles.imageContainer}>
+            <Image
+              source={require("../../assets/bitmap.png")}
+              style={styles.image}
+            />
+          </View>
+          <KeyboardAvoidingView behavior="padding">
+            <ControlledPaperEmailInput
+              control={control}
+              name="email"
+              label="Email"
+              style={styles.textInput}
+              activeOutlineColor="black"
+              textColor="black"
+            />
 
-          {loading ? (
-            <ActivityIndicator size="small" color="#007AFF" />
-          ) : (
-            <>
-              <Button
-                mode="contained"
-                style={styles.loginButton}
-                onPress={handleSignIn}
-              >
-                Login
-              </Button>
-              <Button
-                textColor="#007AFF"
-                onPress={() => router.replace("Register")}
-                style={styles.button}
-              >
-                Sign Up here!
-              </Button>
-              <Button
-                textColor="#007AFF"
-                onPress={() => router.replace("Reset")}
-                style={styles.button}
-              >
-                Forgot Password
-              </Button>
-            </>
-          )}
-          <Button
-            textColor="#007AFF"
-            style={styles.privacyPolicyLink}
-            onPress={() => {
-              router.navigate("/AuthPrivacyPolicy");
-            }}
-          >
-            Privacy Policy
-          </Button>
-        </KeyboardAvoidingView>
-        <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
-      </View>
-    </TouchableWithoutFeedback>
+            <ControlledPaperSecureTextInput
+              control={control}
+              name="password"
+              label="Password"
+              style={styles.textInput}
+              activeOutlineColor="black"
+              textColor="black"
+            />
+
+            {loading ? (
+              <ActivityIndicator size="small" color="#007AFF" />
+            ) : (
+              <>
+                <Button
+                  mode="contained"
+                  onPress={onSubmit}
+                  disabled={isSubmitting}
+                  style={styles.loginButton}
+                >
+                  Login
+                </Button>
+                <Button
+                  textColor="#007AFF"
+                  onPress={() => router.replace("Register")}
+                  style={styles.button}
+                >
+                  Sign Up here!
+                </Button>
+                <Button
+                  textColor="#007AFF"
+                  onPress={() => router.replace("Reset")}
+                  style={styles.button}
+                >
+                  Forgot Password
+                </Button>
+              </>
+            )}
+            <Button
+              textColor="#007AFF"
+              style={styles.privacyPolicyLink}
+              onPress={() => {
+                router.navigate("/AuthPrivacyPolicy");
+              }}
+            >
+              Privacy Policy
+            </Button>
+          </KeyboardAvoidingView>
+        </View>
+      </TouchableWithoutFeedback>
+    </>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -176,5 +194,3 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
 });
-
-export default Login;

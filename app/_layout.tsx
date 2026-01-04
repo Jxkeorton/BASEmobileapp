@@ -2,10 +2,19 @@ import { Slot } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import {
+  ErrorToast,
+  SuccessToast,
+} from "../components/toastComponents/ToastComponents";
 import { AuthProvider } from "../providers/AuthProvider";
 import { QueryProvider } from "../providers/QueryProvider";
 import { RevenueCatProvider } from "../providers/RevenueCatProvider";
 import { UnitSystemProvider } from "../providers/UnitSystemProvider";
+
+export const toastConfig = {
+  success: (props: any) => <SuccessToast {...props} />,
+  error: (props: any) => <ErrorToast {...props} />,
+};
 
 export default function Layout() {
   return (
@@ -16,7 +25,7 @@ export default function Layout() {
             <AuthProvider>
               <RevenueCatProvider>
                 <Slot />
-                <Toast />
+                <Toast config={toastConfig} />
               </RevenueCatProvider>
             </AuthProvider>
           </UnitSystemProvider>

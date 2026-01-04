@@ -1,8 +1,8 @@
-import { z } from "zod";
+import * as yup from "yup";
 
 /**
  * Validation Schemas for Forms
- * Using Zod for runtime type-safe validation with react-hook-form
+ * Using Yup for runtime type-safe validation with react-hook-form
  */
 
 // ============================================================================
@@ -12,75 +12,76 @@ import { z } from "zod";
 /**
  * Login Form Schema
  */
-export const loginSchema = z.object({
-  email: z
+export const loginSchema = yup.object({
+  email: yup
     .string()
-    .min(1, "Email is required")
     .email("Please enter a valid email address")
     .trim()
-    .toLowerCase(),
-  password: z.string().min(1, "Password is required"),
+    .lowercase()
+    .required("Email is required"),
+  password: yup.string().required("Password is required"),
 });
 
-export type LoginFormData = z.infer<typeof loginSchema>;
+export type LoginFormData = yup.InferType<typeof loginSchema>;
 
 /**
  * Registration Form Schema
  */
-export const registerSchema = z.object({
-  name: z
+export const registerSchema = yup.object({
+  name: yup
     .string()
-    .min(1, "Name is required")
+    .required("Name is required")
     .max(100, "Name must be less than 100 characters")
     .trim(),
-  email: z
+  email: yup
     .string()
-    .min(1, "Email is required")
     .email("Please enter a valid email address")
     .trim()
-    .toLowerCase(),
-  password: z
+    .lowercase()
+    .required("Email is required"),
+  password: yup
     .string()
+    .required("Password is required")
     .min(6, "Password must be at least 6 characters")
     .max(100, "Password must be less than 100 characters"),
-  termsAccepted: z
+  termsAccepted: yup
     .boolean()
-    .refine((val) => val === true, "You must accept the terms and conditions"),
+    .oneOf([true], "You must accept the terms and conditions")
+    .required(),
 });
 
-export type RegisterFormData = z.infer<typeof registerSchema>;
+export type RegisterFormData = yup.InferType<typeof registerSchema>;
 
 /**
  * Reset Password Form Schema
  */
-export const resetPasswordSchema = z.object({
-  email: z
+export const resetPasswordSchema = yup.object({
+  email: yup
     .string()
-    .min(1, "Email is required")
     .email("Please enter a valid email address")
     .trim()
-    .toLowerCase(),
+    .lowercase()
+    .required("Email is required"),
 });
 
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+export type ResetPasswordFormData = yup.InferType<typeof resetPasswordSchema>;
 
 /**
  * Reset Password Confirmation Form Schema
  */
-export const resetPasswordConfirmSchema = z
-  .object({
-    newPassword: z
-      .string()
-      .min(6, "Password must be at least 6 characters")
-      .max(100, "Password must be less than 100 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-  })
-  .refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+export const resetPasswordConfirmSchema = yup.object({
+  newPassword: yup
+    .string()
+    .required("Password is required")
+    .min(6, "Password must be at least 6 characters")
+    .max(100, "Password must be less than 100 characters"),
+  confirmPassword: yup
+    .string()
+    .required("Please confirm your password")
+    .oneOf([yup.ref("newPassword")], "Passwords do not match"),
+});
 
-export type ResetPasswordConfirmFormData = z.infer<
+export type ResetPasswordConfirmFormData = yup.InferType<
   typeof resetPasswordConfirmSchema
 >;
 
@@ -91,38 +92,51 @@ export type ResetPasswordConfirmFormData = z.infer<
 /**
  * Edit Profile Form Schema
  */
-export const editProfileSchema = z.object({
-  name: z
+export const editProfileSchema = yup.object({
+  name: yup
     .string()
-    .min(1, "Name is required")
+    .required("Name is required")
     .max(100, "Name must be less than 100 characters")
     .trim(),
-  email: z
+  email: yup
     .string()
     .email("Please enter a valid email address")
     .trim()
-    .toLowerCase(),
-  username: z
+    .lowercase()
+    .required("Email is required"),
+  username: yup
     .string()
     .min(3, "Username must be at least 3 characters")
     .max(30, "Username must be less than 30 characters")
-    .regex(
+    .matches(
       /^[a-zA-Z0-9_-]+$/,
       "Username can only contain letters, numbers, underscores, and hyphens",
     )
     .trim()
-    .optional()
-    .or(z.literal("")),
-  jump_number: z
-    .string()
-    .regex(/^\d+$/, "Jump number must be a valid number")
-    .transform((val) => parseInt(val, 10))
-    .pipe(z.number().min(0, "Jump number cannot be negative"))
-    .or(z.number().min(0)),
+    .notRequired(),
+  jump_number: yup
+    .number()
+    .transform((value, originalValue) => {
+      // Handle empty string or undefined
+      if (originalValue === "" || originalValue === undefined) return undefined;
+      // Transform string to number
+      return typeof originalValue === "string"
+        ? parseInt(originalValue, 10)
+        : value;
+    })
+    .min(0, "Jump number cannot be negative")
+    .notRequired(),
 });
 
-export type EditProfileFormData = z.infer<typeof editProfileSchema>;
-
+// Explicitly define the type with proper optional fields
+// Note: jump_number is string in the form (TextInput), but Yup transform converts it to number
+export type EditProfileFormData = {
+  name: string;
+  email: string;
+  username?: string;
+  jump_number?: string | number;
+};
+// // ============================================================================
 // ============================================================================
 // Location Submission Schemas
 // ============================================================================
@@ -134,23 +148,27 @@ const cliffAspectValues = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] as const;
 
 /**
  * Submit Location Form Schema
+ * Field names aligned with API expected values (SubmitLocationData)
  */
-export const submitLocationSchema = z.object({
-  exitName: z
+export const submitLocationSchema = yup.object({
+  name: yup
     .string()
-    .min(1, "Exit name is required")
+    .required("Exit name is required")
     .max(200, "Exit name must be less than 200 characters")
     .trim(),
-  country: z
+  country: yup
     .string()
     .max(100, "Country name must be less than 100 characters")
     .trim()
-    .optional(),
-  coordinates: z
+    .notRequired(),
+  coordinates: yup
     .string()
-    .min(1, "Coordinates are required")
-    .refine(
+    .required("Coordinates are required")
+    .test(
+      "is-valid-coordinates",
+      "Invalid coordinates. Use format: latitude, longitude (e.g., 60.140582, -2.111822)",
       (val) => {
+        if (!val) return false;
         const coords = val.replace(/[^\d.,-]/g, "").split(",");
         if (coords.length !== 2) return false;
         const lat = coords[0] ? parseFloat(coords[0].trim()) : NaN;
@@ -164,102 +182,193 @@ export const submitLocationSchema = z.object({
           lng <= 180
         );
       },
-      {
-        message:
-          "Invalid coordinates. Use format: latitude, longitude (e.g., 60.140582, -2.111822)",
-      },
     ),
-  rockDrop: z
+  rock_drop: yup
     .string()
-    .min(1, "Rock drop is required")
-    .regex(/^\d+(\.\d+)?$/, "Rock drop must be a valid number"),
-  total: z
+    .required("Rock drop is required")
+    .test(
+      "is-valid-number",
+      "Rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    ),
+  total_height: yup
     .string()
-    .regex(/^\d+(\.\d+)?$/, "Total height must be a valid number")
-    .optional()
-    .or(z.literal("")),
-  cliffAspect: z
-    .enum(cliffAspectValues, {
-      message: "Cliff aspect must be one of: N, NE, E, SE, S, SW, W, NW",
-    })
-    .optional()
-    .or(z.literal("")),
-  anchor: z
+    .test(
+      "is-valid-number",
+      "Total height must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .notRequired(),
+  cliff_aspect: yup
+    .string()
+    .oneOf(
+      [...cliffAspectValues, ""],
+      "Cliff aspect must be one of: N, NE, E, SE, S, SW, W, NW",
+    )
+    .notRequired(),
+  anchor_info: yup
     .string()
     .max(500, "Anchor info must be less than 500 characters")
-    .optional(),
-  access: z
+    .notRequired(),
+  access_info: yup
     .string()
     .max(1000, "Access info must be less than 1000 characters")
-    .optional(),
-  notes: z
+    .notRequired(),
+  notes: yup
     .string()
     .max(1000, "Notes must be less than 1000 characters")
-    .optional(),
-  openedBy: z
+    .notRequired(),
+  opened_by_name: yup
     .string()
     .max(100, "Opened by must be less than 100 characters")
-    .optional(),
-  openedDate: z.string().optional(),
-  videoLink: z
+    .notRequired(),
+  opened_date: yup.string().notRequired(),
+  video_link: yup.string().url("Video link must be a valid URL").notRequired(),
+  selectedUnit: yup
     .string()
-    .url("Video link must be a valid URL")
-    .optional()
-    .or(z.literal("")),
-  selectedUnit: z.enum(["Meters", "Feet"]),
+    .oneOf(["Meters", "Feet"])
+    .required("Unit selection is required"),
 });
 
-export type SubmitLocationFormData = z.infer<typeof submitLocationSchema>;
-
+export type SubmitLocationFormData = yup.InferType<typeof submitLocationSchema>;
 /**
  * Submit Details Modal Schema (similar to location but for updates)
  */
-export const submitDetailsSchema = z.object({
-  newLocationName: z
+export const submitDetailsSchema = yup.object({
+  newLocationName: yup
     .string()
     .max(200, "Location name must be less than 200 characters")
     .trim()
-    .optional(),
-  exitType: z
+    .notRequired(),
+  exitType: yup
     .string()
     .max(50, "Exit type must be less than 50 characters")
-    .optional(),
-  rockDropHeight: z
+    .notRequired(),
+  rockDropHeight: yup
     .string()
-    .regex(/^\d+(\.\d+)?$/, "Rock drop must be a valid number")
-    .optional()
-    .or(z.literal("")),
-  totalHeight: z
+    .test(
+      "is-valid-number",
+      "Rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .notRequired(),
+  totalHeight: yup
     .string()
-    .regex(/^\d+(\.\d+)?$/, "Total height must be a valid number")
-    .optional()
-    .or(z.literal("")),
-  cliffAspect: z
-    .enum(cliffAspectValues, {
-      message: "Cliff aspect must be one of: N, NE, E, SE, S, SW, W, NW",
-    })
-    .optional()
-    .or(z.literal("")),
-  anchorInfo: z
+    .test(
+      "is-valid-number",
+      "Total height must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .notRequired(),
+  cliffAspect: yup
+    .string()
+    .oneOf(
+      [...cliffAspectValues, ""],
+      "Cliff aspect must be one of: N, NE, E, SE, S, SW, W, NW",
+    )
+    .notRequired(),
+  anchorInfo: yup
     .string()
     .max(500, "Anchor info must be less than 500 characters")
-    .optional(),
-  accessInfo: z
+    .notRequired(),
+  accessInfo: yup
     .string()
     .max(1000, "Access info must be less than 1000 characters")
-    .optional(),
-  notes: z
+    .notRequired(),
+  notes: yup
     .string()
     .max(1000, "Notes must be less than 1000 characters")
-    .optional(),
-  openedByName: z
+    .notRequired(),
+  openedByName: yup
     .string()
     .max(100, "Opened by must be less than 100 characters")
-    .optional(),
-  openedDate: z.string().optional(),
+    .notRequired(),
+  openedDate: yup.string().notRequired(),
 });
 
-export type SubmitDetailsFormData = z.infer<typeof submitDetailsSchema>;
+export type SubmitDetailsFormData = yup.InferType<typeof submitDetailsSchema>;
+
+// ============================================================================
+// Logbook Schemas
+// ============================================================================
+
+const exitTypes = ["Building", "Antenna", "Span", "Earth"] as const;
+
+/**
+ * Logbook Jump Form Schema
+ */
+export const logbookJumpSchema = yup.object({
+  location_name: yup
+    .string()
+    .required("Location name is required")
+    .max(200, "Location name must be less than 200 characters")
+    .trim(),
+  exit_type: yup
+    .string()
+    .oneOf(
+      exitTypes,
+      "Exit type must be one of: Building, Antenna, Span, Earth",
+    )
+    .required("Exit type is required"),
+  delay_seconds: yup
+    .number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue === undefined) return 0;
+      return typeof originalValue === "string"
+        ? parseFloat(originalValue)
+        : value;
+    })
+    .min(0, "Delay cannot be negative")
+    .notRequired(),
+  details: yup
+    .string()
+    .max(1000, "Details must be less than 1000 characters")
+    .notRequired(),
+  jump_date: yup
+    .string()
+    .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in format YYYY-MM-DD")
+    .notRequired(),
+});
+
+export type LogbookJumpFormData = yup.InferType<typeof logbookJumpSchema>;
+
+/**
+ * Filter Modal Schema
+ */
+export const filterSchema = yup.object({
+  minRockDrop: yup
+    .string()
+    .test(
+      "is-valid-number",
+      "Min rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .notRequired(),
+  maxRockDrop: yup
+    .string()
+    .test(
+      "is-valid-number",
+      "Max rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .test(
+      "max-greater-than-min",
+      "Max rock drop must be greater than min rock drop",
+      function (value) {
+        const { minRockDrop } = this.parent;
+        if (!value || !minRockDrop) return true;
+        return parseFloat(value) >= parseFloat(minRockDrop);
+      },
+    )
+    .notRequired(),
+  unknownRockdrop: yup.boolean().notRequired(),
+});
+
+export type FilterFormData = {
+  minRockDrop?: string;
+  maxRockDrop?: string;
+  unknownRockdrop?: boolean;
+};
 
 // ============================================================================
 // Helper Functions

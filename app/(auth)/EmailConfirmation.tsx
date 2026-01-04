@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "react-native-paper";
 import Toast from "react-native-toast-message";
@@ -11,6 +11,14 @@ const EmailConfirmation = () => {
   const { email } = useLocalSearchParams();
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
 
   const resendConfirmationMutation = useMutation({
     mutationFn: async ({ email }: { email: string }) => {
@@ -22,6 +30,7 @@ const EmailConfirmation = () => {
     },
     onSuccess: async (response) => {
       if (response.response.status === 200) {
+        setCountdown(60);
         Toast.show({
           type: "success",
           text1: "Email Sent",
@@ -56,9 +65,11 @@ const EmailConfirmation = () => {
         onPress={resendConfirmation}
         loading={resendConfirmationMutation.isPending}
         style={styles.resendButton}
-        disabled={!email}
+        disabled={!email || countdown > 0}
       >
-        Resend Confirmation Email
+        {countdown > 0
+          ? `Resend in ${countdown}s`
+          : "Resend Confirmation Email"}
       </Button>
 
       <Button

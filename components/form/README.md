@@ -12,12 +12,12 @@ Generic text input component for **standard React Native TextInput**. For Materi
 
 ```tsx
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { yupResolver } from "@hookform/resolvers/zod";
 import { ControlledTextInput } from "@/components/form";
 
 const MyForm = () => {
   const { control, handleSubmit } = useForm({
-    resolver: zodResolver(mySchema),
+    resolver: yupResolver(mySchema),
   });
 
   return (
@@ -198,7 +198,7 @@ Displays validation error messages with consistent styling.
 
 ```tsx
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { yupResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { View, StyleSheet } from "react-native";
 import { Button } from "react-native-paper";
@@ -217,7 +217,7 @@ const RegisterForm = () => {
     formState: { isSubmitting },
     reset,
   } = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: yupResolver(registerSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -281,7 +281,7 @@ const RegisterForm = () => {
 
 ```tsx
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { yupResolver } from "@hookform/resolvers/zod";
 import { View } from "react-native";
 import { Button } from "react-native-paper";
 import {
@@ -293,7 +293,7 @@ import { loginSchema, LoginFormData } from "@/utils/validationSchemas";
 
 const PaperLoginForm = () => {
   const { control, handleSubmit } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    resolver: yupResolver(loginSchema),
   });
 
   const onSubmit = handleSubmit((data) => {

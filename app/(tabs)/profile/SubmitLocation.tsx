@@ -1,46 +1,67 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
-  Keyboard,
   KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider, Switch } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../../components/APIErrorHandler";
+import { ControlledPaperTextInput } from "../../../components/form";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
+import { convertToFeet } from "../../../utils/unitConversions";
+import {
+  parseCoordinates,
+  submitLocationSchema,
+  type SubmitLocationFormData,
+} from "../../../utils/validationSchemas";
 
 export type SubmitLocationData = NonNullable<
   paths["/locations/submissions"]["post"]["requestBody"]
 >["content"]["application/json"];
 
 const SubmitLocation = () => {
-  const [exitName, setExitName] = useState("");
-  const [rockDrop, setRockDrop] = useState("");
-  const [total, setTotal] = useState("");
-  const [anchor, setAnchor] = useState("");
-  const [access, setAccess] = useState("");
-  const [notes, setNotes] = useState("");
-  const [coordinates, setCoordinates] = useState("");
-  const [cliffAspect, setCliffAspect] = useState("");
-  const [videoLink, setVideoLink] = useState("");
-  const [openedBy, setOpenedBy] = useState("");
-  const [openedDate, setOpenedDate] = useState("");
-  const [country, setCountry] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState<"Meters" | "Feet">("Meters");
   const [error, setError] = useState<any>(null);
-
   const queryClient = useQueryClient();
   const client = useKyClient();
 
-  // TODO: add react form for better form handling and validation
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<SubmitLocationFormData>({
+    resolver: yupResolver(submitLocationSchema) as any,
+    mode: "onBlur",
+    defaultValues: {
+      name: "",
+      country: "",
+      coordinates: "",
+      rock_drop: "",
+      total_height: "",
+      cliff_aspect: "",
+      anchor_info: "",
+      access_info: "",
+      notes: "",
+      opened_by_name: "",
+      opened_date: "",
+      video_link: "",
+      selectedUnit: "Meters",
+    },
+  });
+
+  const selectedUnit = watch("selectedUnit");
 
   const submitLocationMutation = useMutation({
     mutationFn: async (locationData: SubmitLocationData) => {
@@ -57,10 +78,13 @@ const SubmitLocation = () => {
     },
     onSuccess: () => {
       router.replace("/(tabs)/profile/Profile");
-
-      // Clear form
-      clearForm();
-
+      Toast.show({
+        type: "success",
+        text1: "Location submitted successfully",
+        position: "top",
+        visibilityTime: 0,
+      });
+      reset();
       queryClient.invalidateQueries({ queryKey: ["submissions"] });
     },
     onError: (error: any) => {
@@ -68,46 +92,8 @@ const SubmitLocation = () => {
     },
   });
 
-  const clearForm = () => {
-    setExitName("");
-    setRockDrop("");
-    setTotal("");
-    setAnchor("");
-    setAccess("");
-    setNotes("");
-    setCoordinates("");
-    setCliffAspect("");
-    setVideoLink("");
-    setOpenedBy("");
-    setOpenedDate("");
-    setCountry("");
-  };
-
-  const parseCoordinates = (coordsString: string) => {
-    if (!coordsString) return null;
-
-    // Handle various coordinate formats
-    const coords = coordsString.replace(/[^\d.,-]/g, "").split(",");
-    if (coords.length !== 2) return null;
-
-    const lat = coords[0] ? parseFloat(coords[0].trim()) : NaN;
-    const lng = coords[1] ? parseFloat(coords[1].trim()) : NaN;
-
-    if (isNaN(lat) || isNaN(lng)) return null;
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
-
-    return { latitude: lat, longitude: lng };
-  };
-
-  const convertHeight = (value: string, unit: "Meters" | "Feet") => {
-    const numValue = parseFloat(value);
-    return unit === "Meters"
-      ? Math.round(numValue * 3.28084)
-      : Math.round(numValue);
-  };
-
-  const handleSubmit = async () => {
-    const parsedCoords = parseCoordinates(coordinates);
+  const handleFormSubmit = handleSubmit(async (data) => {
+    const parsedCoords = parseCoordinates(data.coordinates);
     if (!parsedCoords) {
       setError({
         message:
@@ -116,176 +102,223 @@ const SubmitLocation = () => {
       return;
     }
 
+    const isMetric = data.selectedUnit === "Meters";
+
+    const optionalFields: Partial<SubmitLocationData> = {};
+    if (data.country) optionalFields.country = data.country.trim();
+    if (data.total_height) {
+      optionalFields.total_height_ft = convertToFeet(
+        parseFloat(data.total_height),
+        isMetric,
+      );
+    }
+    if (data.cliff_aspect)
+      optionalFields.cliff_aspect = data.cliff_aspect.trim();
+    if (data.anchor_info) optionalFields.anchor_info = data.anchor_info.trim();
+    if (data.access_info) optionalFields.access_info = data.access_info.trim();
+    if (data.notes) optionalFields.notes = data.notes.trim();
+    if (data.opened_by_name)
+      optionalFields.opened_by_name = data.opened_by_name.trim();
+    if (data.opened_date) optionalFields.opened_date = data.opened_date.trim();
+    if (data.video_link) optionalFields.video_link = data.video_link.trim();
+
     const locationData = {
       submission_type: "new",
-      name: exitName.trim(),
-      country: country.trim() || "",
+      name: data.name.trim(),
       latitude: parsedCoords.latitude,
       longitude: parsedCoords.longitude,
-      rock_drop_ft: convertHeight(rockDrop, selectedUnit),
-      // Only include optional fields if they have values
-      ...(total && { total_height_ft: convertHeight(total, selectedUnit) }),
-      ...(cliffAspect && { cliff_aspect: cliffAspect.trim() }),
-      ...(anchor && { anchor_info: anchor.trim() }),
-      ...(access && { access_info: access.trim() }),
-      ...(notes && { notes: notes.trim() }),
-      ...(openedBy && { opened_by_name: openedBy.trim() }),
-      ...(openedDate && { opened_date: openedDate.trim() }),
-      ...(videoLink && { video_link: videoLink.trim() }),
+      rock_drop_ft: convertToFeet(parseFloat(data.rock_drop), isMetric),
+      ...optionalFields,
     } satisfies SubmitLocationData;
 
     await submitLocationMutation.mutateAsync(locationData);
-  };
+  });
 
   return (
     <PaperProvider>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView>
-          <View style={styles.container}>
-            <KeyboardAvoidingView behavior="padding">
-              <Text style={styles.instructionText}>
-                Fields marked with * must be filled in
-              </Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.container}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.instructionText}>
+            Fields marked with * must be filled in
+          </Text>
 
-              <TextInput
-                value={exitName}
-                style={styles.textInput}
-                placeholder="Exit Name *"
-                autoCapitalize="words"
-                onChangeText={setExitName}
-              />
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchText}>
+              <Text style={styles.bold}>Unit: </Text>
+              {selectedUnit}
+            </Text>
+            <Switch
+              value={selectedUnit === "Feet"}
+              color="#00ABF0"
+              onValueChange={(value) =>
+                setValue("selectedUnit", value ? "Feet" : "Meters")
+              }
+            />
+          </View>
 
-              <TextInput
-                value={country}
-                style={styles.textInput}
-                placeholder="Country"
-                autoCapitalize="words"
-                onChangeText={setCountry}
-              />
+          <ControlledPaperTextInput
+            control={control}
+            name="name"
+            label="Exit Name *"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="words"
+            textColor="black"
+            activeOutlineColor="black"
+          />
 
-              <TextInput
-                value={coordinates}
-                style={styles.textInput}
-                placeholder="Exact Coordinates * (lat, lng)"
-                autoCapitalize="none"
-                onChangeText={setCoordinates}
-              />
+          <ControlledPaperTextInput
+            control={control}
+            name="coordinates"
+            label="Exact Coordinates * (lat, lng)"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="none"
+            textColor="black"
+            activeOutlineColor="black"
+          />
 
-              <View style={styles.switchContainer}>
-                <Text style={styles.switchText}>
-                  <Text style={styles.bold}>Unit: </Text>
-                  {selectedUnit}
-                </Text>
-                <Switch
-                  value={selectedUnit === "Feet"}
-                  onValueChange={() =>
-                    setSelectedUnit(
-                      selectedUnit === "Meters" ? "Feet" : "Meters",
-                    )
-                  }
-                />
+          <ControlledPaperTextInput
+            control={control}
+            name="rock_drop"
+            label={`Rock Drop * (${selectedUnit})`}
+            style={styles.textInput}
+            mode="outlined"
+            keyboardType="numeric"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="total_height"
+            label={`Total Height (${selectedUnit})`}
+            style={styles.textInput}
+            mode="outlined"
+            keyboardType="numeric"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="country"
+            label="Country"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="words"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="cliff_aspect"
+            label="Cliff Aspect (N, NE, E, SE, S, SW, W, NW)"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="characters"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="anchor_info"
+            label="Anchor Info"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="sentences"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="access_info"
+            label="Access Information"
+            style={[styles.textInput, styles.multilineInput]}
+            mode="outlined"
+            autoCapitalize="sentences"
+            multiline
+            numberOfLines={3}
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="notes"
+            label="Additional Notes"
+            style={[styles.textInput, styles.multilineInput]}
+            mode="outlined"
+            autoCapitalize="sentences"
+            multiline
+            numberOfLines={3}
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="opened_by_name"
+            label="Opened By"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="words"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="opened_date"
+            label="Opened Date (YYYY-MM-DD)"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="none"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <ControlledPaperTextInput
+            control={control}
+            name="video_link"
+            label="Video Link"
+            style={styles.textInput}
+            mode="outlined"
+            autoCapitalize="none"
+            keyboardType="url"
+            textColor="black"
+            activeOutlineColor="black"
+          />
+
+          <View style={styles.buttonContainer}>
+            {submitLocationMutation.isPending || isSubmitting ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#00ABF0" />
+                <Text style={styles.loadingText}>Submitting location...</Text>
               </View>
-
-              <TextInput
-                value={rockDrop}
-                style={styles.textInput}
-                placeholder={`Rock Drop * (${selectedUnit})`}
-                keyboardType="numeric"
-                onChangeText={setRockDrop}
-              />
-
-              <TextInput
-                value={total}
-                style={styles.textInput}
-                placeholder={`Total Height (${selectedUnit})`}
-                keyboardType="numeric"
-                onChangeText={setTotal}
-              />
-
-              <TextInput
-                value={cliffAspect}
-                style={styles.textInput}
-                placeholder="Cliff Aspect (N, NE, E, SE, S, SW, W, NW)"
-                autoCapitalize="characters"
-                onChangeText={setCliffAspect}
-              />
-
-              <TextInput
-                value={anchor}
-                style={styles.textInput}
-                placeholder="Anchor Info"
-                autoCapitalize="sentences"
-                onChangeText={setAnchor}
-              />
-
-              <TextInput
-                value={access}
-                style={[styles.textInput, styles.multilineInput]}
-                placeholder="Access Information"
-                autoCapitalize="sentences"
-                multiline={true}
-                numberOfLines={3}
-                textAlignVertical="top"
-                onChangeText={setAccess}
-              />
-
-              <TextInput
-                value={notes}
-                style={[styles.textInput, styles.multilineInput]}
-                placeholder="Additional Notes"
-                autoCapitalize="sentences"
-                multiline={true}
-                numberOfLines={3}
-                textAlignVertical="top"
-                onChangeText={setNotes}
-              />
-
-              <TextInput
-                value={openedBy}
-                style={styles.textInput}
-                placeholder="Opened By"
-                autoCapitalize="words"
-                onChangeText={setOpenedBy}
-              />
-
-              <TextInput
-                value={openedDate}
-                style={styles.textInput}
-                placeholder="Opened Date (YYYY-MM-DD)"
-                autoCapitalize="none"
-                onChangeText={setOpenedDate}
-              />
-
-              <TextInput
-                value={videoLink}
-                style={styles.textInput}
-                placeholder="Video Link (optional)"
-                autoCapitalize="none"
-                keyboardType="url"
-                onChangeText={setVideoLink}
-              />
-
-              <View style={styles.buttonContainer}>
-                {submitLocationMutation.isPending ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#00ABF0" />
-                    <Text style={styles.loadingText}>
-                      Submitting location...
-                    </Text>
-                  </View>
-                ) : (
-                  <TouchableOpacity
-                    onPress={handleSubmit}
-                    style={styles.commandButton}
-                  >
-                    <Text style={styles.panelButtonTitle}>Submit Location</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            </KeyboardAvoidingView>
+            ) : (
+              <TouchableOpacity
+                onPress={handleFormSubmit}
+                style={styles.commandButton}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.panelButtonTitle}>Submit Location</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
-      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
       <APIErrorHandler error={error} onDismiss={() => setError(null)} />
     </PaperProvider>
   );
@@ -295,30 +328,29 @@ export default SubmitLocation;
 
 const styles = StyleSheet.create({
   container: {
-    marginHorizontal: 20,
     flex: 1,
-    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
   },
   instructionText: {
     alignItems: "center",
     justifyContent: "center",
-    marginVertical: 20,
+    marginBottom: 20,
     fontSize: 16,
     color: "#666",
     textAlign: "center",
   },
   textInput: {
     marginVertical: 4,
-    height: 50,
-    borderWidth: 1,
-    borderRadius: 4,
-    padding: 10,
     backgroundColor: "#fff",
-    borderColor: "#ddd",
   },
   multilineInput: {
-    height: 80,
-    paddingTop: 10,
+    minHeight: 100,
   },
   panelButtonTitle: {
     fontSize: 17,
@@ -341,6 +373,8 @@ const styles = StyleSheet.create({
   },
   switchContainer: {
     flexDirection: "row",
+    justifyContent: "space-between",
+    width: "60%",
     alignItems: "center",
     marginVertical: 10,
     paddingHorizontal: 10,

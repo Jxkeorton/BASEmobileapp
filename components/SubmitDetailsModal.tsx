@@ -1,21 +1,28 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Keyboard,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import { Location } from "../app/(tabs)/map/Map";
 import { SubmitLocationData } from "../app/(tabs)/profile/SubmitLocation";
 import { useKyClient } from "../services/kyClient";
+import {
+  submitDetailsSchema,
+  type SubmitDetailsFormData,
+} from "../utils/validationSchemas";
 import APIErrorHandler from "./APIErrorHandler";
+import { ControlledPaperTextInput } from "./form";
 
 interface SubmitDetailsModalProps {
   visible: boolean;
@@ -28,20 +35,31 @@ const SubmitDetailsModal = ({
   onClose,
   location,
 }: SubmitDetailsModalProps) => {
-  const [newLocationName, setNewLocationName] = useState("");
-  const [exitType, setExitType] = useState("");
-  const [rockDropHeight, setRockDropHeight] = useState("");
-  const [totalHeight, setTotalHeight] = useState("");
-  const [cliffAspect, setCliffAspect] = useState("");
-  const [anchorInfo, setAnchorInfo] = useState("");
-  const [accessInfo, setAccessInfo] = useState("");
-  const [notes, setNotes] = useState("");
-  const [openedByName, setOpenedByName] = useState("");
-  const [openedDate, setOpenedDate] = useState("");
   const [error, setError] = useState<any>(null);
-
   const queryClient = useQueryClient();
   const client = useKyClient();
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<SubmitDetailsFormData>({
+    resolver: yupResolver(submitDetailsSchema) as any,
+    mode: "onBlur",
+    defaultValues: {
+      newLocationName: "",
+      exitType: "",
+      rockDropHeight: "",
+      totalHeight: "",
+      cliffAspect: "",
+      anchorInfo: "",
+      accessInfo: "",
+      notes: "",
+      openedByName: "",
+      openedDate: "",
+    },
+  });
 
   const submitUpdateMutation = useMutation({
     mutationFn: async (submissionData: SubmitLocationData) => {
@@ -59,84 +77,82 @@ const SubmitDetailsModal = ({
     onSuccess: (response) => {
       if (response.success) {
         onClose();
-
-        clearForm();
-
+        reset();
         queryClient.invalidateQueries({ queryKey: ["submissions"] });
+
+        Toast.show({
+          type: "success",
+          text1: "Details submitted successfully!",
+          visibilityTime: 3000,
+          position: "top",
+          topOffset: 60,
+        });
       } else {
         setError({ message: "Error submitting details" });
+        reset();
+        onClose();
       }
     },
     onError: (error: any) => {
       setError(error);
+      reset();
+      onClose();
     },
   });
 
-  const clearForm = () => {
-    setNewLocationName("");
-    setExitType("");
-    setRockDropHeight("");
-    setTotalHeight("");
-    setCliffAspect("");
-    setAnchorInfo("");
-    setAccessInfo("");
-    setNotes("");
-    setOpenedByName("");
-    setOpenedDate("");
-  };
-
-  const handleSubmit = async () => {
+  const handleFormSubmit = handleSubmit(async (data) => {
     const hasUpdates =
-      newLocationName ||
-      exitType ||
-      rockDropHeight ||
-      totalHeight ||
-      cliffAspect ||
-      anchorInfo ||
-      accessInfo ||
-      notes ||
-      openedByName ||
-      openedDate;
+      data.newLocationName ||
+      data.exitType ||
+      data.rockDropHeight ||
+      data.totalHeight ||
+      data.cliffAspect ||
+      data.anchorInfo ||
+      data.accessInfo ||
+      data.notes ||
+      data.openedByName ||
+      data.openedDate;
 
     if (!hasUpdates) {
       setError({
         message: "No updates provided: Please fill in at least one field",
       });
+      onClose();
+      reset();
       return;
     }
+
+    const optionalFields: Partial<SubmitLocationData> = {};
+    if (data.rockDropHeight && !isNaN(parseInt(data.rockDropHeight))) {
+      optionalFields.rock_drop_ft = parseInt(data.rockDropHeight);
+    }
+    if (data.totalHeight && !isNaN(parseInt(data.totalHeight))) {
+      optionalFields.total_height_ft = parseInt(data.totalHeight);
+    }
+    if (data.cliffAspect) optionalFields.cliff_aspect = data.cliffAspect.trim();
+    if (data.anchorInfo) optionalFields.anchor_info = data.anchorInfo.trim();
+    if (data.accessInfo) optionalFields.access_info = data.accessInfo.trim();
+    if (data.notes) optionalFields.notes = data.notes.trim();
+    if (data.openedByName)
+      optionalFields.opened_by_name = data.openedByName.trim();
+    if (data.openedDate) optionalFields.opened_date = data.openedDate.trim();
 
     const submissionData = {
       submission_type: "update",
       existing_location_id: location.id,
-      name: newLocationName || location.name,
+      name: data.newLocationName || location.name,
       country: location.country || "",
       latitude: location.latitude,
       longitude: location.longitude,
-      // Only include height fields if they're provided and valid
-      ...(rockDropHeight &&
-        !isNaN(parseInt(rockDropHeight)) && {
-          rock_drop_ft: parseInt(rockDropHeight),
-        }),
-      ...(totalHeight &&
-        !isNaN(parseInt(totalHeight)) && {
-          total_height_ft: parseInt(totalHeight),
-        }),
-      // Only include other fields if they're provided
-      ...(cliffAspect && { cliff_aspect: cliffAspect }),
-      ...(anchorInfo && { anchor_info: anchorInfo }),
-      ...(accessInfo && { access_info: accessInfo }),
-      ...(notes && { notes: notes }),
-      ...(openedByName && { opened_by_name: openedByName }),
-      ...(openedDate && { opened_date: openedDate }),
+      ...optionalFields,
     } satisfies SubmitLocationData;
 
     await submitUpdateMutation.mutateAsync(submissionData);
-  };
+  });
 
   const handleCancel = () => {
     onClose();
-
-    clearForm();
+    reset();
   };
 
   return (
@@ -154,112 +170,130 @@ const SubmitDetailsModal = ({
               <Text style={styles.panelSubtitle}>
                 Location Name (if different)
               </Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="newLocationName"
                 style={styles.input}
-                value={newLocationName}
-                onChangeText={setNewLocationName}
+                mode="outlined"
                 placeholder={location?.name}
-                autoCorrect={false}
                 autoCapitalize="words"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Exit Type / Object Type</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="exitType"
                 style={styles.input}
-                value={exitType}
-                onChangeText={setExitType}
+                mode="outlined"
                 placeholder="e.g., Building, Antenna, Span, Earth, Cliff"
-                autoCorrect={false}
                 autoCapitalize="words"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Rock Drop Height (feet)</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="rockDropHeight"
                 style={styles.input}
-                value={rockDropHeight}
-                onChangeText={setRockDropHeight}
+                mode="outlined"
                 placeholder="Height in feet"
                 keyboardType="numeric"
-                autoCorrect={false}
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Total Height (feet)</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="totalHeight"
                 style={styles.input}
-                value={totalHeight}
-                onChangeText={setTotalHeight}
+                mode="outlined"
                 placeholder="Total height in feet"
                 keyboardType="numeric"
-                autoCorrect={false}
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Cliff Aspect</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="cliffAspect"
                 style={styles.input}
-                value={cliffAspect}
-                onChangeText={setCliffAspect}
+                mode="outlined"
                 placeholder="e.g., N, NE, E, SE, S, SW, W, NW"
-                autoCorrect={false}
                 autoCapitalize="characters"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Anchor Information</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="anchorInfo"
                 style={styles.input}
-                value={anchorInfo}
-                onChangeText={setAnchorInfo}
+                mode="outlined"
                 placeholder="Anchor type and details"
-                autoCorrect={false}
                 autoCapitalize="sentences"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Access Information</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="accessInfo"
                 style={[styles.input, { height: 80 }]}
-                value={accessInfo}
-                onChangeText={setAccessInfo}
+                mode="outlined"
                 placeholder="How to access this location..."
-                multiline={true}
+                multiline
                 numberOfLines={3}
-                textAlignVertical="top"
-                autoCorrect={true}
                 autoCapitalize="sentences"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Opened By</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="openedByName"
                 style={styles.input}
-                value={openedByName}
-                onChangeText={setOpenedByName}
+                mode="outlined"
                 placeholder="Person who first jumped this location"
-                autoCorrect={false}
                 autoCapitalize="words"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Opened Date</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="openedDate"
                 style={styles.input}
-                value={openedDate}
-                onChangeText={setOpenedDate}
+                mode="outlined"
                 placeholder="Date first jumped (e.g., 2023-05-15)"
-                autoCorrect={false}
                 autoCapitalize="none"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Additional Notes</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="notes"
                 style={[styles.input, { height: 100 }]}
-                value={notes}
-                onChangeText={setNotes}
+                mode="outlined"
                 placeholder="Any additional information about this location..."
-                multiline={true}
+                multiline
                 numberOfLines={4}
-                textAlignVertical="top"
-                autoCorrect={true}
                 autoCapitalize="sentences"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
-              {submitUpdateMutation.isPending ? (
+              {submitUpdateMutation.isPending || isSubmitting ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator
                     animating={true}
@@ -272,7 +306,7 @@ const SubmitDetailsModal = ({
                 <>
                   <TouchableOpacity
                     style={styles.submitButton}
-                    onPress={handleSubmit}
+                    onPress={handleFormSubmit}
                   >
                     <Text style={styles.buttonText}>Submit Details</Text>
                   </TouchableOpacity>
@@ -300,6 +334,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 1000,
   },
   container: {
     width: "90%",
@@ -308,6 +343,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     elevation: 5,
+    zIndex: 1000,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -339,12 +375,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   input: {
-    borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 10,
-    fontSize: 16,
     backgroundColor: "#f9f9f9",
   },
   submitButton: {

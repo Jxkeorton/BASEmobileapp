@@ -42,12 +42,13 @@ export function ControlledCheckbox<T extends FieldValues>({
       render={({ field: { onChange, value }, fieldState: { error } }) => (
         <View style={styles.container}>
           <View style={[styles.checkboxContainer, error && styles.errorBorder]}>
-            <View style={styles.checkbox}>
+            <View style={styles.checkboxWrapper}>
               <Checkbox
                 status={value ? "checked" : "unchecked"}
                 onPress={() => onChange(!value)}
                 disabled={disabled}
                 color={color}
+                uncheckedColor={color}
               />
             </View>
             {labelComponent ? (
@@ -93,7 +94,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 4,
   },
-  checkbox: {
+  checkboxWrapper: {
+    borderWidth: 2,
+    borderColor: "white",
+    borderRadius: 4,
+    padding: 2,
     marginRight: 8,
   },
   labelContainer: {
@@ -101,6 +106,6 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: "#333",
+    color: "white",
   },
 });

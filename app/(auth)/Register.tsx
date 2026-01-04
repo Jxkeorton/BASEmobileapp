@@ -1,50 +1,62 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Image,
-  Keyboard,
   KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
-  TouchableWithoutFeedback,
+  Text,
+  TouchableOpacity,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  Button,
-  Checkbox,
-  Text,
-  TextInput,
-} from "react-native-paper";
+import { ActivityIndicator, Button } from "react-native-paper";
 import APIErrorHandler from "../../components/APIErrorHandler";
+import {
+  ControlledCheckbox,
+  ControlledPaperEmailInput,
+  ControlledPaperSecureTextInput,
+  ControlledPaperTextInput,
+} from "../../components/form";
 import { useAuth } from "../../providers/AuthProvider";
 import { useKyClient } from "../../services/kyClient";
+import {
+  type RegisterFormData,
+  registerSchema,
+} from "../../utils/validationSchemas";
 
 const Register = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setDisplayName] = useState("");
-  const [termsChecked, setTermsChecked] = useState(false);
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-
   const { updateUser } = useAuth();
 
-  interface SignUpBody {
-    email: string;
-    password: string;
-    name: string;
-  }
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: yupResolver(registerSchema),
+    mode: "onBlur",
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      termsAccepted: false,
+    },
+  });
 
   const signUpMutation = useMutation({
-    mutationFn: async ({ email, password, name }: SignUpBody) => {
+    mutationFn: async (data: RegisterFormData) => {
       const result = await client.POST("/signup", {
-        body: { email, password, name },
+        body: { email: data.email, password: data.password, name: data.name },
       });
       return result;
     },
-    onSuccess: async (response) => {
+    onSuccess: async (response, variables) => {
       const user = response.data?.data?.user;
 
       if (response.response.status === 200) {
@@ -52,7 +64,7 @@ const Register = () => {
         if (response.data?.data?.requiresEmailConfirmation) {
           router.replace({
             pathname: "/(auth)/EmailConfirmation",
-            params: { email: email },
+            params: { email: variables.email },
           });
         } else {
           // Auto-login if session exists (no confirmation required)
@@ -76,106 +88,122 @@ const Register = () => {
     },
   });
 
-  const handleSignUp = async () => {
-    signUpMutation.mutate({ email, password, name: name });
-  };
+  const onSubmit = handleSubmit((data) => {
+    signUpMutation.mutate(data);
+  });
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <KeyboardAvoidingView behavior="padding">
-          <View style={styles.imageContainer}>
-            <Image
-              source={require("../../assets/bitmap.png")}
-              style={styles.image}
-            />
-          </View>
-          <TextInput
-            value={name}
-            style={styles.textInput}
-            placeholder="Name"
-            autoCapitalize="words"
-            onChangeText={(text) => setDisplayName(text.trim())}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.imageContainer}>
+          <Image
+            source={require("../../assets/bitmap.png")}
+            style={styles.image}
           />
-          <TextInput
-            value={email}
-            style={styles.textInput}
-            placeholder="Email"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            onChangeText={(text) => setEmail(text.trim().toLowerCase())}
-          />
-          <TextInput
-            secureTextEntry={true}
-            value={password}
-            style={styles.textInput}
-            placeholder="Password"
-            autoCapitalize="none"
-            onChangeText={(text) => setPassword(text)}
-          />
+        </View>
 
-          <View style={styles.checkboxContainer}>
-            <View style={styles.checkbox}>
-              <Checkbox
-                status={termsChecked ? "checked" : "unchecked"}
-                onPress={() => setTermsChecked(!termsChecked)}
-                color="white"
-              />
-            </View>
-            <Button
-              textColor="black"
+        <ControlledPaperTextInput
+          control={control}
+          name="name"
+          label="Name"
+          style={styles.textInput}
+          activeOutlineColor="black"
+          textColor="black"
+          autoCapitalize="words"
+        />
+
+        <ControlledPaperEmailInput
+          control={control}
+          name="email"
+          label="Email"
+          style={styles.textInput}
+          activeOutlineColor="black"
+          textColor="black"
+        />
+
+        <ControlledPaperSecureTextInput
+          control={control}
+          name="password"
+          label="Password"
+          style={styles.textInput}
+          activeOutlineColor="black"
+          textColor="black"
+        />
+
+        <ControlledCheckbox
+          control={control}
+          name="termsAccepted"
+          color="white"
+          labelComponent={
+            <TouchableOpacity
               onPress={() => router.navigate("/AuthTerms")}
+              style={styles.labelContainer}
             >
-              <Text style={styles.packageText}>
-                I agree to the Terms and Conditions
+              <Text style={styles.label}>
+                I agree to the{" "}
+                <Text style={styles.linkText}>Terms and Conditions</Text>
               </Text>
+            </TouchableOpacity>
+          }
+        />
+
+        {signUpMutation.isPending ? (
+          <ActivityIndicator size="small" color="#007AFF" />
+        ) : (
+          <>
+            <Button
+              mode="contained"
+              style={styles.registerButton}
+              onPress={onSubmit}
+              disabled={isSubmitting}
+            >
+              Register
             </Button>
-          </View>
 
-          {signUpMutation.isPending ? (
-            <ActivityIndicator size="small" color="#007AFF" />
-          ) : (
-            <>
-              <Button
-                mode="contained"
-                style={styles.registerButton}
-                onPress={handleSignUp}
-              >
-                Register
-              </Button>
+            <Button
+              onPress={() => router.replace("/(auth)/Login")}
+              textColor="#007AFF"
+              style={styles.button}
+            >
+              Already have an account?
+            </Button>
+          </>
+        )}
 
-              <Button
-                onPress={() => router.replace("/(auth)/Login")}
-                textColor="#007AFF"
-                style={styles.button}
-              >
-                Already have an account?
-              </Button>
-            </>
-          )}
+        <Button
+          textColor="#007AFF"
+          style={styles.privacyPolicyLink}
+          onPress={() => {
+            router.navigate("/AuthPrivacyPolicy");
+          }}
+        >
+          Privacy Policy
+        </Button>
 
-          <Button
-            textColor="#007AFF"
-            style={styles.privacyPolicyLink}
-            onPress={() => {
-              router.navigate("/AuthPrivacyPolicy");
-            }}
-          >
-            Privacy Policy
-          </Button>
-        </KeyboardAvoidingView>
         <APIErrorHandler error={apiError} onDismiss={() => setApiError(null)} />
-      </View>
-    </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     backgroundColor: "black",
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: 20,
+    paddingTop: 60,
+    paddingBottom: 40,
   },
   imageContainer: {
     alignItems: "center",
@@ -187,7 +215,7 @@ const styles = StyleSheet.create({
     height: 100,
   },
   textInput: {
-    marginVertical: 10,
+    marginVertical: 5,
     height: 50,
     backgroundColor: "white",
     borderRadius: 8,
@@ -197,6 +225,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#007AFF",
     marginVertical: 10,
   },
+  labelContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  label: {
+    fontSize: 16,
+    color: "white",
+  },
+  linkText: {
+    color: "#007AFF",
+  },
   button: {
     backgroundColor: "transparent",
     borderWidth: 1,
@@ -205,18 +245,6 @@ const styles = StyleSheet.create({
   },
   privacyPolicyLink: {
     textAlign: "center",
-    color: "#00ABF0",
-    textDecorationLine: "underline",
-    marginTop: 20,
-  },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  checkbox: {
-    borderColor: "white",
-    borderWidth: 2,
     borderRadius: 4,
     padding: 1,
     marginRight: 10,
@@ -225,10 +253,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 5,
     color: "white",
-    fontWeight: "bold",
-    textShadowColor: "black",
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 2,
   },
 });
 

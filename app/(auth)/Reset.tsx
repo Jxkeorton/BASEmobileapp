@@ -1,6 +1,8 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Image,
   Keyboard,
@@ -9,20 +11,36 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ActivityIndicator, Button, TextInput } from "react-native-paper";
+import { ActivityIndicator, Button } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../components/APIErrorHandler";
+import { ControlledPaperEmailInput } from "../../components/form";
 import { useKyClient } from "../../services/kyClient";
+import {
+  type ResetPasswordFormData,
+  resetPasswordSchema,
+} from "../../utils/validationSchemas";
 
 const Reset = () => {
-  const [email, setEmail] = useState("");
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
 
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<ResetPasswordFormData>({
+    resolver: yupResolver(resetPasswordSchema),
+    mode: "onBlur",
+    defaultValues: {
+      email: "",
+    },
+  });
+
   const resetPasswordMutation = useMutation({
-    mutationFn: async ({ email }: { email: string }) => {
+    mutationFn: async (data: ResetPasswordFormData) => {
       const result = await client.POST("/reset-password", {
-        body: { email },
+        body: { email: data.email },
       });
 
       return result;
@@ -43,9 +61,9 @@ const Reset = () => {
     },
   });
 
-  const handlePasswordReset = async () => {
-    resetPasswordMutation.mutate({ email });
-  };
+  const onSubmit = handleSubmit((data) => {
+    resetPasswordMutation.mutate(data);
+  });
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -57,13 +75,14 @@ const Reset = () => {
               style={styles.image}
             />
           </View>
-          <TextInput
-            value={email}
+
+          <ControlledPaperEmailInput
+            control={control}
+            name="email"
+            label="Email"
             style={styles.textInput}
-            placeholder="Email"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            onChangeText={(text) => setEmail(text)}
+            activeOutlineColor="black"
+            textColor="black"
           />
 
           {resetPasswordMutation.isPending ? (
@@ -73,7 +92,8 @@ const Reset = () => {
               <Button
                 mode="contained"
                 style={styles.sendResetButton}
-                onPress={handlePasswordReset}
+                onPress={onSubmit}
+                disabled={isSubmitting}
               >
                 Send Reset Email
               </Button>
@@ -110,12 +130,11 @@ const styles = StyleSheet.create({
     height: 200,
   },
   textInput: {
-    marginVertical: 10,
-    height: 40,
+    marginVertical: 5,
+    height: 50,
     backgroundColor: "white",
     borderRadius: 8,
     padding: 10,
-    marginBottom: 20,
   },
   sendResetButton: {
     backgroundColor: "#007AFF",

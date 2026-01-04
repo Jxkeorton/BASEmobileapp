@@ -10,7 +10,6 @@ import React, {
 import { Platform } from "react-native";
 import Purchases, {
   CustomerInfo,
-  LOG_LEVEL,
   PurchasesOffering,
   PurchasesPackage,
 } from "react-native-purchases";
@@ -69,7 +68,9 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
           return;
         }
 
-        Purchases.setLogLevel(__DEV__ ? LOG_LEVEL.DEBUG : LOG_LEVEL.WARN);
+        Purchases.setLogLevel(
+          __DEV__ ? Purchases.LOG_LEVEL.ERROR : Purchases.LOG_LEVEL.WARN,
+        );
 
         // Initialize with the user's ID from Supabase
         if (user?.id) {

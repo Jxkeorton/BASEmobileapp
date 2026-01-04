@@ -39,7 +39,6 @@ const Settings: React.FC = () => {
         break;
       case "logout":
         signOut();
-        router.replace("/(auth)/Login");
         break;
       case "privacypolicy":
         router.navigate("/profile/settings/PrivacyPolicy");

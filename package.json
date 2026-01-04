@@ -57,7 +57,8 @@
     "react-native-vector-icons": "^10.0.0",
     "react-native-web": "~0.19.13",
     "uglify-js": "^3.17.4",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
@@ -73,8 +74,7 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "openapi-typescript": "^7.8.0",
     "prettier": "^3.6.2",
-    "typescript": "^5.8.3",
-    "zod": "^4.0.17"
+    "typescript": "^5.8.3"
   },
   "overrides": {
     "metro": "0.76.0",
