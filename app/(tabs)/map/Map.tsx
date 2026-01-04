@@ -10,8 +10,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import MapView from "react-native-map-clustering";
-import { Marker } from "react-native-maps";
+import MapView, { Marker } from "react-native-maps";
 import {
   ActivityIndicator,
   PaperProvider,
@@ -137,9 +136,6 @@ export default function Map() {
                 longitudeDelta: 14.52603159394414,
               }}
               mapType={satelliteActive ? "hybrid" : "standard"}
-              clusterColor="black"
-              clusterTextColor="white"
-              clusteringEnabled={true}
             >
               {locations &&
                 locations
