@@ -16,8 +16,8 @@ import {
   Text,
 } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import LogbookJumpCard from "../../../components/LogbookJumpCard";
-import LogbookModal from "../../../components/LogbookModal";
+import LogbookEntryCard from "../../../components/LogbookEntryCard";
+import LogbookEntryModal from "../../../components/LogbookEntryModal";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
@@ -73,7 +73,7 @@ const LogBook = () => {
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View>
             <Portal>
-              <LogbookModal
+              <LogbookEntryModal
                 visible={visible}
                 onClose={hideModal}
                 isLoading={loading}
@@ -108,7 +108,7 @@ const LogBook = () => {
               </View>
             </View>
 
-            <LogbookJumpCard jumpNumber={profile?.jump_number || 0} />
+            <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
             <APIErrorHandler error={profileError} />
           </View>
         </TouchableWithoutFeedback>

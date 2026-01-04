@@ -13,7 +13,7 @@ import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import SavedLocationsCard from "../../../components/SavedLocationsCard";
+import SavedLocationCard from "../../../components/SavedLocationCard";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
@@ -213,7 +213,7 @@ const Profile = () => {
                 </Text>
               </View>
             ) : (
-              <SavedLocationsCard data={savedLocations} onDelete={onDelete} />
+              <SavedLocationCard data={savedLocations} onDelete={onDelete} />
             )}
           </>
         )}

@@ -5,12 +5,12 @@ import { SavedLocationsArray } from "../app/(tabs)/profile/Profile";
 import { useUnitSystem } from "../providers/UnitSystemProvider";
 import { getHeightInPreferredUnit } from "../utils/unitConversions";
 
-interface SavedLocationsCardProps {
+interface SavedLocationCardProps {
   data: SavedLocationsArray;
   onDelete: (id: number) => void;
 }
 
-const SavedLocationsCard = ({ data, onDelete }: SavedLocationsCardProps) => {
+const SavedLocationCard = ({ data, onDelete }: SavedLocationCardProps) => {
   const { isMetric } = useUnitSystem();
   const onDetailsPress = (itemId: number) => {
     router.navigate(`/(tabs)/map/${itemId}`);
@@ -61,7 +61,7 @@ const SavedLocationsCard = ({ data, onDelete }: SavedLocationsCardProps) => {
   );
 };
 
-export default SavedLocationsCard;
+export default SavedLocationCard;
 
 const styles = StyleSheet.create({
   container: {

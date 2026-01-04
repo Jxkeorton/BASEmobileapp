@@ -8,7 +8,7 @@ export const useProtectedRoute = () => {
 
   useEffect(() => {
     if (!revenueCatLoading && !isProUser) {
-      router.replace("/SubscriptionsPage");
+      router.replace("/PayWall");
     }
   }, [revenueCatLoading, isProUser, router]);
 

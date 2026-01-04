@@ -20,7 +20,7 @@ import {
   Text,
 } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import SubmitDetailsModal from "../../../components/SubmitDetailsModal";
+import SubmitLocationDetailsModal from "../../../components/SubmitLocationDetailsModal";
 import { useProtectedRoute } from "../../../hooks/useProtectedRoute";
 import { useAuth } from "../../../providers/AuthProvider";
 import { useUnitSystem } from "../../../providers/UnitSystemProvider";
@@ -30,11 +30,9 @@ import type { Location as LocationType } from "./Map";
 
 export default function Location() {
   const [isCopied, setIsCopied] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [isSubmitDetailsModalVisible, setIsSubmitDetailsModalVisible] =
+    useState(false);
   const [error, setError] = useState<any>(null);
-
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
 
   const { id } = useLocalSearchParams();
   const { isMetric } = useUnitSystem();
@@ -213,9 +211,9 @@ export default function Location() {
     <PaperProvider>
       <View style={styles.container}>
         <Portal>
-          <SubmitDetailsModal
-            visible={visible}
-            onClose={hideModal}
+          <SubmitLocationDetailsModal
+            visible={isSubmitDetailsModalVisible}
+            onClose={() => setIsSubmitDetailsModalVisible(false)}
             location={location}
           />
         </Portal>
@@ -231,7 +229,11 @@ export default function Location() {
             <Button style={styles.button} mode="contained" onPress={openMaps}>
               Open in maps
             </Button>
-            <Button style={styles.button} mode="contained" onPress={showModal}>
+            <Button
+              style={styles.button}
+              mode="contained"
+              onPress={() => setIsSubmitDetailsModalVisible(true)}
+            >
               Update
             </Button>
             <Button

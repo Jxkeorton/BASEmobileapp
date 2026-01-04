@@ -22,15 +22,19 @@ import {
 } from "../utils/validationSchemas";
 import APIErrorHandler from "./APIErrorHandler";
 import { ControlledPaperTextInput } from "./form";
-import { LogbookJump } from "./LogbookJumpCard";
+import { LogbookJump } from "./LogbookEntryCard";
 
-interface LogbookModalProps {
+interface LogbookEntryModalProps {
   visible: boolean;
   onClose: () => void;
   isLoading: boolean;
 }
 
-const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
+const LogbookEntryModal = ({
+  visible,
+  onClose,
+  isLoading,
+}: LogbookEntryModalProps) => {
   const [showExitTypes, setShowExitTypes] = useState(false);
   const [error, setError] = useState<any>(null);
   const client = useKyClient();
@@ -370,4 +374,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LogbookModal;
+export default LogbookEntryModal;

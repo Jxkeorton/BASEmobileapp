@@ -2,10 +2,7 @@ import { Slot } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import {
-  ErrorToast,
-  SuccessToast,
-} from "../components/toastComponents/ToastComponents";
+import { ErrorToast, SuccessToast } from "../components/toast/ToastComponents";
 import { AuthProvider } from "../providers/AuthProvider";
 import { QueryProvider } from "../providers/QueryProvider";
 import { RevenueCatProvider } from "../providers/RevenueCatProvider";

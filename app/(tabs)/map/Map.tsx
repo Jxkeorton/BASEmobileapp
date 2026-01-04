@@ -20,7 +20,7 @@ import {
 } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import CustomCallout from "../../../components/CustomCallout";
-import ModalContent from "../../../components/ModalContent";
+import FiltersModal from "../../../components/FiltersModal";
 import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { paths } from "../../../types/api";
@@ -37,16 +37,12 @@ export default function Map() {
   const client = useKyClient();
 
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
-  const [filterIconLoading, setFilterIconLoading] = useState(false);
 
   // Filter modal state
   const [minRockDrop, setMinRockDrop] = useState("");
   const [maxRockDrop, setMaxRockDrop] = useState("");
   const [unknownRockdrop, setUnknownRockDrop] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  const [isFiltersVisible, setFiltersVisible] = useState(false);
 
   const { isMetric, toggleUnitSystem } = useUnitSystem();
 
@@ -113,9 +109,9 @@ export default function Map() {
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View style={styles.container}>
           <Portal>
-            <ModalContent
-              visible={visible}
-              onClose={hideModal}
+            <FiltersModal
+              visible={isFiltersVisible}
+              onClose={() => setFiltersVisible(false)}
               onApplyFilter={(min: string, max: string, unknown: boolean) => {
                 setMinRockDrop(min);
                 setMaxRockDrop(max);
@@ -180,20 +176,12 @@ export default function Map() {
                 value={searchTerm}
               />
               <TouchableHighlight
-                onPress={async () => {
-                  setFilterIconLoading(true);
-                  showModal();
-                  setFilterIconLoading(false);
-                }}
+                onPress={() => setFiltersVisible(true)}
                 underlayColor="#DDDDDD"
                 style={styles.filterButton}
               >
                 <View style={styles.dropdownIcon}>
-                  {filterIconLoading ? (
-                    <ActivityIndicator size="small" color="#0000ff" />
-                  ) : (
-                    <FontAwesome name="filter" size={20} color="#000" />
-                  )}
+                  <FontAwesome name="filter" size={20} color="#000" />
                 </View>
               </TouchableHighlight>
             </View>

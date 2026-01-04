@@ -24,17 +24,17 @@ import {
 import APIErrorHandler from "./APIErrorHandler";
 import { ControlledPaperTextInput } from "./form";
 
-interface SubmitDetailsModalProps {
+interface SubmitLocationDetailsModalProps {
   visible: boolean;
   onClose: () => void;
   location: Location;
 }
 
-const SubmitDetailsModal = ({
+const SubmitLocationDetailsModal = ({
   visible,
   onClose,
   location,
-}: SubmitDetailsModalProps) => {
+}: SubmitLocationDetailsModalProps) => {
   const [error, setError] = useState<any>(null);
   const queryClient = useQueryClient();
   const client = useKyClient();
@@ -409,4 +409,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SubmitDetailsModal;
+export default SubmitLocationDetailsModal;

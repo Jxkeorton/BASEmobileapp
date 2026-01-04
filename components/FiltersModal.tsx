@@ -15,7 +15,7 @@ import Toast from "react-native-toast-message";
 import { filterSchema, type FilterFormData } from "../utils/validationSchemas";
 import { ControlledPaperTextInput } from "./form";
 
-interface ModalContentProps {
+interface FiltersModalProps {
   visible: boolean;
   onClose: () => void;
   onApplyFilter: (
@@ -27,13 +27,13 @@ interface ModalContentProps {
   maxRockDrop: string;
 }
 
-const ModalContent = ({
+const FiltersModal = ({
   visible,
   onClose,
   onApplyFilter,
   minRockDrop,
   maxRockDrop,
-}: ModalContentProps) => {
+}: FiltersModalProps) => {
   const { control, handleSubmit, reset, watch, setValue } =
     useForm<FilterFormData>({
       resolver: yupResolver(filterSchema) as any,
@@ -208,4 +208,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ModalContent;
+export default FiltersModal;
