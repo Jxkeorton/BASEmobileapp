@@ -246,11 +246,19 @@ export const submitDetailsSchema = yup.object({
     .notRequired(),
   rockDropHeight: yup
     .string()
-    .matches(/^\d+(\.\d+)?$/, "Rock drop must be a valid number")
+    .test(
+      "is-valid-number",
+      "Rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
     .notRequired(),
   totalHeight: yup
     .string()
-    .matches(/^\d+(\.\d+)?$/, "Total height must be a valid number")
+    .test(
+      "is-valid-number",
+      "Total height must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
     .notRequired(),
   cliffAspect: yup
     .string()

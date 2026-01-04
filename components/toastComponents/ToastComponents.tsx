@@ -46,6 +46,8 @@ export const ErrorToast = ({ text1, text2 }: BaseToastProps) => {
 const styles = StyleSheet.create({
   container: {
     width: "90%",
+    zIndex: 9999,
+    elevation: 9999,
   },
   successSnackbar: {
     backgroundColor: "#4CAF50",
