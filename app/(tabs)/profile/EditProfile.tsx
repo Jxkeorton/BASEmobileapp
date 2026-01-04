@@ -102,7 +102,6 @@ const EditProfile = () => {
     if (profileResponse?.success && profileResponse?.data) {
       const profile = profileResponse.data;
 
-      console.log("Loaded profile data:", profile);
       setValue("name", profile.name || "");
       setValue("email", profile.email || "");
       if (profile.username) {

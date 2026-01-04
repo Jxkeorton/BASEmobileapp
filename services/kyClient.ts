@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ky from "ky";
 import createClient from "openapi-fetch";
 import { paths } from "../types/api";
+import { refreshAuthToken, signOut } from "../utils/authUtils";
 
 const getBaseUrl = () => {
   if (__DEV__) {
@@ -27,6 +28,7 @@ export const kyInstance = (timeout: number) =>
     retry: {
       limit: 2,
       methods: ["get"],
+      statusCodes: [408, 413, 429, 500, 502, 503, 504], // Don't retry 401
     },
     hooks: {
       beforeRequest: [
@@ -38,7 +40,6 @@ export const kyInstance = (timeout: number) =>
           }
 
           const method = request.method.toLowerCase();
-
           const hasBody = request.body !== null && request.body !== undefined;
 
           if (hasBody && !request.headers.get("Content-Type")) {
@@ -48,6 +49,23 @@ export const kyInstance = (timeout: number) =>
           if (method === "get") {
             request.headers.delete("Content-Type");
           }
+        },
+      ],
+      afterResponse: [
+        async (request, _options, response) => {
+          // Handle 401 (unauthorized) - token expired
+          if (response.status === 401) {
+            const newToken = await refreshAuthToken();
+
+            if (newToken) {
+              request.headers.set("Authorization", `Bearer ${newToken}`);
+              return ky(request);
+            } else {
+              await signOut();
+            }
+          }
+
+          return response;
         },
       ],
     },

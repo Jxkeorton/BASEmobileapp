@@ -281,6 +281,88 @@ export const submitDetailsSchema = yup.object({
 export type SubmitDetailsFormData = yup.InferType<typeof submitDetailsSchema>;
 
 // ============================================================================
+// Logbook Schemas
+// ============================================================================
+
+const exitTypes = ["Building", "Antenna", "Span", "Earth"] as const;
+
+/**
+ * Logbook Jump Form Schema
+ */
+export const logbookJumpSchema = yup.object({
+  location_name: yup
+    .string()
+    .required("Location name is required")
+    .max(200, "Location name must be less than 200 characters")
+    .trim(),
+  exit_type: yup
+    .string()
+    .oneOf(
+      exitTypes,
+      "Exit type must be one of: Building, Antenna, Span, Earth",
+    )
+    .required("Exit type is required"),
+  delay_seconds: yup
+    .number()
+    .transform((value, originalValue) => {
+      if (originalValue === "" || originalValue === undefined) return 0;
+      return typeof originalValue === "string"
+        ? parseFloat(originalValue)
+        : value;
+    })
+    .min(0, "Delay cannot be negative")
+    .notRequired(),
+  details: yup
+    .string()
+    .max(1000, "Details must be less than 1000 characters")
+    .notRequired(),
+  jump_date: yup
+    .string()
+    .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in format YYYY-MM-DD")
+    .notRequired(),
+});
+
+export type LogbookJumpFormData = yup.InferType<typeof logbookJumpSchema>;
+
+/**
+ * Filter Modal Schema
+ */
+export const filterSchema = yup.object({
+  minRockDrop: yup
+    .string()
+    .test(
+      "is-valid-number",
+      "Min rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .notRequired(),
+  maxRockDrop: yup
+    .string()
+    .test(
+      "is-valid-number",
+      "Max rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .test(
+      "max-greater-than-min",
+      "Max rock drop must be greater than min rock drop",
+      function (value) {
+        const { minRockDrop } = this.parent;
+        if (!value || !minRockDrop) return true;
+        return parseFloat(value) >= parseFloat(minRockDrop);
+      },
+    )
+    .notRequired(),
+  unknownRockdrop: yup.boolean().notRequired(),
+});
+
+export type FilterFormData = {
+  minRockDrop?: string;
+  maxRockDrop?: string;
+  unknownRockdrop?: boolean;
+};
+
+// ============================================================================
 // Helper Functions
 // ============================================================================
 

@@ -20,7 +20,6 @@ const PayWall = () => {
       await purchasePackage(pkg);
     } catch (error) {
       // Error is already handled in the provider
-      console.error("Purchase error:", error);
     }
   };
 
@@ -29,7 +28,6 @@ const PayWall = () => {
       await restorePurchases();
     } catch (error) {
       // Error is already handled in the provider
-      console.error("Restore error:", error);
     }
   };
 
