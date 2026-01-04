@@ -1,3 +1,4 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -13,7 +14,6 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import {
   ControlledPaperEmailInput,

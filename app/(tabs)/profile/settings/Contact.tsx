@@ -1,3 +1,4 @@
+import { FontAwesome } from "@expo/vector-icons";
 import {
   Linking,
   StyleSheet,
@@ -5,7 +6,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Icon from "react-native-vector-icons/FontAwesome";
 
 const Contact = () => {
   const handleInstagramPress = () => {
@@ -26,7 +26,12 @@ const Contact = () => {
         <Text style={styles.text}>worldbasemap@gmail.com</Text>
         <Text style={styles.text}>(+44) 7986273803</Text>
         <TouchableOpacity onPress={handleInstagramPress}>
-          <Icon name="instagram" size={30} color="white" style={styles.icon} />
+          <FontAwesome
+            name="instagram"
+            size={30}
+            color="white"
+            style={styles.icon}
+          />
         </TouchableOpacity>
       </View>
     </View>

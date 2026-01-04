@@ -1,6 +1,6 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
 import { Button } from "react-native-paper";
-import Icon from "react-native-vector-icons/FontAwesome";
 
 export default () => {
   return (
@@ -22,7 +22,7 @@ export default () => {
               buttonColor="black"
               onPress={() => router.navigate("/profile/settings")}
             >
-              <Icon name="cog" size={20} color="#fff" />
+              <FontAwesome name="cog" size={20} color="#fff" />
             </Button>
           ),
           headerTitle: "",

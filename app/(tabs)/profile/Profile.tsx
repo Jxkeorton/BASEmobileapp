@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
 
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   SafeAreaView,
   ScrollView,
@@ -10,8 +11,6 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationCard from "../../../components/SavedLocationCard";
 import { useAuth } from "../../../providers/AuthProvider";
@@ -178,13 +177,21 @@ const Profile = () => {
               onPress={() => router.replace("/(tabs)/profile/EditProfile")}
             >
               <View style={styles.menuItem}>
-                <Icon name="account-check-outline" color="#777777" size={25} />
+                <MaterialCommunityIcons
+                  name="account-check-outline"
+                  color="#777777"
+                  size={25}
+                />
                 <Text style={styles.menuItemText}>Edit Profile</Text>
               </View>
             </TouchableRipple>
             <TouchableRipple onPress={myCustomShare}>
               <View style={styles.menuItem}>
-                <Icon name="share-outline" color="#777777" size={25} />
+                <MaterialCommunityIcons
+                  name="share-outline"
+                  color="#777777"
+                  size={25}
+                />
                 <Text style={styles.menuItemText}>Tell Your Friends</Text>
               </View>
             </TouchableRipple>
@@ -192,7 +199,11 @@ const Profile = () => {
               onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
             >
               <View style={styles.menuItem}>
-                <Icon name="map-marker-radius" color="#777777" size={25} />
+                <MaterialCommunityIcons
+                  name="map-marker-radius"
+                  color="#777777"
+                  size={25}
+                />
                 <Text style={styles.menuItemText}>Submit A Location</Text>
               </View>
             </TouchableRipple>
