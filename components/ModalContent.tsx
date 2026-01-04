@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
 import {
   Keyboard,
   Modal,
@@ -6,12 +7,13 @@ import {
   StyleSheet,
   Switch,
   Text,
-  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import { filterSchema, type FilterFormData } from "../utils/validationSchemas";
+import { ControlledPaperTextInput } from "./form";
 
 interface ModalContentProps {
   visible: boolean;
@@ -32,41 +34,50 @@ const ModalContent = ({
   minRockDrop,
   maxRockDrop,
 }: ModalContentProps) => {
-  const [tempMinRockDrop, setTempMinRockDrop] = useState(minRockDrop);
-  const [tempMaxRockDrop, setTempMaxRockDrop] = useState(maxRockDrop);
-  const [tempUnknownRockdrop, setTempUnknownRockDrop] = useState(false);
+  const { control, handleSubmit, reset, watch, setValue } =
+    useForm<FilterFormData>({
+      resolver: yupResolver(filterSchema) as any,
+      mode: "onBlur",
+      defaultValues: {
+        minRockDrop: minRockDrop,
+        maxRockDrop: maxRockDrop,
+        unknownRockdrop: false,
+      },
+    });
 
-  // TODO: Add improved validation with react forms
+  const unknownRockdrop = watch("unknownRockdrop");
 
   const clearFilter = () => {
-    setTempMinRockDrop("");
-    setTempMaxRockDrop("");
-    setTempUnknownRockDrop(false);
+    reset({
+      minRockDrop: "",
+      maxRockDrop: "",
+      unknownRockdrop: false,
+    });
 
     Toast.show({
       type: "info",
       text1: "Filter cleared",
+      visibilityTime: 3000,
       position: "top",
+      topOffset: 60,
     });
   };
 
-  const applyFilter = () => {
-    if (
-      tempMinRockDrop !== "" &&
-      tempMaxRockDrop !== "" &&
-      parseFloat(tempMinRockDrop) > parseFloat(tempMaxRockDrop)
-    ) {
-      alert("Min Rock Drop cannot be greater than Max Rock Drop");
-    } else {
-      onClose();
-      onApplyFilter(tempMinRockDrop, tempMaxRockDrop, tempUnknownRockdrop);
-      Toast.show({
-        type: "success",
-        text1: "Filter applied",
-        position: "top",
-      });
-    }
-  };
+  const handleFormSubmit = handleSubmit((data) => {
+    onClose();
+    onApplyFilter(
+      data.minRockDrop || "",
+      data.maxRockDrop || "",
+      data.unknownRockdrop || false,
+    );
+    Toast.show({
+      type: "success",
+      text1: "Filter applied",
+      visibilityTime: 3000,
+      position: "top",
+      topOffset: 60,
+    });
+  });
 
   return (
     <Modal visible={visible} onRequestClose={onClose} transparent={true}>
@@ -77,35 +88,37 @@ const ModalContent = ({
               <ScrollView>
                 <Text style={styles.panelTitle}>Filter Pins</Text>
                 <Text style={styles.panelSubtitle}>Min Rock Drop: </Text>
-                <TextInput
+                <ControlledPaperTextInput
+                  control={control}
+                  name="minRockDrop"
                   style={styles.input}
+                  mode="outlined"
                   keyboardType="numeric"
-                  value={tempMinRockDrop}
-                  onChangeText={setTempMinRockDrop}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  accessibilityLabel="Minimum Rock Drop"
+                  placeholder="Minimum height"
+                  textColor="black"
+                  activeOutlineColor="black"
                 />
 
                 <Text style={styles.panelSubtitle}>Max Rock Drop: </Text>
-                <TextInput
+                <ControlledPaperTextInput
+                  control={control}
+                  name="maxRockDrop"
                   style={styles.input}
+                  mode="outlined"
                   keyboardType="numeric"
-                  value={tempMaxRockDrop}
-                  onChangeText={setTempMaxRockDrop}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                  accessibilityLabel="Maximum Rock Drop"
+                  placeholder="Maximum height"
+                  textColor="black"
+                  activeOutlineColor="black"
                 />
 
                 <Text style={styles.panelSubtitle}>
                   Remove Unknown Rockdrops{" "}
                 </Text>
                 <Switch
-                  value={tempUnknownRockdrop}
-                  onValueChange={() =>
-                    setTempUnknownRockDrop(!tempUnknownRockdrop)
-                  }
+                  value={unknownRockdrop ?? false}
+                  onValueChange={(value) => setValue("unknownRockdrop", value)}
+                  trackColor={{ false: "#767577", true: "#00ABF0" }}
+                  thumbColor={unknownRockdrop ? "#fff" : "#f4f3f4"}
                 />
 
                 <View style={styles.modalFooter}>
@@ -116,7 +129,7 @@ const ModalContent = ({
                     <Text style={styles.imageButtonTitle}>Clear Filter</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={applyFilter}
+                    onPress={handleFormSubmit}
                     style={styles.panelButton}
                   >
                     <Text style={styles.panelButtonTitle}>Apply Filter</Text>

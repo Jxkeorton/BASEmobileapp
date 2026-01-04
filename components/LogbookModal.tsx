@@ -1,25 +1,28 @@
+import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   Keyboard,
   Modal,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import { useKyClient } from "../services/kyClient";
-import { paths } from "../types/api";
+import {
+  logbookJumpSchema,
+  type LogbookJumpFormData,
+} from "../utils/validationSchemas";
 import APIErrorHandler from "./APIErrorHandler";
+import { ControlledPaperTextInput } from "./form";
 import { LogbookJump } from "./LogbookJumpCard";
-
-type LogbookPostBody =
-  paths["/logbook"]["post"]["requestBody"]["content"]["application/json"];
 
 interface LogbookModalProps {
   visible: boolean;
@@ -28,16 +31,31 @@ interface LogbookModalProps {
 }
 
 const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
-  const [location, setLocation] = useState("");
-  const [exitType, setExitType] =
-    useState<LogbookPostBody["exit_type"]>("Earth");
-  const [delay, setDelay] = useState<number>(0);
-  const [details, setDetails] = useState("");
-  const [date, setDate] = useState("");
   const [showExitTypes, setShowExitTypes] = useState(false);
   const [error, setError] = useState<any>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<LogbookJumpFormData>({
+    resolver: yupResolver(logbookJumpSchema) as any,
+    mode: "onBlur",
+    defaultValues: {
+      location_name: "",
+      exit_type: "Earth",
+      delay_seconds: 0,
+      details: "",
+      jump_date: "",
+    },
+  });
+
+  const exitType = watch("exit_type");
 
   const validExitTypes: LogbookJump["exit_type"][] = [
     "Building",
@@ -47,11 +65,11 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
   ];
 
   const submitJumpMutation = useMutation({
-    mutationFn: async (jumpData: LogbookPostBody) => {
+    mutationFn: async (jumpData: LogbookJumpFormData) => {
       const requestBody: any = {
         location_name: jumpData.location_name,
         exit_type: jumpData.exit_type ?? "Earth",
-        delay_seconds: jumpData.delay_seconds ? jumpData.delay_seconds : NaN,
+        delay_seconds: jumpData.delay_seconds ?? 0,
         details: jumpData.details ?? "",
       };
 
@@ -70,11 +88,19 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
         queryClient.invalidateQueries({ queryKey: ["logbook"] });
         queryClient.invalidateQueries({ queryKey: ["profile"] });
 
+        Toast.show({
+          type: "success",
+          text1: "Jump logged successfully!",
+          visibilityTime: 3000,
+          position: "top",
+          topOffset: 60,
+        });
+
         onClose();
         router.replace("/(tabs)/logbook/LogBook");
 
-        // Clear the form fields
-        clearForm();
+        // Clear the form
+        reset();
       } else {
         setError({ message: "Failed to submit jump" });
       }
@@ -84,31 +110,13 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
     },
   });
 
-  const clearForm = () => {
-    setLocation("");
-    setExitType("Earth");
-    setDelay(0);
-    setDetails("");
-    setDate("");
-  };
-
-  const formData = {
-    location_name: location,
-    exit_type: exitType,
-    delay_seconds: delay,
-    details: details,
-    jump_date: date,
-  } as LogbookPostBody;
-
-  const handleSubmit = async () => {
-    await submitJumpMutation.mutateAsync(formData);
-  };
+  const handleFormSubmit = handleSubmit(async (data) => {
+    await submitJumpMutation.mutateAsync(data);
+  });
 
   const handleCancel = () => {
     onClose();
-
-    // Clear state
-    clearForm();
+    reset();
   };
 
   return (
@@ -120,13 +128,15 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
               <Text style={styles.panelTitle}>Log a jump !</Text>
 
               <Text style={styles.panelSubtitle}>Location</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="location_name"
                 style={styles.input}
-                value={location}
-                onChangeText={setLocation}
-                autoCorrect={false}
-                autoCapitalize="none"
+                mode="outlined"
                 placeholder="Enter location name"
+                autoCapitalize="words"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Exit Type</Text>
@@ -158,7 +168,7 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
                       ]}
                       onPress={() => {
                         if (typeof type === "string") {
-                          setExitType(type);
+                          setValue("exit_type", type);
                           setShowExitTypes(false);
                         }
                       }}
@@ -176,7 +186,7 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
                   <TouchableOpacity
                     style={styles.exitTypeOption}
                     onPress={() => {
-                      setExitType("Earth");
+                      setValue("exit_type", "Earth");
                       setShowExitTypes(false);
                     }}
                   >
@@ -186,45 +196,50 @@ const LogbookModal = ({ visible, onClose, isLoading }: LogbookModalProps) => {
               )}
 
               <Text style={styles.panelSubtitle}>Delay</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="delay_seconds"
                 style={styles.input}
+                mode="outlined"
                 keyboardType="numeric"
-                value={delay.toString()}
-                onChangeText={(text) => setDelay(Number(text) || 0)}
-                autoCorrect={false}
-                autoCapitalize="none"
                 placeholder="in seconds"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Date of jump</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="jump_date"
                 style={styles.input}
-                value={date}
-                onChangeText={setDate}
-                autoCorrect={false}
-                autoCapitalize="none"
+                mode="outlined"
                 placeholder="YYYY-MM-DD"
+                autoCapitalize="none"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
               <Text style={styles.panelSubtitle}>Details</Text>
-              <TextInput
+              <ControlledPaperTextInput
+                control={control}
+                name="details"
                 style={[styles.input, { height: 100 }]}
-                value={details}
-                onChangeText={setDetails}
-                autoCorrect={false}
-                autoCapitalize="none"
-                multiline={true}
+                mode="outlined"
+                multiline
                 numberOfLines={4}
                 placeholder="Add any additional details"
+                autoCapitalize="sentences"
+                textColor="black"
+                activeOutlineColor="black"
               />
 
-              {isLoading || submitJumpMutation.isPending ? (
+              {isLoading || submitJumpMutation.isPending || isSubmitting ? (
                 <ActivityIndicator animating={true} color="#00ABF0" />
               ) : (
                 <>
                   <TouchableOpacity
                     style={styles.panelButton}
-                    onPress={handleSubmit}
+                    onPress={handleFormSubmit}
                   >
                     <Text style={styles.panelButtonTitle}>Submit</Text>
                   </TouchableOpacity>
@@ -269,6 +284,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   input: {
+    height: 30,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
