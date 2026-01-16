@@ -4,13 +4,13 @@ import { useState } from "react";
 
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
-  SafeAreaView,
   ScrollView,
   Share,
   StyleSheet,
   View,
 } from "react-native";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationCard from "../../../components/SavedLocationCard";
 import { useAuth } from "../../../providers/AuthProvider";
@@ -129,7 +129,7 @@ const Profile = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <ScrollView>
         <View style={styles.userInfoSection}>
           <View style={{ flexDirection: "row", marginTop: 15 }}>
@@ -233,7 +233,7 @@ const Profile = () => {
         error={error || profileError || locationsError}
         onDismiss={() => setError(null)}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

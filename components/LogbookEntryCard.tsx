@@ -64,6 +64,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
   const filteredJumps = useMemo(() => {
     if (!searchTerm) return processedJumps;
 
+
     const searchLower = searchTerm.toLowerCase();
     return processedJumps.filter((jump) => {
       const jumpNumberMatch = jump.jumpNumber?.toString().includes(searchTerm);
@@ -74,12 +75,15 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     });
   }, [processedJumps, searchTerm]);
 
-  const onCardPress = (index: number, jump: LogbookJump) => {
+  const onCardPress = (index: number) => {
     router.navigate({
       pathname: `/(tabs)/logbook/${index}`,
-      params: { jumpNumber: jump.id },
+      params: { jumpNumber: jumpNumber - index },
     });
   };
+
+    console.log('Jumps', filteredJumps )
+
 
   if (isError) {
     return (
@@ -120,7 +124,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
           <TouchableOpacity
             key={jump.id || index}
             style={styles.jumpCard}
-            onPress={() => onCardPress(index, jump)}
+            onPress={() => onCardPress(index)}
           >
             <View style={[styles.backgroundImage, styles.blackBackground]}>
               <View style={styles.jumpCardContent}>
