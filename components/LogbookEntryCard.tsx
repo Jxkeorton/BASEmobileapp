@@ -64,7 +64,6 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
   const filteredJumps = useMemo(() => {
     if (!searchTerm) return processedJumps;
 
-
     const searchLower = searchTerm.toLowerCase();
     return processedJumps.filter((jump) => {
       const jumpNumberMatch = jump.jumpNumber?.toString().includes(searchTerm);
@@ -81,9 +80,6 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
       params: { jumpNumber: jumpNumber - index },
     });
   };
-
-    console.log('Jumps', filteredJumps )
-
 
   if (isError) {
     return (

@@ -1,4 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
+import Mapbox, { Camera, MapView, PointAnnotation } from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
@@ -10,7 +11,6 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import {
   ActivityIndicator,
   PaperProvider,
@@ -18,11 +18,15 @@ import {
   Switch,
 } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import CustomCallout from "../../../components/CustomCallout";
 import FiltersModal from "../../../components/FiltersModal";
+import { MarkerDetails } from "../../../components/Map/MarkerDetails";
 import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { paths } from "../../../types/api";
+
+Mapbox.setAccessToken(
+  "PLACEHOLDER_TOKEN",
+);
 
 type LocationsResponse =
   paths["/locations"]["get"]["responses"][200]["content"]["application/json"];
@@ -33,6 +37,9 @@ type LocationsFilters = paths["/locations"]["get"]["parameters"]["query"];
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState("");
   const [satelliteActive, setSatelliteActive] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<Location | null>(
+    null,
+  );
   const client = useKyClient();
 
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
@@ -129,14 +136,23 @@ export default function Map() {
           ) : (
             <MapView
               style={styles.map}
-              initialRegion={{
-                latitude: 56.25284254305279,
-                longitude: -2.653906767865911,
-                latitudeDelta: 14.138225243481841,
-                longitudeDelta: 14.52603159394414,
+              styleURL={
+                satelliteActive
+                  ? Mapbox.StyleURL.Satellite
+                  : Mapbox.StyleURL.Outdoors
+              }
+              onPress={() => {
+                if (selectedLocation) {
+                  setSelectedLocation(null);
+                }
               }}
-              mapType={satelliteActive ? "hybrid" : "standard"}
             >
+              <Camera
+                defaultSettings={{
+                  centerCoordinate: [0, 20],
+                  zoomLevel: 2,
+                }}
+              />
               {locations &&
                 locations
                   .filter((event) => filterEventsByRockDrop(event))
@@ -145,19 +161,30 @@ export default function Map() {
                     const longitude = event.longitude;
 
                     return (
-                      <Marker
-                        key={event.id || index}
-                        coordinate={{ latitude, longitude }}
+                      <PointAnnotation
+                        key={String(event.id || index)}
+                        id={String(event.id || index)}
+                        coordinate={[longitude, latitude]}
                         title={event.name || "Unknown Name"}
-                        description={
-                          event.opened_by_name || event.country || ""
-                        }
-                        pinColor="red"
+                        onSelected={() => {
+                          setSelectedLocation(event);
+                        }}
+                        onDeselected={() => {
+                          setSelectedLocation(null);
+                        }}
                       >
-                        <CustomCallout info={event} />
-                      </Marker>
+                        <View style={styles.markerContainer}>
+                          <View style={styles.marker} />
+                        </View>
+                      </PointAnnotation>
                     );
                   })}
+              {selectedLocation && (
+                <MarkerDetails
+                  selectedLocation={selectedLocation}
+                  isMetric={isMetric}
+                />
+              )}
             </MapView>
           )}
 
@@ -391,5 +418,17 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     fontWeight: "500",
+  },
+  markerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  marker: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "red",
+    borderWidth: 2,
+    borderColor: "white",
   },
 });
