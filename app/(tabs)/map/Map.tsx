@@ -11,12 +11,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import {
-  ActivityIndicator,
-  PaperProvider,
-  Portal,
-  Switch,
-} from "react-native-paper";
+import { ActivityIndicator, PaperProvider, Portal } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import FiltersModal from "../../../components/FiltersModal";
 import { MarkerDetails } from "../../../components/Map/MarkerDetails";
@@ -110,6 +105,8 @@ export default function Map() {
     return true;
   };
 
+  console.log("selectedLocation:", selectedLocation);
+
   return (
     <PaperProvider>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -134,119 +131,134 @@ export default function Map() {
               <Text style={styles.loadingText}>Loading locations...</Text>
             </View>
           ) : (
-            <MapView
-              style={styles.map}
-              styleURL={
-                satelliteActive
-                  ? Mapbox.StyleURL.Satellite
-                  : Mapbox.StyleURL.Outdoors
-              }
-              onPress={() => {
-                if (selectedLocation) {
-                  setSelectedLocation(null);
+            <>
+              <MapView
+                style={styles.map}
+                styleURL={
+                  satelliteActive
+                    ? Mapbox.StyleURL.Satellite
+                    : Mapbox.StyleURL.Outdoors
                 }
-              }}
-            >
-              <Camera
-                defaultSettings={{
-                  centerCoordinate: [0, 20],
-                  zoomLevel: 2,
+                logoEnabled={false}
+                compassEnabled={true}
+                compassViewPosition={2}
+                compassViewMargins={{
+                  x: 15,
+                  y: 25,
                 }}
-              />
-              {locations &&
-                locations
-                  .filter((event) => filterEventsByRockDrop(event))
-                  .map((event, index) => {
-                    const latitude = event.latitude;
-                    const longitude = event.longitude;
-
-                    return (
-                      <PointAnnotation
-                        key={String(event.id || index)}
-                        id={String(event.id || index)}
-                        coordinate={[longitude, latitude]}
-                        title={event.name || "Unknown Name"}
-                        onSelected={() => {
-                          setSelectedLocation(event);
-                        }}
-                        onDeselected={() => {
-                          setSelectedLocation(null);
-                        }}
-                      >
-                        <View style={styles.markerContainer}>
-                          <View style={styles.marker} />
-                        </View>
-                      </PointAnnotation>
-                    );
-                  })}
-              {selectedLocation && (
-                <MarkerDetails
-                  selectedLocation={selectedLocation}
-                  isMetric={isMetric}
+                scaleBarPosition={{ bottom: 8, left: 8 }}
+                onPress={() => {
+                  if (selectedLocation) {
+                    setSelectedLocation(null);
+                  }
+                }}
+              >
+                <Camera
+                  defaultSettings={{
+                    centerCoordinate: [0, 20],
+                    zoomLevel: 2,
+                  }}
                 />
-              )}
-            </MapView>
+                {locations &&
+                  locations
+                    .filter((event) => filterEventsByRockDrop(event))
+                    .map((event, index) => {
+                      const latitude = event.latitude;
+                      const longitude = event.longitude;
+
+                      return (
+                        <PointAnnotation
+                          key={String(event.id || index)}
+                          id={String(event.id || index)}
+                          coordinate={[longitude, latitude]}
+                          title={event.name || "Unknown Name"}
+                          onSelected={() => {
+                            setSelectedLocation(event);
+                          }}
+                          onDeselected={() => {
+                            setSelectedLocation(null);
+                          }}
+                        >
+                          <View style={styles.markerContainer}>
+                            <View style={styles.marker} />
+                          </View>
+                        </PointAnnotation>
+                      );
+                    })}
+                {selectedLocation && (
+                  <MarkerDetails
+                    selectedLocation={selectedLocation}
+                    isMetric={isMetric}
+                  />
+                )}
+              </MapView>
+            </>
           )}
 
-          <View style={styles.searchBox}>
-            <View style={styles.textInputContainer}>
-              <TextInput
-                placeholder="Search here"
-                placeholderTextColor="#000"
-                autoCapitalize="none"
-                style={{ flex: 1, padding: 0 }}
-                onChangeText={(text) => setSearchTerm(text)}
-                value={searchTerm}
-              />
+          {/* Map controls container */}
+          {!loadingMap && (
+            <View style={styles.mapControlsContainer}>
+              {/* Satellite toggle button */}
+              <TouchableHighlight
+                onPress={() => {
+                  setSatelliteLoading(true);
+                  setTimeout(() => {
+                    setSatelliteActive(!satelliteActive);
+                    setSatelliteLoading(false);
+                  }, 100);
+                }}
+                underlayColor="#E0E0E0"
+                style={styles.controlButton}
+              >
+                <View style={styles.controlButtonContent}>
+                  {satelliteViewLoading ? (
+                    <ActivityIndicator size="small" color="#00ABF0" />
+                  ) : (
+                    <FontAwesome
+                      name={satelliteActive ? "globe" : "map"}
+                      size={20}
+                      color="#333"
+                    />
+                  )}
+                </View>
+              </TouchableHighlight>
+
+              {/* Unit toggle button */}
+              <TouchableHighlight
+                onPress={toggleUnitSystem}
+                underlayColor="#E0E0E0"
+                style={styles.controlButton}
+              >
+                <View style={styles.controlButtonContent}>
+                  <Text style={styles.unitButtonText}>
+                    {isMetric ? "M" : "Ft"}
+                  </Text>
+                </View>
+              </TouchableHighlight>
+
+              {/* Filter button */}
               <TouchableHighlight
                 onPress={() => setFiltersVisible(true)}
-                underlayColor="#DDDDDD"
-                style={styles.filterButton}
+                underlayColor="#E0E0E0"
+                style={styles.controlButton}
               >
-                <View style={styles.dropdownIcon}>
-                  <FontAwesome name="filter" size={20} color="#000" />
+                <View style={styles.controlButtonContent}>
+                  <FontAwesome name="filter" size={20} color="#333" />
                 </View>
               </TouchableHighlight>
             </View>
-
-            <View style={styles.switchContainer}>
-              <Text style={styles.switchLabel}>Satellite</Text>
-              {satelliteViewLoading ? (
-                <ActivityIndicator size="small" color="#0000ff" />
-              ) : (
-                <Switch
-                  value={satelliteActive}
-                  onValueChange={() => {
-                    setSatelliteLoading(true);
-                    setTimeout(() => {
-                      setSatelliteActive(!satelliteActive);
-                      setSatelliteLoading(false);
-                    }, 100);
-                  }}
-                  color="#00ABF0"
-                />
-              )}
-              <Text style={[styles.switchLabel, { paddingLeft: 5 }]}>
-                Imperial
-              </Text>
-              <Switch
-                value={isMetric}
-                onValueChange={toggleUnitSystem}
-                color="#00ABF0"
-              />
-              <Text style={styles.switchLabel}>Metric</Text>
-            </View>
-          </View>
-
-          {/* Show results count */}
-          {!loadingMap && (
-            <View style={styles.resultsContainer}>
-              <Text style={styles.resultsText}>
-                {locations?.length || 0} location
-                {(locations?.length || 0) !== 1 ? "s" : ""} found
-              </Text>
-            </View>
           )}
+
+          <View style={styles.searchBox}>
+            <TextInput
+              placeholder="Search here"
+              placeholderTextColor="#000"
+              autoCapitalize="none"
+              style={styles.searchInput}
+              onChangeText={(text) => setSearchTerm(text)}
+              value={searchTerm}
+            />
+          </View>
           <APIErrorHandler error={error} />
         </View>
       </TouchableWithoutFeedback>
@@ -296,7 +308,7 @@ const styles = StyleSheet.create({
   searchBox: {
     position: "absolute",
     backgroundColor: "#fff",
-    width: "90%",
+    width: "95%",
     alignSelf: "center",
     borderRadius: 5,
     padding: 10,
@@ -305,7 +317,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 5,
     elevation: 10,
-    marginTop: 50,
+    marginTop: 60,
+  },
+  searchInput: {
+    flex: 1,
+    padding: 0,
+    fontSize: 16,
   },
   button: {
     paddingHorizontal: 10,
@@ -331,11 +348,6 @@ const styles = StyleSheet.create({
   switchLabel: {
     marginHorizontal: 5,
     color: "black",
-  },
-  textInputContainer: {
-    flexDirection: "row",
-    marginRight: 10,
-    marginBottom: 10,
   },
   // modal styles
   dropdownIcon: {
@@ -365,7 +377,6 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
-    marginBottom: 10,
     width: 200,
   },
   modalFooter: {
@@ -430,5 +441,33 @@ const styles = StyleSheet.create({
     backgroundColor: "red",
     borderWidth: 2,
     borderColor: "white",
+  },
+  mapControlsContainer: {
+    position: "absolute",
+    top: 115,
+    right: 10,
+    gap: 10,
+    zIndex: 1000,
+  },
+  controlButton: {
+    backgroundColor: "white",
+    borderRadius: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: 44,
+    height: 44,
+  },
+  controlButtonContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  unitButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#333",
   },
 });
