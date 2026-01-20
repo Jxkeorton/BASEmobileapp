@@ -7,6 +7,18 @@
     "icon": "./assets/bitmap.png",
     "userInterfaceStyle": "light",
     "scheme": "base.map",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      "@rnmapbox/maps",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Show current location on map."
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/bitmap.png",
       "resizeMode": "contain",
@@ -40,11 +52,6 @@
         }
       }
     },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store",
-      "expo-font"
-    ],
     "extra": {
       "router": {
         "origin": false
