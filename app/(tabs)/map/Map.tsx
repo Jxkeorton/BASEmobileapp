@@ -9,6 +9,7 @@ import Mapbox, {
   Terrain,
 } from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import {
   Keyboard,
@@ -58,6 +59,7 @@ export default function Map() {
   const client = useKyClient();
 
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(false);
 
   // Filter modal state
   const [minRockDrop, setMinRockDrop] = useState("");
@@ -173,6 +175,17 @@ export default function Map() {
     }
   };
 
+  const handleMapStyleChange = () => {
+    setSatelliteLoading(true);
+    setIsMapLoading(true);
+    setTimeout(() => {
+      setSatelliteActive(!satelliteActive);
+      setSatelliteLoading(false);
+    }, 100);
+  };
+
+  const isFullyLoaded = !loadingMap && !isMapLoading;
+
   return (
     <PaperProvider>
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -191,133 +204,132 @@ export default function Map() {
             />
           </Portal>
 
-          {loadingMap ? (
-            <View style={styles.loadingContainer}>
+          <MapView
+            style={styles.map}
+            styleURL={
+              satelliteActive
+                ? "mapbox://styles/mapbox/satellite-streets-v12"
+                : "mapbox://styles/jakeorton99/clopszx4t00k101pb70b0crpc"
+            }
+            logoEnabled={false}
+            compassEnabled={true}
+            compassViewPosition={2}
+            compassViewMargins={{
+              x: 15,
+              y: 25,
+            }}
+            scaleBarPosition={{ bottom: 8, left: 8 }}
+            onPress={() => {
+              if (selectedLocation) {
+                setSelectedLocation(null);
+              }
+            }}
+            onWillStartLoadingMap={() => setIsMapLoading(true)}
+            onDidFinishLoadingMap={() => setIsMapLoading(false)}
+            onDidFinishLoadingStyle={() => setIsMapLoading(false)}
+            onMapLoadingError={() => setIsMapLoading(false)}
+          >
+            <Camera
+              ref={cameraRef}
+              defaultSettings={{
+                centerCoordinate: [0, 20],
+                zoomLevel: 2,
+                pitch: 45,
+              }}
+            />
+            <LocationPuck
+              puckBearingEnabled
+              puckBearing="heading"
+              pulsing={{ isEnabled: true }}
+            />
+            <Terrain sourceID="mapbox-dem" style={{ exaggeration: 1.5 }} />
+
+            {/* Clustered markers */}
+            <ShapeSource
+              id="locationsSource"
+              shape={geoJsonSource}
+              cluster={true}
+              clusterRadius={50}
+              clusterMaxZoomLevel={14}
+              onPress={handleMarkerPress}
+            >
+              {/* Cluster circles */}
+              <CircleLayer
+                id="clusterCircles"
+                filter={["has", "point_count"]}
+                style={{
+                  circleColor: [
+                    "step",
+                    ["get", "point_count"],
+                    "#000000",
+                    10,
+                    "#000000",
+                    50,
+                    "#000000",
+                  ],
+                  circleRadius: [
+                    "step",
+                    ["get", "point_count"],
+                    20,
+                    10,
+                    25,
+                    50,
+                    30,
+                  ],
+                  circleStrokeWidth: 2,
+                  circleStrokeColor: "#ffffff",
+                }}
+              />
+
+              {/* Cluster count labels */}
+              <SymbolLayer
+                id="clusterCount"
+                filter={["has", "point_count"]}
+                style={{
+                  textField: ["get", "point_count_abbreviated"],
+                  textSize: 14,
+                  textColor: "#FFFFFF",
+                  textFont: ["DIN Pro Medium", "Arial Unicode MS Bold"],
+                }}
+              />
+
+              {/* Individual markers (non-clustered) */}
+              <CircleLayer
+                id="singlePoint"
+                filter={["!", ["has", "point_count"]]}
+                style={{
+                  circleColor: "#ca2222",
+                  circleRadius: 10,
+                  circleStrokeWidth: 2,
+                  circleStrokeColor: "#ffffff",
+                }}
+              />
+            </ShapeSource>
+
+            {selectedLocation && (
+              <MarkerDetails
+                selectedLocation={selectedLocation}
+                isMetric={isMetric}
+              />
+            )}
+          </MapView>
+
+          {/* Loading overlay */}
+          {(loadingMap || isMapLoading) && (
+            <View style={styles.loadingOverlay}>
               <ActivityIndicator size="large" color="#00ABF0" />
-              <Text style={styles.loadingText}>Loading locations...</Text>
+              <Text style={styles.loadingText}>
+                {loadingMap ? "Loading locations..." : "Loading map..."}
+              </Text>
             </View>
-          ) : (
-            <>
-              <MapView
-                style={styles.map}
-                styleURL={
-                  satelliteActive
-                    ? "mapbox://styles/mapbox/satellite-streets-v12"
-                    : "mapbox://styles/jakeorton99/clopszx4t00k101pb70b0crpc"
-                }
-                logoEnabled={false}
-                compassEnabled={true}
-                compassViewPosition={2}
-                compassViewMargins={{
-                  x: 15,
-                  y: 25,
-                }}
-                scaleBarPosition={{ bottom: 8, left: 8 }}
-                onPress={() => {
-                  if (selectedLocation) {
-                    setSelectedLocation(null);
-                  }
-                }}
-              >
-                <Camera
-                  ref={cameraRef}
-                  defaultSettings={{
-                    centerCoordinate: [0, 20],
-                    zoomLevel: 2,
-                    pitch: 45,
-                  }}
-                />
-                <LocationPuck
-                  puckBearingEnabled
-                  puckBearing="heading"
-                  pulsing={{ isEnabled: true }}
-                />
-                <Terrain sourceID="mapbox-dem" style={{ exaggeration: 1.5 }} />
-
-                {/* Clustered markers */}
-                <ShapeSource
-                  id="locationsSource"
-                  shape={geoJsonSource}
-                  cluster={true}
-                  clusterRadius={50}
-                  clusterMaxZoomLevel={14}
-                  onPress={handleMarkerPress}
-                >
-                  {/* Cluster circles */}
-                  <CircleLayer
-                    id="clusterCircles"
-                    filter={["has", "point_count"]}
-                    style={{
-                      circleColor: [
-                        "step",
-                        ["get", "point_count"],
-                        "#000000",
-                        10,
-                        "#000000",
-                        50,
-                        "#000000",
-                      ],
-                      circleRadius: [
-                        "step",
-                        ["get", "point_count"],
-                        20,
-                        10,
-                        25,
-                        50,
-                        30,
-                      ],
-                      circleStrokeWidth: 2,
-                      circleStrokeColor: "#ffffff",
-                    }}
-                  />
-
-                  {/* Cluster count labels */}
-                  <SymbolLayer
-                    id="clusterCount"
-                    filter={["has", "point_count"]}
-                    style={{
-                      textField: ["get", "point_count_abbreviated"],
-                      textSize: 14,
-                      textColor: "#FFFFFF",
-                      textFont: ["DIN Pro Medium", "Arial Unicode MS Bold"],
-                    }}
-                  />
-
-                  {/* Individual markers (non-clustered) */}
-                  <CircleLayer
-                    id="singlePoint"
-                    filter={["!", ["has", "point_count"]]}
-                    style={{
-                      circleColor: "#ca2222",
-                      circleRadius: 10,
-                      circleStrokeWidth: 2,
-                      circleStrokeColor: "#ffffff",
-                    }}
-                  />
-                </ShapeSource>
-
-                {selectedLocation && (
-                  <MarkerDetails
-                    selectedLocation={selectedLocation}
-                    isMetric={isMetric}
-                  />
-                )}
-              </MapView>
-            </>
           )}
 
           {/* Map controls container */}
-          {!loadingMap && (
+          {isFullyLoaded && (
             <View style={styles.mapControlsContainer}>
               {/* Satellite toggle button */}
               <TouchableHighlight
-                onPress={() => {
-                  setSatelliteLoading(true);
-                  setTimeout(() => {
-                    setSatelliteActive(!satelliteActive);
-                    setSatelliteLoading(false);
-                  }, 100);
-                }}
+                onPress={handleMapStyleChange}
                 underlayColor="#E0E0E0"
                 style={styles.controlButton}
               >
@@ -360,7 +372,26 @@ export default function Map() {
             </View>
           )}
 
+          {/* Submit Location Button */}
+          {isFullyLoaded && (
+            <TouchableHighlight
+              onPress={() => router.push("/(tabs)/profile/SubmitLocation")}
+              underlayColor="#E0E0E0"
+              style={styles.submitLocationButton}
+            >
+              <View style={styles.controlButtonContent}>
+                <FontAwesome name="plus" size={20} color="#333" />
+              </View>
+            </TouchableHighlight>
+          )}
+
           <View style={styles.searchBox}>
+            <FontAwesome
+              name="search"
+              size={18}
+              color="#666"
+              style={styles.searchIcon}
+            />
             <TextInput
               placeholder="Search here"
               placeholderTextColor="#000"
@@ -416,10 +447,26 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: -32,
   },
+  submitLocationButton: {
+    position: "absolute",
+    top: 60,
+    left: 10,
+    backgroundColor: "white",
+    borderRadius: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    width: 44,
+    height: 44,
+    zIndex: 1000,
+  },
   searchBox: {
     position: "absolute",
     backgroundColor: "#fff",
-    width: "95%",
+    right: 10,
+    width: "80%",
     alignSelf: "center",
     borderRadius: 5,
     padding: 10,
@@ -429,6 +476,11 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 10,
     marginTop: 60,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  searchIcon: {
+    marginRight: 10,
   },
   searchInput: {
     flex: 1,
@@ -517,6 +569,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  loadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
   },
   loadingText: {
     marginTop: 10,
