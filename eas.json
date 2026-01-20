@@ -8,23 +8,6 @@
         "EXPO_USE_PNPM": "1"
       }
     },
-    "preview": {
-      "distribution": "internal",
-      "channel": "preview",
-      "env": {
-        "EXPO_USE_PNPM": "1",
-        "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "$EXPO_PUBLIC_REVENUECAT_APPLE_KEY",
-        "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "$EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY",
-        "EXPO_PUBLIC_API_BASE_URL": "$EXPO_PUBLIC_API_BASE_URL",
-        "EXPO_PUBLIC_API_KEY": "$EXPO_PUBLIC_API_KEY"
-      },
-      "android": {
-        "buildType": "apk"
-      },
-      "ios": {
-        "buildConfiguration": "Release"
-      }
-    },
     "production": {
       "channel": "production",
       "env": {
@@ -32,7 +15,8 @@
         "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "$EXPO_PUBLIC_REVENUECAT_APPLE_KEY",
         "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "$EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY",
         "EXPO_PUBLIC_API_BASE_URL": "$EXPO_PUBLIC_API_BASE_URL",
-        "EXPO_PUBLIC_API_KEY": "$EXPO_PUBLIC_API_KEY"
+        "EXPO_PUBLIC_API_KEY": "$EXPO_PUBLIC_API_KEY",
+        "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "$EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN"
       },
       "android": {
         "buildType": "app-bundle"
