@@ -1,5 +1,10 @@
 import { FontAwesome } from "@expo/vector-icons";
-import Mapbox, { Camera, MapView, PointAnnotation } from "@rnmapbox/maps";
+import Mapbox, {
+  Camera,
+  MapView,
+  PointAnnotation,
+  Terrain,
+} from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import {
@@ -19,9 +24,7 @@ import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { paths } from "../../../types/api";
 
-Mapbox.setAccessToken(
-  "PLACEHOLDER_TOKEN",
-);
+Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || "");
 
 type LocationsResponse =
   paths["/locations"]["get"]["responses"][200]["content"]["application/json"];
@@ -136,8 +139,8 @@ export default function Map() {
                 style={styles.map}
                 styleURL={
                   satelliteActive
-                    ? Mapbox.StyleURL.Satellite
-                    : Mapbox.StyleURL.Outdoors
+                    ? "mapbox://styles/mapbox/satellite-streets-v12"
+                    : "mapbox://styles/jakeorton99/clopszx4t00k101pb70b0crpc"
                 }
                 logoEnabled={false}
                 compassEnabled={true}
@@ -157,8 +160,10 @@ export default function Map() {
                   defaultSettings={{
                     centerCoordinate: [0, 20],
                     zoomLevel: 2,
+                    pitch: 45, // Tilt the map to see 3D effect
                   }}
                 />
+                <Terrain sourceID="mapbox-dem" style={{ exaggeration: 1.5 }} />
                 {locations &&
                   locations
                     .filter((event) => filterEventsByRockDrop(event))
