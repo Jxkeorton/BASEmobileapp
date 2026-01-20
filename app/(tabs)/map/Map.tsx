@@ -1,12 +1,15 @@
 import { FontAwesome } from "@expo/vector-icons";
 import Mapbox, {
   Camera,
+  CircleLayer,
+  LocationPuck,
   MapView,
-  PointAnnotation,
+  ShapeSource,
+  SymbolLayer,
   Terrain,
 } from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   StyleSheet,
@@ -32,6 +35,20 @@ export type Location = NonNullable<LocationsResponse["data"]>[number];
 
 type LocationsFilters = paths["/locations"]["get"]["parameters"]["query"];
 
+// Type for ShapeSource onPress event
+type OnPressEvent = {
+  features: Array<GeoJSON.Feature>;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+    zoom?: number;
+  };
+  point: {
+    x: number;
+    y: number;
+  };
+};
+
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState("");
   const [satelliteActive, setSatelliteActive] = useState(false);
@@ -49,6 +66,7 @@ export default function Map() {
   const [isFiltersVisible, setFiltersVisible] = useState(false);
 
   const { isMetric, toggleUnitSystem } = useUnitSystem();
+  const cameraRef = useRef<Camera>(null);
 
   const apiFilters: LocationsFilters = useMemo(() => {
     const filters: LocationsFilters = {};
@@ -108,7 +126,52 @@ export default function Map() {
     return true;
   };
 
-  console.log("selectedLocation:", selectedLocation);
+  // Convert locations to GeoJSON FeatureCollection for clustering
+  const geoJsonSource = useMemo(() => {
+    const filteredLocations = locations?.filter(filterEventsByRockDrop) || [];
+    return {
+      type: "FeatureCollection" as const,
+      features: filteredLocations.map((location) => ({
+        type: "Feature" as const,
+        id: location.id,
+        geometry: {
+          type: "Point" as const,
+          coordinates: [location.longitude, location.latitude],
+        },
+        properties: {
+          id: location.id,
+          name: location.name || "Unknown Name",
+          total_height_ft: location.total_height_ft,
+          rock_drop_ft: location.rock_drop_ft,
+          latitude: location.latitude,
+          longitude: location.longitude,
+        },
+      })),
+    };
+  }, [locations, unknownRockdrop]);
+
+  const handleMarkerPress = (event: OnPressEvent) => {
+    const feature = event.features[0];
+    if (!feature) return;
+
+    // Check if it's a cluster
+    if (feature.properties?.cluster) {
+      // Zoom into the cluster
+      const coordinates = (feature.geometry as GeoJSON.Point).coordinates;
+      cameraRef.current?.setCamera({
+        centerCoordinate: coordinates,
+        zoomLevel: (event.coordinates?.zoom || 5) + 2,
+        animationDuration: 500,
+      });
+    } else {
+      // It's an individual marker - find the location and select it
+      const locationId = feature.properties?.id;
+      const location = locations?.find((loc) => loc.id === locationId);
+      if (location) {
+        setSelectedLocation(location);
+      }
+    }
+  };
 
   return (
     <PaperProvider>
@@ -157,39 +220,82 @@ export default function Map() {
                 }}
               >
                 <Camera
+                  ref={cameraRef}
                   defaultSettings={{
                     centerCoordinate: [0, 20],
                     zoomLevel: 2,
-                    pitch: 45, // Tilt the map to see 3D effect
+                    pitch: 45,
                   }}
                 />
+                <LocationPuck
+                  puckBearingEnabled
+                  puckBearing="heading"
+                  pulsing={{ isEnabled: true }}
+                />
                 <Terrain sourceID="mapbox-dem" style={{ exaggeration: 1.5 }} />
-                {locations &&
-                  locations
-                    .filter((event) => filterEventsByRockDrop(event))
-                    .map((event, index) => {
-                      const latitude = event.latitude;
-                      const longitude = event.longitude;
 
-                      return (
-                        <PointAnnotation
-                          key={String(event.id || index)}
-                          id={String(event.id || index)}
-                          coordinate={[longitude, latitude]}
-                          title={event.name || "Unknown Name"}
-                          onSelected={() => {
-                            setSelectedLocation(event);
-                          }}
-                          onDeselected={() => {
-                            setSelectedLocation(null);
-                          }}
-                        >
-                          <View style={styles.markerContainer}>
-                            <View style={styles.marker} />
-                          </View>
-                        </PointAnnotation>
-                      );
-                    })}
+                {/* Clustered markers */}
+                <ShapeSource
+                  id="locationsSource"
+                  shape={geoJsonSource}
+                  cluster={true}
+                  clusterRadius={50}
+                  clusterMaxZoomLevel={14}
+                  onPress={handleMarkerPress}
+                >
+                  {/* Cluster circles */}
+                  <CircleLayer
+                    id="clusterCircles"
+                    filter={["has", "point_count"]}
+                    style={{
+                      circleColor: [
+                        "step",
+                        ["get", "point_count"],
+                        "#000000",
+                        10,
+                        "#000000",
+                        50,
+                        "#000000",
+                      ],
+                      circleRadius: [
+                        "step",
+                        ["get", "point_count"],
+                        20,
+                        10,
+                        25,
+                        50,
+                        30,
+                      ],
+                      circleStrokeWidth: 2,
+                      circleStrokeColor: "#ffffff",
+                    }}
+                  />
+
+                  {/* Cluster count labels */}
+                  <SymbolLayer
+                    id="clusterCount"
+                    filter={["has", "point_count"]}
+                    style={{
+                      textField: ["get", "point_count_abbreviated"],
+                      textSize: 14,
+                      textColor: "#FFFFFF",
+                      textFont: ["DIN Pro Medium", "Arial Unicode MS Bold"],
+                    }}
+                  />
+
+                  {/* Individual markers (non-clustered) */}
+                  <CircleLayer
+                    id="singlePoint"
+                    filter={["!", ["has", "point_count"]]}
+                    style={{
+                      circleColor: "#ca2222",
+                      circleRadius: 10,
+                      circleStrokeWidth: 2,
+                      circleStrokeColor: "#ffffff",
+                    }}
+                  />
+                </ShapeSource>
+
                 {selectedLocation && (
                   <MarkerDetails
                     selectedLocation={selectedLocation}
