@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useAuth } from "../../../../providers/AuthProvider";
+import { useAuth } from "../../../../providers/SessionProvider";
 
 type SettingsItemKey =
   | "contactUs"

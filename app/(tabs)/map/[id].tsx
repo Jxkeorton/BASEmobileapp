@@ -22,7 +22,7 @@ import {
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SubmitLocationDetailsModal from "../../../components/SubmitLocationDetailsModal";
 import { useProtectedRoute } from "../../../hooks/useProtectedRoute";
-import { useAuth } from "../../../providers/AuthProvider";
+import { useAuth } from "../../../providers/SessionProvider";
 import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { getHeightInPreferredUnit } from "../../../utils/unitConversions";

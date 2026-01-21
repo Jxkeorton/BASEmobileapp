@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -18,13 +17,13 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperSecureTextInput,
 } from "../../components/form";
-import { useAuth } from "../../providers/AuthProvider";
+import { useAuth } from "../../providers/SessionProvider";
 import { useKyClient } from "../../services/kyClient";
 import { type LoginFormData, loginSchema } from "../../utils/validationSchemas";
 
 export default function Login() {
   const client = useKyClient();
-  const { updateUser, loading } = useAuth();
+  const { login, loading } = useAuth();
   const [apiError, setApiError] = useState<any>(null);
 
   const {
@@ -50,19 +49,19 @@ export default function Login() {
     },
     onSuccess: async (response) => {
       const user = response.data?.data?.user;
+      const session = response.data?.data?.session;
 
-      // Store token and user data
-      await AsyncStorage.setItem(
-        "auth_token",
-        response.data?.data?.session?.access_token || "",
-      );
-      await AsyncStorage.setItem(
-        "refresh_token",
-        response.data?.data?.session?.refresh_token || "",
-      );
-
-      if (user?.id && user.email) {
-        updateUser({ id: user.id, email: user.email });
+      if (
+        user?.id &&
+        user.email &&
+        session?.access_token &&
+        session?.refresh_token
+      ) {
+        login({
+          user: { id: user.id, email: user.email },
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
+        });
       }
 
       // Navigate to main app

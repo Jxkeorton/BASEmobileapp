@@ -2,9 +2,9 @@ import { Slot } from "expo-router";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { AuthProvider } from "../providers/AuthProvider";
 import { QueryProvider } from "../providers/QueryProvider";
 import { RevenueCatProvider } from "../providers/RevenueCatProvider";
+import { SessionProvider } from "../providers/SessionProvider";
 import { UnitSystemProvider } from "../providers/UnitSystemProvider";
 import { toastConfig } from "../utils/toastConfig";
 
@@ -14,12 +14,12 @@ export default function Layout() {
       <QueryProvider>
         <PaperProvider>
           <UnitSystemProvider>
-            <AuthProvider>
+            <SessionProvider>
               <RevenueCatProvider>
                 <Slot />
                 <Toast config={toastConfig} />
               </RevenueCatProvider>
-            </AuthProvider>
+            </SessionProvider>
           </UnitSystemProvider>
         </PaperProvider>
       </QueryProvider>

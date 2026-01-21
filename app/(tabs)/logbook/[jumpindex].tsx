@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { Button, Card, Paragraph, Title } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import { useAuth } from "../../../providers/AuthProvider";
+import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 
 const JumpDetails = () => {

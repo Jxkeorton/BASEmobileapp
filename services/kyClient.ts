@@ -1,8 +1,20 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from "expo-secure-store";
 import ky from "ky";
 import createClient from "openapi-fetch";
+import { Platform } from "react-native";
 import { paths } from "../types/api";
 import { refreshAuthToken, signOut } from "../utils/authUtils";
+
+const getStorageItem = async (key: string): Promise<string | null> => {
+  if (Platform.OS === "web") {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+  return SecureStore.getItemAsync(key);
+};
 
 const getBaseUrl = () => {
   if (__DEV__) {
@@ -33,7 +45,7 @@ export const kyInstance = (timeout: number) =>
     hooks: {
       beforeRequest: [
         async (request) => {
-          const token = await AsyncStorage.getItem("auth_token");
+          const token = await getStorageItem("auth_token");
 
           if (token) {
             request.headers.set("Authorization", `Bearer ${token}`);

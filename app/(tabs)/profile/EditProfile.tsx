@@ -19,7 +19,7 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
-import { useAuth } from "../../../providers/AuthProvider";
+import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 import {

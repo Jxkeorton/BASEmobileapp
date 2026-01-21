@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, use, useState } from "react";
 
 type UnitSystemContextType = {
   isMetric: boolean;
@@ -10,7 +10,7 @@ const UnitSystemContext = createContext<UnitSystemContextType | undefined>(
 );
 
 export const useUnitSystem = () => {
-  const context = useContext(UnitSystemContext);
+  const context = use(UnitSystemContext);
   if (!context) {
     throw new Error("useUnitSystem must be used within a UnitSystemProvider");
   }

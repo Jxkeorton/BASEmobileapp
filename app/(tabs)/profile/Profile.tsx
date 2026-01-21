@@ -3,17 +3,12 @@ import { router } from "expo-router";
 import { useState } from "react";
 
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import {
-  ScrollView,
-  Share,
-  StyleSheet,
-  View,
-} from "react-native";
+import { ScrollView, Share, StyleSheet, View } from "react-native";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationCard from "../../../components/SavedLocationCard";
-import { useAuth } from "../../../providers/AuthProvider";
+import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
 
