@@ -2,7 +2,7 @@ import { router, useRootNavigationState, useSegments } from "expo-router";
 import { useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { ActivityIndicator, MD2Colors } from "react-native-paper";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/SessionProvider";
 
 const Index = () => {
   const segments = useSegments();

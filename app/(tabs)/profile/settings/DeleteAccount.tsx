@@ -10,7 +10,7 @@ import {
 import { ActivityIndicator, Button, TextInput } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../../../components/APIErrorHandler";
-import { useAuth } from "../../../../providers/AuthProvider";
+import { useAuth } from "../../../../providers/SessionProvider";
 import { useKyClient } from "../../../../services/kyClient";
 
 const DeleteAccount = () => {

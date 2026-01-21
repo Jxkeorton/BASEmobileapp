@@ -18,7 +18,7 @@ import {
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import LogbookEntryCard from "../../../components/LogbookEntryCard";
 import LogbookEntryModal from "../../../components/LogbookEntryModal";
-import { useAuth } from "../../../providers/AuthProvider";
+import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
 

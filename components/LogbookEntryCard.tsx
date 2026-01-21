@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
 
