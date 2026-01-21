@@ -1,6 +1,22 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import ky from "ky";
+import { Platform } from "react-native";
+import { setStorageItemAsync } from "../hooks/useStorageState";
+
+/**
+ * Helper to get item from secure storage (SecureStore on native, localStorage on web)
+ */
+const getStorageItem = async (key: string): Promise<string | null> => {
+  if (Platform.OS === "web") {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  }
+  return SecureStore.getItemAsync(key);
+};
 
 const getBaseUrl = () => {
   if (__DEV__) {
@@ -15,7 +31,7 @@ const getBaseUrl = () => {
 
 export const signOut = async (): Promise<void> => {
   try {
-    const authToken = await AsyncStorage.getItem("auth_token");
+    const authToken = await getStorageItem("auth_token");
     const baseUrl = getBaseUrl();
 
     if (authToken && baseUrl) {
@@ -29,21 +45,21 @@ export const signOut = async (): Promise<void> => {
   } catch (error) {
     // Silently continue with local cleanup
   } finally {
-    // Always clear local storage regardless of API call result
-    await AsyncStorage.removeItem("auth_token");
-    await AsyncStorage.removeItem("refresh_token");
-    await AsyncStorage.removeItem("user_data");
+    // Always clear secure storage regardless of API call result
+    await setStorageItemAsync("auth_token", null);
+    await setStorageItemAsync("refresh_token", null);
+    await setStorageItemAsync("user_data", null);
     router.replace("/(auth)/Login");
   }
 };
 
 /**
- * Shared token refresh logic used by both AuthProvider and kyClient
+ * Shared token refresh logic used by both SessionProvider and kyClient
  * Calls the /refresh API endpoint and stores new tokens
  */
 export const refreshAuthToken = async (): Promise<string | null> => {
   try {
-    const refreshToken = await AsyncStorage.getItem("refresh_token");
+    const refreshToken = await getStorageItem("refresh_token");
 
     if (!refreshToken) {
       return null;
@@ -71,9 +87,9 @@ export const refreshAuthToken = async (): Promise<string | null> => {
     if (response.success && response.data.session) {
       const { access_token, refresh_token } = response.data.session;
 
-      // Store new tokens
-      await AsyncStorage.setItem("auth_token", access_token);
-      await AsyncStorage.setItem("refresh_token", refresh_token);
+      // Store new tokens securely
+      await setStorageItemAsync("auth_token", access_token);
+      await setStorageItemAsync("refresh_token", refresh_token);
 
       return access_token;
     }
@@ -81,9 +97,9 @@ export const refreshAuthToken = async (): Promise<string | null> => {
     return null;
   } catch (error) {
     // Clear stored tokens on refresh failure
-    await AsyncStorage.removeItem("auth_token");
-    await AsyncStorage.removeItem("refresh_token");
-    await AsyncStorage.removeItem("user_data");
+    await setStorageItemAsync("auth_token", null);
+    await setStorageItemAsync("refresh_token", null);
+    await setStorageItemAsync("user_data", null);
     return null;
   }
 };

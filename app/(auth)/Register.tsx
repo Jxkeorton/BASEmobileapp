@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -22,7 +21,7 @@ import {
   ControlledPaperSecureTextInput,
   ControlledPaperTextInput,
 } from "../../components/form";
-import { useAuth } from "../../providers/AuthProvider";
+import { useAuth } from "../../providers/SessionProvider";
 import { useKyClient } from "../../services/kyClient";
 import {
   type RegisterFormData,
@@ -32,7 +31,7 @@ import {
 const Register = () => {
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
-  const { updateUser } = useAuth();
+  const { login } = useAuth();
 
   const {
     control,
@@ -58,6 +57,7 @@ const Register = () => {
     },
     onSuccess: async (response, variables) => {
       const user = response.data?.data?.user;
+      const session = response.data?.data?.session;
 
       if (response.response.status === 200) {
         // Check if email confirmation is required
@@ -68,16 +68,17 @@ const Register = () => {
           });
         } else {
           // Auto-login if session exists (no confirmation required)
-          await AsyncStorage.setItem(
-            "auth_token",
-            response.data?.data?.session?.access_token || "",
-          );
-          await AsyncStorage.setItem(
-            "refresh_token",
-            response.data?.data?.session?.refresh_token || "",
-          );
-          if (user !== undefined && user.id && user.email) {
-            updateUser({ id: user.id, email: user.email });
+          if (
+            user?.id &&
+            user.email &&
+            session?.access_token &&
+            session?.refresh_token
+          ) {
+            login({
+              user: { id: user.id, email: user.email },
+              accessToken: session.access_token,
+              refreshToken: session.refresh_token,
+            });
           }
           router.replace("/(tabs)/map");
         }
