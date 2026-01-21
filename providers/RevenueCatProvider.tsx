@@ -1,12 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, use, useEffect, useMemo, useState } from "react";
 import { Platform } from "react-native";
 import Purchases, {
   CustomerInfo,
@@ -14,7 +8,7 @@ import Purchases, {
   PurchasesPackage,
 } from "react-native-purchases";
 import Toast from "react-native-toast-message";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "./SessionProvider";
 
 interface RevenueCatContextType {
   customerInfo: CustomerInfo | null;
@@ -31,7 +25,7 @@ const RevenueCatContext = createContext<RevenueCatContextType | undefined>(
 );
 
 export const useRevenueCat = () => {
-  const context = useContext(RevenueCatContext);
+  const context = use(RevenueCatContext);
   if (!context) {
     throw new Error("useRevenueCat must be used within RevenueCatProvider");
   }
