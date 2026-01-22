@@ -227,10 +227,10 @@ const LogbookEntryModal = ({
               <ControlledPaperTextInput
                 control={control}
                 name="details"
-                style={[styles.input, { height: 100 }]}
+                style={[styles.input, { height: 70 }]}
                 mode="outlined"
                 multiline
-                numberOfLines={4}
+                numberOfLines={3}
                 placeholder="Add any additional details"
                 autoCapitalize="sentences"
                 textColor="black"
@@ -266,109 +266,118 @@ const LogbookEntryModal = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "80%",
+    width: "85%",
+    maxWidth: 400,
     backgroundColor: "#FFFFFF",
-    padding: 20,
+    padding: 24,
+    borderRadius: 12,
     alignItems: "center",
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
   },
   panelTitle: {
-    fontSize: 27,
-    height: 35,
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 20,
+    color: "#1a1a1a",
   },
   panelSubtitle: {
-    fontSize: 14,
-    color: "gray",
-    height: 30,
+    fontSize: 13,
+    color: "#666",
+    marginBottom: 6,
+    marginTop: 10,
+    fontWeight: "500",
   },
   input: {
-    height: 30,
+    height: 42,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    width: 200,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    width: "100%",
+    fontSize: 15,
   },
   modalFooter: {
     marginTop: 20,
     alignItems: "center",
   },
   panelButton: {
-    padding: 13,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 8,
     backgroundColor: "#00ABF0",
     alignItems: "center",
-    marginVertical: 7,
+    marginTop: 8,
+    marginBottom: 8,
+    width: "100%",
   },
   panelButtonTitle: {
-    fontSize: 17,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
     color: "white",
   },
   cancelButton: {
-    padding: 13,
-    borderRadius: 10,
-    backgroundColor: "#A52A2A",
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: "#6c757d",
     alignItems: "center",
-    marginVertical: 7,
+    marginBottom: 8,
+    width: "100%",
   },
   dropdownButton: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    width: 200,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+    width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#fff",
+    height: 42,
   },
   dropdownText: {
-    fontSize: 16,
-    color: "#000",
+    fontSize: 15,
+    color: "#1a1a1a",
   },
   placeholderText: {
     color: "#999",
   },
   dropdownArrow: {
     color: "#666",
-    fontSize: 12,
+    fontSize: 10,
   },
   exitTypesList: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
+    borderRadius: 6,
     backgroundColor: "#fff",
-    marginBottom: 10,
-    width: 200,
-    maxHeight: 200,
+    marginBottom: 14,
+    width: "100%",
+    maxHeight: 180,
   },
   exitTypeOption: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "#f0f0f0",
   },
   selectedExitType: {
     backgroundColor: "#00ABF0",
   },
   exitTypeText: {
-    fontSize: 16,
-    color: "#000",
+    fontSize: 15,
+    color: "#1a1a1a",
   },
   selectedExitTypeText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "600",
   },
   clearOptionText: {
-    fontSize: 16,
+    fontSize: 15,
     color: "#666",
     fontStyle: "italic",
   },

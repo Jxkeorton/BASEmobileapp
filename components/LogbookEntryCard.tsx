@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { LinearGradient } from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
@@ -122,14 +123,19 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
             style={styles.jumpCard}
             onPress={() => onCardPress(index)}
           >
-            <View style={[styles.backgroundImage, styles.blackBackground]}>
+            <LinearGradient
+              colors={["#00ABF0", "#0088CC", "#006699"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.backgroundImage}
+            >
               <View style={styles.jumpCardContent}>
                 <Text style={styles.contentText}>{jump.jumpNumber}</Text>
                 <Text style={styles.locationTextWhite}>
                   {jump.location_name}
                 </Text>
               </View>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
         ))
       ) : (
@@ -193,35 +199,33 @@ const styles = StyleSheet.create({
   },
   jumpCard: {
     marginHorizontal: 20,
-    marginVertical: 8,
-    borderRadius: 12,
+    marginVertical: 6,
+    borderRadius: 8,
     overflow: "hidden",
-    elevation: 3,
+    elevation: 2,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   backgroundImage: {
-    height: 120,
+    height: 75,
     justifyContent: "flex-end",
   },
-  blackBackground: {
-    backgroundColor: "#333",
-  },
   jumpCardContent: {
-    padding: 15,
+    padding: 12,
     zIndex: 1,
   },
   contentText: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "600",
     color: "#fff",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   locationTextWhite: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#fff",
+    opacity: 0.95,
   },
   emptyMessage: {
     flex: 1,

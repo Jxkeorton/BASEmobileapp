@@ -96,14 +96,19 @@ const LogBook = () => {
               <View style={styles.infoBox}>
                 <TouchableHighlight
                   onPress={showModal}
-                  underlayColor="#DDDDDD"
+                  underlayColor="#e8f7fd"
                   disabled={loading}
+                  style={styles.addButton}
                 >
-                  <FontAwesome
-                    name="plus"
-                    size={30}
-                    color={loading ? "#ccc" : "#000"}
-                  />
+                  <View style={styles.addButtonContent}>
+                    <FontAwesome
+                      name="plus"
+                      size={18}
+                      color="#fff"
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text style={styles.addButtonText}>Log Jump</Text>
+                  </View>
                 </TouchableHighlight>
               </View>
             </View>
@@ -125,18 +130,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#f6f6f6",
   },
   infoBoxWrapper: {
-    borderBottomColor: "#dddddd",
+    borderBottomColor: "#e0e0e0",
     borderBottomWidth: 1,
-    borderTopColor: "#dddddd",
+    borderTopColor: "#e0e0e0",
     borderTopWidth: 1,
     flexDirection: "row",
-    height: 100,
-    marginTop: 20,
+    height: 85,
+    marginTop: 0,
+    backgroundColor: "#fff",
   },
   infoBox: {
     width: "50%",
     alignItems: "center",
     justifyContent: "center",
+  },
+  addButton: {
+    backgroundColor: "#00ABF0",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  addButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   userInfoSection: {
     paddingHorizontal: 30,

@@ -124,9 +124,6 @@ export function ControlledPaperEmailInput<T extends FieldValues>({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginVertical: 10,
-  },
   paperInput: {
     backgroundColor: "white",
   },

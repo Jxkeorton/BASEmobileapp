@@ -108,7 +108,7 @@ const JumpDetails = () => {
         <ActivityIndicator size="large" color="#00ABF0" />
         <Text style={styles.loadingText}>
           {deleteJumpMutation.isPending
-            ? "Processing..."
+            ? "Deleting jump..."
             : "Loading jump details..."}
         </Text>
       </View>
@@ -130,7 +130,7 @@ const JumpDetails = () => {
       <Text variant="titleLarge" style={styles.title}>
         Jump {jumpNumber || "N/A"}
       </Text>
-      <Card style={{ alignItems: "center" }}>
+      <Card style={styles.card}>
         <Card.Content>
           {jump.location_name && (
             <View>
@@ -165,9 +165,11 @@ const JumpDetails = () => {
       <Button
         style={styles.deleteButton}
         mode="contained"
-        buttonColor="red"
+        buttonColor="#dc3545"
+        textColor="#fff"
         onPress={handleDeleteJump}
         disabled={deleteJumpMutation.isPending}
+        labelStyle={{ fontSize: 15, fontWeight: "600" }}
       >
         {deleteJumpMutation.isPending ? "Deleting..." : "Delete Jump"}
       </Button>
@@ -182,12 +184,23 @@ const JumpDetails = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 16,
+    padding: 20,
+    backgroundColor: "#f6f6f6",
+  },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "600",
     marginBottom: 16,
+    color: "#1a1a1a",
   },
   subtitle: {
     fontSize: 18,
@@ -200,19 +213,21 @@ const styles = StyleSheet.create({
   },
   text: {
     marginBottom: 10,
-    fontSize: 16,
+    fontSize: 15,
     paddingLeft: 10,
+    color: "#333",
   },
   subtitleText: {
     marginBottom: 10,
     paddingLeft: 10,
-    fontSize: 16,
-    fontWeight: "bold",
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#666",
   },
   mainContainer: {
     flexDirection: "row",
     marginTop: 10,
-    marginBottom: 5,
+    marginBottom: 8,
     alignItems: "flex-start",
   },
   textContainer: {
@@ -232,15 +247,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f6f6f6",
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 16,
+    fontSize: 15,
     color: "#666",
   },
   deleteButton: {
-    marginTop: 20,
+    marginTop: 24,
     marginBottom: 10,
+    borderRadius: 8,
   },
 });
 
