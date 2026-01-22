@@ -255,21 +255,14 @@ export default function Map() {
               id="locationsSource"
               shape={geoJsonSource}
               cluster={true}
-              clusterRadius={80}
-              clusterMaxZoomLevel={12}
-              clusterProperties={{
-                sum: ["+", ["case", [">=", ["get", "point_count"], 10], 1, 0]],
-              }}
+              clusterRadius={30}
+              clusterMaxZoomLevel={6}
               onPress={handleMarkerPress}
             >
-              {/* Cluster circles */}
+              {/* Cluster circles - all clusters */}
               <CircleLayer
                 id="clusterCircles"
-                filter={[
-                  "all",
-                  ["has", "point_count"],
-                  [">=", ["get", "point_count"], 10],
-                ]}
+                filter={["has", "point_count"]}
                 style={{
                   circleColor: [
                     "step",
@@ -284,6 +277,8 @@ export default function Map() {
                     "interpolate",
                     ["linear"],
                     ["get", "point_count"],
+                    2,
+                    18, // 2 points = 18px
                     10,
                     22, // 10 points = 22px
                     50,
@@ -300,11 +295,7 @@ export default function Map() {
               {/* Cluster count labels */}
               <SymbolLayer
                 id="clusterCount"
-                filter={[
-                  "all",
-                  ["has", "point_count"],
-                  [">=", ["get", "point_count"], 10],
-                ]}
+                filter={["has", "point_count"]}
                 style={{
                   textField: ["get", "point_count_abbreviated"],
                   textSize: 14,
@@ -313,14 +304,10 @@ export default function Map() {
                 }}
               />
 
-              {/* Individual markers and small clusters (< 10 points) */}
+              {/* Individual markers only (not clustered at all) */}
               <CircleLayer
                 id="singlePoint"
-                filter={[
-                  "any",
-                  ["!", ["has", "point_count"]],
-                  ["<", ["get", "point_count"], 10],
-                ]}
+                filter={["!", ["has", "point_count"]]}
                 style={{
                   circleColor: "#ca2222",
                   circleRadius: 10,
