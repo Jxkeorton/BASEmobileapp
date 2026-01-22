@@ -79,7 +79,7 @@ const LogBook = () => {
         end={{ x: 0, y: 1 }}
         style={styles.container}
       >
-        <ScrollView>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View>
               <Portal>
@@ -90,44 +90,37 @@ const LogBook = () => {
                 />
               </Portal>
 
-              <View style={styles.infoBoxWrapper}>
-                <View
-                  style={[
-                    styles.infoBox,
-                    {
-                      borderRightColor: "rgba(255, 255, 255, 0.2)",
-                      borderRightWidth: 1,
-                    },
-                  ]}
-                >
-                  <Text variant="titleLarge" style={styles.whiteText}>
-                    {profile?.jump_number || 0}
-                  </Text>
-                  <Text variant="bodySmall" style={styles.lightWhiteText}>
-                    Total Base Jumps
-                  </Text>
-                </View>
-                <View style={styles.infoBox}>
-                  <TouchableHighlight
-                    onPress={showModal}
-                    underlayColor="rgba(255, 255, 255, 0.2)"
-                    disabled={loading}
-                    style={styles.addButton}
-                  >
-                    <View style={styles.addButtonContent}>
-                      <FontAwesome
-                        name="plus"
-                        size={18}
-                        color="#00ABF0"
-                        style={{ marginRight: 6 }}
-                      />
-                      <Text style={styles.addButtonText}>Log Jump</Text>
-                    </View>
-                  </TouchableHighlight>
+              <View style={styles.statsCard}>
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>
+                      {profile?.jump_number || 0}
+                    </Text>
+                    <Text style={styles.statLabel}>Total Jumps</Text>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.actionItem}>
+                    <TouchableHighlight
+                      onPress={showModal}
+                      underlayColor="rgba(0, 171, 240, 0.1)"
+                      disabled={loading}
+                      style={styles.addButton}
+                    >
+                      <View style={styles.addButtonContent}>
+                        <View style={styles.addIconContainer}>
+                          <FontAwesome name="plus" size={16} color="#fff" />
+                        </View>
+                        <Text style={styles.addButtonText}>Log Jump</Text>
+                      </View>
+                    </TouchableHighlight>
+                  </View>
                 </View>
               </View>
 
-              <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
+              <View style={styles.entriesSection}>
+                <Text style={styles.sectionTitle}>Jump History</Text>
+                <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
+              </View>
               <APIErrorHandler error={profileError} />
             </View>
           </TouchableWithoutFeedback>
@@ -143,50 +136,83 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  infoBoxWrapper: {
-    borderBottomColor: "rgba(255, 255, 255, 0.2)",
-    borderBottomWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.2)",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    height: 85,
-    marginTop: 0,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
   },
-  infoBox: {
-    width: "50%",
+  statsCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  statsRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+  },
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#00ABF0",
+  },
+  statLabel: {
+    fontSize: 11,
+    color: "#888",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  divider: {
+    width: 1,
+    height: 50,
+    backgroundColor: "#f0f0f0",
+  },
+  actionItem: {
+    flex: 1,
+    alignItems: "center",
   },
   addButton: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    borderRadius: 12,
+    overflow: "hidden",
   },
   addButtonContent: {
     flexDirection: "row",
     alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  addIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#00ABF0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
   },
   addButtonText: {
-    color: "#00ABF0",
-    fontSize: 16,
-    fontWeight: "600",
+    color: "#1a1a1a",
+    fontSize: 15,
+    fontWeight: "700",
   },
-  whiteText: {
+  entriesSection: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
     color: "#fff",
-    fontWeight: "600",
-  },
-  lightWhiteText: {
-    color: "rgba(255, 255, 255, 0.9)",
-  },
-  userInfoSection: {
-    paddingHorizontal: 30,
-    marginBottom: 25,
+    marginBottom: 12,
+    marginLeft: 4,
   },
 });

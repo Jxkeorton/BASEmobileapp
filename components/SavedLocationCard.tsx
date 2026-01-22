@@ -19,7 +19,6 @@ const SavedLocationCard = ({ data, onDelete }: SavedLocationCardProps) => {
   if (data.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>No Saved Locations</Text>
         <View style={{ justifyContent: "center" }}>
           <Text style={styles.emptyText}>Visit the Map to save locations</Text>
         </View>
@@ -29,7 +28,6 @@ const SavedLocationCard = ({ data, onDelete }: SavedLocationCardProps) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Saved Locations</Text>
       {data.map((item) => (
         <View key={item.save_id} style={styles.card}>
           <Card style={styles.cardStyle}>

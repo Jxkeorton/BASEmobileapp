@@ -140,112 +140,108 @@ const Profile = () => {
       end={{ x: 0, y: 1 }}
       style={styles.container}
     >
-      <ScrollView>
-        <View style={styles.userInfoSection}>
-          <View style={{ flexDirection: "row", marginTop: 15 }}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.profileCard}>
+          <View style={styles.profileHeader}>
             <View style={styles.avatarPlaceholder}>
-              <FontAwesome name="user" size={30} color="#ccc" />
+              <FontAwesome name="user" size={36} color="#00ABF0" />
             </View>
-            <View style={{ marginLeft: 20 }}>
-              <Text
-                variant="titleLarge"
-                style={[
-                  styles.title,
-                  {
-                    marginTop: 15,
-                    marginBottom: 5,
-                  },
-                ]}
-              >
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>
                 {profile?.name || "No name set"}
               </Text>
-              <Text variant="bodySmall" style={styles.caption}>
+              <Text style={styles.profileUsername}>
                 @{profile.username || "No username"}
               </Text>
             </View>
           </View>
 
-          <View style={styles.userInfoSection} />
-
-          <View style={styles.infoBoxWrapper}>
-            <View
-              style={[
-                styles.infoBox,
-                {
-                  borderRightColor: "rgba(255, 255, 255, 0.2)",
-                  borderRightWidth: 1,
-                },
-              ]}
-            >
-              <Text variant="titleLarge" style={styles.whiteText}>
-                {profile.jump_number || 0}
-              </Text>
-              <Text variant="bodySmall" style={styles.lightText}>
-                Total Base Jumps
-              </Text>
-            </View>
-            <View style={styles.infoBox}>
-              <TouchableRipple
-                onPress={() => router.replace("/(tabs)/profile/EditProfile")}
-                style={styles.quickAction}
-              >
-                <View style={styles.quickActionContent}>
-                  <MaterialCommunityIcons
-                    name="account-check-outline"
-                    color="#fff"
-                    size={22}
-                  />
-                  <Text style={styles.quickActionText}>Edit Profile</Text>
-                </View>
-              </TouchableRipple>
-              <TouchableRipple
-                onPress={myCustomShare}
-                style={styles.quickAction}
-              >
-                <View style={styles.quickActionContent}>
-                  <MaterialCommunityIcons
-                    name="share-outline"
-                    color="#fff"
-                    size={22}
-                  />
-                  <Text style={styles.quickActionText}>Share</Text>
-                </View>
-              </TouchableRipple>
-              <TouchableRipple
-                onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
-                style={styles.quickAction}
-              >
-                <View style={styles.quickActionContent}>
-                  <MaterialCommunityIcons
-                    name="map-marker-radius"
-                    color="#fff"
-                    size={22}
-                  />
-                  <Text style={styles.quickActionText}>Submit</Text>
-                </View>
-              </TouchableRipple>
+          <View style={styles.statsContainer}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>{profile.jump_number || 0}</Text>
+              <Text style={styles.statLabel}>Total Jumps</Text>
             </View>
           </View>
         </View>
 
-        {locationsLoading ? (
-          <Text>Loading</Text>
-        ) : (
-          <>
-            {locationsError ? (
-              <View style={styles.errorContainer}>
-                <Text style={styles.errorText}>
-                  Error loading saved locations
-                </Text>
-                <Text style={styles.errorDetails}>
-                  {locationsError.message}
-                </Text>
+        <View style={styles.actionsCard}>
+          <Text style={styles.sectionLabel}>Quick Actions</Text>
+          <View style={styles.actionsGrid}>
+            <TouchableRipple
+              onPress={() => router.replace("/(tabs)/profile/EditProfile")}
+              style={styles.actionButton}
+              borderless
+            >
+              <View style={styles.actionButtonContent}>
+                <View style={styles.actionIconContainer}>
+                  <MaterialCommunityIcons
+                    name="account-edit"
+                    color="#00ABF0"
+                    size={20}
+                  />
+                </View>
+                <Text style={styles.actionButtonText}>Edit Profile</Text>
               </View>
-            ) : (
-              <SavedLocationCard data={savedLocations} onDelete={onDelete} />
-            )}
-          </>
-        )}
+            </TouchableRipple>
+            <TouchableRipple
+              onPress={myCustomShare}
+              style={styles.actionButton}
+              borderless
+            >
+              <View style={styles.actionButtonContent}>
+                <View style={styles.actionIconContainer}>
+                  <MaterialCommunityIcons
+                    name="share-variant"
+                    color="#00ABF0"
+                    size={20}
+                  />
+                </View>
+                <Text style={styles.actionButtonText}>Share App</Text>
+              </View>
+            </TouchableRipple>
+            <TouchableRipple
+              onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
+              style={styles.actionButton}
+              borderless
+            >
+              <View style={styles.actionButtonContent}>
+                <View style={styles.actionIconContainer}>
+                  <MaterialCommunityIcons
+                    name="map-marker-plus"
+                    color="#00ABF0"
+                    size={20}
+                  />
+                </View>
+                <Text style={styles.actionButtonText}>Submit Location</Text>
+              </View>
+            </TouchableRipple>
+          </View>
+        </View>
+
+        <View style={styles.savedSection}>
+          <Text style={styles.sectionTitle}>Saved Locations</Text>
+          {locationsLoading ? (
+            <View style={styles.loadingSection}>
+              <ActivityIndicator size="small" color="#fff" />
+              <Text style={styles.loadingSectionText}>Loading...</Text>
+            </View>
+          ) : (
+            <>
+              {locationsError ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>
+                    Error loading saved locations
+                  </Text>
+                  <Text style={styles.errorDetails}>
+                    {locationsError.message}
+                  </Text>
+                </View>
+              ) : (
+                <SavedLocationCard data={savedLocations} onDelete={onDelete} />
+              )}
+            </>
+          )}
+        </View>
       </ScrollView>
       <APIErrorHandler
         error={error || profileError || locationsError}
@@ -260,7 +256,10 @@ export default Profile;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f6f6f6",
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 100,
   },
   loadingContainer: {
     justifyContent: "center",
@@ -270,91 +269,157 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: "#fff",
+    fontWeight: "500",
+  },
+  loadingSection: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  loadingSectionText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: "rgba(255, 255, 255, 0.8)",
   },
   errorText: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "600",
     textAlign: "center",
   },
   errorDetails: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.9)",
-    marginTop: 5,
+    fontSize: 13,
+    color: "rgba(255, 255, 255, 0.7)",
+    marginTop: 6,
     textAlign: "center",
   },
   errorContainer: {
     padding: 20,
     alignItems: "center",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  profileCard: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  profileHeader: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: "rgba(0, 171, 240, 0.1)",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "rgba(255, 255, 255, 0.3)",
+    borderWidth: 3,
+    borderColor: "rgba(0, 171, 240, 0.2)",
   },
-  userInfoSection: {
-    paddingHorizontal: 30,
-    marginBottom: 25,
+  profileInfo: {
+    marginLeft: 16,
+    flex: 1,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  caption: {
-    fontSize: 14,
-    lineHeight: 14,
-    fontWeight: "500",
-    color: "rgba(255, 255, 255, 0.9)",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 10,
-  },
-  button: {
-    backgroundColor: "black",
-  },
-  infoBoxWrapper: {
-    borderBottomColor: "rgba(255, 255, 255, 0.2)",
-    borderBottomWidth: 1,
-    borderTopColor: "rgba(255, 255, 255, 0.2)",
-    borderTopWidth: 1,
-    flexDirection: "row",
-    height: 120,
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-  },
-  infoBox: {
-    width: "50%",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  whiteText: {
-    color: "#fff",
+  profileName: {
+    fontSize: 22,
     fontWeight: "700",
+    color: "#1a1a1a",
+    marginBottom: 4,
   },
-  lightText: {
-    color: "rgba(255, 255, 255, 0.9)",
-  },
-  quickAction: {
-    marginVertical: 2,
-    borderRadius: 6,
-  },
-  quickActionContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  quickActionText: {
-    color: "#fff",
-    marginLeft: 8,
+  profileUsername: {
     fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#00ABF0",
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "#888",
     fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  actionsCard: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#999",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  actionsGrid: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  actionButton: {
+    flex: 1,
+    marginHorizontal: 2,
+    borderRadius: 10,
+  },
+  actionButtonContent: {
+    alignItems: "center",
+    paddingVertical: 8,
+  },
+  actionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 171, 240, 0.1)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  actionButtonText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#444",
+    textAlign: "center",
+  },
+  savedSection: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 12,
+    marginLeft: 4,
   },
 });
