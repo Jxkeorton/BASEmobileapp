@@ -8,18 +8,17 @@ import Mapbox, {
   Terrain,
 } from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { PaperProvider, Portal } from "react-native-paper";
+import { ActivityIndicator, PaperProvider, Portal } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import FiltersModal from "../../../components/FiltersModal";
 import {
-  LoadingOverlay,
   MapControls,
   MarkerDetails,
   SearchBox,
@@ -53,6 +52,7 @@ type OnPressEvent = {
 
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [satelliteActive, setSatelliteActive] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     null,
@@ -71,11 +71,20 @@ export default function Map() {
   const { isMetric, toggleUnitSystem } = useUnitSystem();
   const cameraRef = useRef<Camera>(null);
 
+  // Debounce search term to avoid API calls on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const apiFilters: LocationsFilters = useMemo(() => {
     const filters: LocationsFilters = {};
 
-    if (searchTerm.trim()) {
-      filters.search = searchTerm.trim();
+    if (debouncedSearchTerm.trim()) {
+      filters.search = debouncedSearchTerm.trim();
     }
 
     if (minRockDrop !== "") {
@@ -93,11 +102,11 @@ export default function Map() {
     }
 
     return filters;
-  }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
+  }, [debouncedSearchTerm, minRockDrop, maxRockDrop, isMetric]);
 
   const {
     data: locationsResponse,
-    isLoading: loadingMap,
+    isFetching,
     error,
   } = useQuery({
     queryKey: ["locations", apiFilters],
@@ -189,8 +198,6 @@ export default function Map() {
       setSatelliteLoading(false);
     }, 100);
   };
-
-  const isFullyLoaded = !loadingMap && !isMapLoading;
 
   return (
     <PaperProvider>
@@ -325,25 +332,25 @@ export default function Map() {
             )}
           </MapView>
 
-          {/* Loading overlay */}
-          {(loadingMap || isMapLoading) && (
-            <LoadingOverlay loadingLocations={loadingMap} />
+          {/* Subtle loading indicator for search/filter refetches */}
+          {isFetching && (
+            <View style={styles.refetchIndicator}>
+              <ActivityIndicator size="small" color="#00ABF0" />
+            </View>
           )}
 
           {/* Map controls container */}
-          {isFullyLoaded && (
-            <MapControls
-              satelliteActive={satelliteActive}
-              satelliteViewLoading={satelliteViewLoading}
-              isMetric={isMetric}
-              onSatelliteToggle={handleMapStyleChange}
-              onUnitToggle={toggleUnitSystem}
-              onFilterPress={() => setFiltersVisible(true)}
-            />
-          )}
+          <MapControls
+            satelliteActive={satelliteActive}
+            satelliteViewLoading={satelliteViewLoading}
+            isMetric={isMetric}
+            onSatelliteToggle={handleMapStyleChange}
+            onUnitToggle={toggleUnitSystem}
+            onFilterPress={() => setFiltersVisible(true)}
+          />
 
           {/* Submit Location Button */}
-          {isFullyLoaded && <SubmitLocationButton />}
+          <SubmitLocationButton />
 
           <SearchBox value={searchTerm} onChangeText={setSearchTerm} />
           <APIErrorHandler error={error} />
@@ -361,5 +368,19 @@ const styles = StyleSheet.create({
   map: {
     width: "100%",
     height: "100%",
+  },
+  refetchIndicator: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -20 }, { translateY: -20 }],
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    borderRadius: 20,
+    padding: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });

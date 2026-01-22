@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
     top: 115,
     right: 10,
     gap: 10,
-    zIndex: 1000,
+    zIndex: 1100,
   },
   controlButton: {
     backgroundColor: "white",
