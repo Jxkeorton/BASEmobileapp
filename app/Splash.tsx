@@ -3,7 +3,7 @@ import { useAuth } from "../providers/SessionProvider";
 
 SplashScreen.preventAutoHideAsync();
 
-export function SplashScreenController() {
+export default function SplashScreenController() {
   const { loading } = useAuth();
 
   if (!loading) {

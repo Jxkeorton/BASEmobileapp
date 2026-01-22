@@ -7,7 +7,7 @@ import { RevenueCatProvider } from "../providers/RevenueCatProvider";
 import { SessionProvider, useAuth } from "../providers/SessionProvider";
 import { UnitSystemProvider } from "../providers/UnitSystemProvider";
 import { toastConfig } from "../utils/toastConfig";
-import { SplashScreenController } from "./Splash";
+import SplashScreenController from "./Splash";
 
 export default function Layout() {
   return (

@@ -1,25 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  router,
-  Stack,
-  useFocusEffect,
-  useLocalSearchParams,
-} from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { Button, Card, Paragraph, Title } from "react-native-paper";
+import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import { Button, Card, Text } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
+import { paths } from "../../../types/api";
+
+type LogbookEntry = NonNullable<
+  paths["/logbook"]["get"]["responses"][200]["content"]["application/json"]["data"]
+>["entries"][number];
 
 const JumpDetails = () => {
-  const [jump, setJump] = useState<any>(null);
+  const [jump, setJump] = useState<LogbookEntry | undefined>(undefined);
   const [error, setError] = useState<any>(null);
   const params = useLocalSearchParams();
   const client = useKyClient();
@@ -57,17 +51,15 @@ const JumpDetails = () => {
           if (res.error) {
             throw new Error("Failed to delete jump");
           }
+          if (!res.data?.success) {
+            throw new Error("Failed to delete jump");
+          }
           return res.data;
         });
     },
-    onSuccess: (response) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ["logbook"] });
-
-        router.back();
-      } else {
-        setError({ message: "Failed to delete jump" });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["logbook", user?.id] });
+      router.back();
     },
     onError: (err) => {
       setError(err);
@@ -103,7 +95,11 @@ const JumpDetails = () => {
   );
 
   const handleDeleteJump = async () => {
-    await deleteJumpMutation.mutateAsync(jump.id as string);
+    if (jump) {
+      await deleteJumpMutation.mutateAsync(jump.id);
+    } else {
+      setError({ message: "Jump data is not available for deletion." });
+    }
   };
 
   if (loadingJumps || deleteJumpMutation.isPending) {
@@ -131,19 +127,16 @@ const JumpDetails = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Stack.Screen
-        options={{
-          title: jumpNumber ?? "",
-        }}
-      />
-
+      <Text variant="titleLarge" style={styles.title}>
+        Jump {jumpNumber || "N/A"}
+      </Text>
       <Card style={{ alignItems: "center" }}>
         <Card.Content>
           {jump.location_name && (
             <View>
-              <Title style={styles.title}>
+              <Text variant="titleLarge" style={styles.title}>
                 {jump.location_name.toUpperCase()}
-              </Title>
+              </Text>
             </View>
           )}
 
@@ -163,9 +156,9 @@ const JumpDetails = () => {
           </View>
 
           <Text style={styles.subtitleText}>Details: </Text>
-          <Paragraph style={styles.text}>
+          <Text variant="bodyMedium" style={styles.text}>
             {jump.details || "No details provided"}
-          </Paragraph>
+          </Text>
         </Card.Content>
       </Card>
 
