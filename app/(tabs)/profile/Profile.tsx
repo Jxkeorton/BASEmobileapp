@@ -4,8 +4,8 @@ import { useState } from "react";
 
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScrollView, Share, StyleSheet, View } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
-import { SafeAreaView } from "react-native-safe-area-context";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationCard from "../../../components/SavedLocationCard";
 import { useAuth } from "../../../providers/SessionProvider";
@@ -108,23 +108,38 @@ const Profile = () => {
 
   if (profileLoading) {
     return (
-      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
-        <ActivityIndicator size="large" color="#00ABF0" />
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.container, styles.loadingContainer]}
+      >
+        <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.loadingText}>Loading profile...</Text>
-      </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   if (!profile) {
     return (
-      <SafeAreaView style={[styles.container, styles.loadingContainer]}>
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={[styles.container, styles.loadingContainer]}
+      >
         <Text style={styles.errorText}>Profile not found</Text>
-      </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={["#00ABF0", "#0088CC", "#006699"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.container}
+    >
       <ScrollView>
         <View style={styles.userInfoSection}>
           <View style={{ flexDirection: "row", marginTop: 15 }}>
@@ -157,51 +172,59 @@ const Profile = () => {
               style={[
                 styles.infoBox,
                 {
-                  borderRightColor: "#dddddd",
+                  borderRightColor: "rgba(255, 255, 255, 0.2)",
                   borderRightWidth: 1,
                 },
               ]}
             >
-              <Text variant="titleLarge">{profile.jump_number || 0}</Text>
-              <Text variant="bodySmall">Total Base Jumps</Text>
+              <Text variant="titleLarge" style={styles.whiteText}>
+                {profile.jump_number || 0}
+              </Text>
+              <Text variant="bodySmall" style={styles.lightText}>
+                Total Base Jumps
+              </Text>
             </View>
-          </View>
-
-          <View style={styles.menuWrapper}>
-            <TouchableRipple
-              onPress={() => router.replace("/(tabs)/profile/EditProfile")}
-            >
-              <View style={styles.menuItem}>
-                <MaterialCommunityIcons
-                  name="account-check-outline"
-                  color="#777777"
-                  size={25}
-                />
-                <Text style={styles.menuItemText}>Edit Profile</Text>
-              </View>
-            </TouchableRipple>
-            <TouchableRipple onPress={myCustomShare}>
-              <View style={styles.menuItem}>
-                <MaterialCommunityIcons
-                  name="share-outline"
-                  color="#777777"
-                  size={25}
-                />
-                <Text style={styles.menuItemText}>Tell Your Friends</Text>
-              </View>
-            </TouchableRipple>
-            <TouchableRipple
-              onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
-            >
-              <View style={styles.menuItem}>
-                <MaterialCommunityIcons
-                  name="map-marker-radius"
-                  color="#777777"
-                  size={25}
-                />
-                <Text style={styles.menuItemText}>Submit A Location</Text>
-              </View>
-            </TouchableRipple>
+            <View style={styles.infoBox}>
+              <TouchableRipple
+                onPress={() => router.replace("/(tabs)/profile/EditProfile")}
+                style={styles.quickAction}
+              >
+                <View style={styles.quickActionContent}>
+                  <MaterialCommunityIcons
+                    name="account-check-outline"
+                    color="#fff"
+                    size={22}
+                  />
+                  <Text style={styles.quickActionText}>Edit Profile</Text>
+                </View>
+              </TouchableRipple>
+              <TouchableRipple
+                onPress={myCustomShare}
+                style={styles.quickAction}
+              >
+                <View style={styles.quickActionContent}>
+                  <MaterialCommunityIcons
+                    name="share-outline"
+                    color="#fff"
+                    size={22}
+                  />
+                  <Text style={styles.quickActionText}>Share</Text>
+                </View>
+              </TouchableRipple>
+              <TouchableRipple
+                onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
+                style={styles.quickAction}
+              >
+                <View style={styles.quickActionContent}>
+                  <MaterialCommunityIcons
+                    name="map-marker-radius"
+                    color="#fff"
+                    size={22}
+                  />
+                  <Text style={styles.quickActionText}>Submit</Text>
+                </View>
+              </TouchableRipple>
+            </View>
           </View>
         </View>
 
@@ -228,7 +251,7 @@ const Profile = () => {
         error={error || profileError || locationsError}
         onDismiss={() => setError(null)}
       />
-    </View>
+    </LinearGradient>
   );
 };
 
@@ -246,17 +269,17 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
   },
   errorText: {
     fontSize: 18,
-    color: "#d32f2f",
+    color: "#fff",
     fontWeight: "bold",
     textAlign: "center",
   },
   errorDetails: {
     fontSize: 14,
-    color: "#666",
+    color: "rgba(255, 255, 255, 0.9)",
     marginTop: 5,
     textAlign: "center",
   },
@@ -268,11 +291,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "#ddd",
+    borderColor: "rgba(255, 255, 255, 0.3)",
   },
   userInfoSection: {
     paddingHorizontal: 30,
@@ -281,11 +304,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "#fff",
   },
   caption: {
     fontSize: 14,
     lineHeight: 14,
     fontWeight: "500",
+    color: "rgba(255, 255, 255, 0.9)",
   },
   row: {
     flexDirection: "row",
@@ -296,32 +321,40 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
   },
   infoBoxWrapper: {
-    borderBottomColor: "#dddddd",
+    borderBottomColor: "rgba(255, 255, 255, 0.2)",
     borderBottomWidth: 1,
-    borderTopColor: "#dddddd",
+    borderTopColor: "rgba(255, 255, 255, 0.2)",
     borderTopWidth: 1,
     flexDirection: "row",
-    height: 100,
+    height: 120,
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   infoBox: {
     width: "50%",
     alignItems: "center",
     justifyContent: "center",
   },
-  menuWrapper: {
-    marginTop: 10,
+  whiteText: {
+    color: "#fff",
+    fontWeight: "700",
   },
-  menuItem: {
+  lightText: {
+    color: "rgba(255, 255, 255, 0.9)",
+  },
+  quickAction: {
+    marginVertical: 2,
+    borderRadius: 6,
+  },
+  quickActionContent: {
     flexDirection: "row",
-    paddingVertical: 10,
-    justifyContent: "center",
-    width: "100%",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  menuItemText: {
-    color: "#777777",
-    marginLeft: 20,
+  quickActionText: {
+    color: "#fff",
+    marginLeft: 8,
+    fontSize: 14,
     fontWeight: "600",
-    fontSize: 16,
-    lineHeight: 26,
   },
 });

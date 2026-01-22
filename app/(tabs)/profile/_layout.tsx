@@ -1,6 +1,34 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
-import { Button } from "react-native-paper";
+import React from "react";
+import { TouchableOpacity } from "react-native";
+
+const SettingsButton = React.memo(() => (
+  <TouchableOpacity
+    onPress={() => router.navigate("/profile/settings")}
+    style={{
+      marginRight: 10,
+      padding: 8,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <FontAwesome name="cog" size={22} color="#fff" />
+  </TouchableOpacity>
+));
+
+const CancelButton = React.memo(() => (
+  <TouchableOpacity
+    onPress={() => router.replace("/profile/Profile")}
+    style={{
+      padding: 8,
+      justifyContent: "center",
+      alignItems: "center",
+    }}
+  >
+    <FontAwesome name="times" size={22} color="#fff" />
+  </TouchableOpacity>
+));
 
 export default () => {
   return (
@@ -16,16 +44,7 @@ export default () => {
       <Stack.Screen
         name="Profile"
         options={{
-          headerRight: () => (
-            <Button
-              mode="contained-tonal"
-              buttonColor="black"
-              onPress={() => router.navigate("/profile/settings")}
-            >
-              <FontAwesome name="cog" size={20} color="#fff" />
-            </Button>
-          ),
-          headerTitle: "",
+          headerRight: () => <SettingsButton />,
         }}
       />
       <Stack.Screen
@@ -38,16 +57,7 @@ export default () => {
         name="SubmitLocation"
         options={{
           title: "Submit A New Exit",
-          headerLeft: () => (
-            <Button
-              mode="contained-tonal"
-              buttonColor="black"
-              textColor="white"
-              onPress={() => router.replace("/profile/Profile")}
-            >
-              Cancel
-            </Button>
-          ),
+          headerLeft: () => <CancelButton />,
         }}
       />
       <Stack.Screen

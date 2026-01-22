@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import { Button, Card, Text } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import { useAuth } from "../../../providers/SessionProvider";
@@ -104,80 +105,108 @@ const JumpDetails = () => {
 
   if (loadingJumps || deleteJumpMutation.isPending) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#00ABF0" />
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.loadingContainer}
+      >
+        <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.loadingText}>
           {deleteJumpMutation.isPending
-            ? "Deleting jump..."
+            ? "Processing..."
             : "Loading jump details..."}
         </Text>
-      </View>
+      </LinearGradient>
     );
   }
 
   if (!jump) {
     return (
-      <View style={styles.noJumpContainer}>
-        <Text style={{ fontSize: 25 }}>
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.noJumpContainer}
+      >
+        <Text style={{ fontSize: 25, color: "#fff" }}>
           Cannot fetch jump details. Please try again.
         </Text>
-      </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text variant="titleLarge" style={styles.title}>
-        Jump {jumpNumber || "N/A"}
-      </Text>
-      <Card style={styles.card}>
-        <Card.Content>
-          {jump.location_name && (
-            <View>
-              <Text variant="titleLarge" style={styles.title}>
+    <LinearGradient
+      colors={["#00ABF0", "#0088CC", "#006699"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text variant="titleLarge" style={styles.pageTitle}>
+          Jump {jumpNumber || "N/A"}
+        </Text>
+
+        {jump.location_name && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text style={styles.sectionLabel}>Location</Text>
+              <Text style={styles.locationName}>
                 {jump.location_name.toUpperCase()}
               </Text>
-            </View>
-          )}
+            </Card.Content>
+          </Card>
+        )}
 
-          <View style={styles.mainContainer}>
-            <View style={styles.subtitleContainer}>
-              <Text style={styles.subtitleText}>Exit Type: </Text>
-              <Text style={styles.subtitleText}>Delay: </Text>
-              <Text style={styles.subtitleText}>Date: </Text>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={styles.sectionLabel}>Jump Information</Text>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Exit Type:</Text>
+              <Text style={styles.infoValue}>{jump.exit_type || "N/A"}</Text>
             </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.text}>{jump.exit_type || "N/A"}</Text>
-              <Text style={styles.text}>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Delay:</Text>
+              <Text style={styles.infoValue}>
                 {jump.delay_seconds ? `${jump.delay_seconds} sec` : "N/A"}
               </Text>
-              <Text style={styles.text}>{jump.jump_date || "N/A"}</Text>
             </View>
-          </View>
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Date:</Text>
+              <Text style={styles.infoValue}>{jump.jump_date || "N/A"}</Text>
+            </View>
+          </Card.Content>
+        </Card>
 
-          <Text style={styles.subtitleText}>Details: </Text>
-          <Text variant="bodyMedium" style={styles.text}>
-            {jump.details || "No details provided"}
-          </Text>
-        </Card.Content>
-      </Card>
+        {jump.details && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text style={styles.sectionLabel}>Details</Text>
+              <Text style={styles.detailsText}>
+                {jump.details || "No details provided"}
+              </Text>
+            </Card.Content>
+          </Card>
+        )}
 
-      <Button
-        style={styles.deleteButton}
-        mode="contained"
-        buttonColor="#dc3545"
-        textColor="#fff"
-        onPress={handleDeleteJump}
-        disabled={deleteJumpMutation.isPending}
-        labelStyle={{ fontSize: 15, fontWeight: "600" }}
-      >
-        {deleteJumpMutation.isPending ? "Deleting..." : "Delete Jump"}
-      </Button>
-      <APIErrorHandler
-        error={error || jumpsError}
-        onDismiss={() => setError(null)}
-      />
-    </ScrollView>
+        <Button
+          style={styles.deleteButton}
+          mode="contained"
+          buttonColor="#dc3545"
+          textColor="#fff"
+          onPress={handleDeleteJump}
+          disabled={deleteJumpMutation.isPending}
+          labelStyle={{ fontSize: 15, fontWeight: "600" }}
+        >
+          {deleteJumpMutation.isPending ? "Deleting..." : "Delete Jump"}
+        </Button>
+        <APIErrorHandler
+          error={error || jumpsError}
+          onDismiss={() => setError(null)}
+        />
+      </ScrollView>
+    </LinearGradient>
   );
 };
 
@@ -185,57 +214,60 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
-    backgroundColor: "#f6f6f6",
+  },
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 20,
+    color: "#fff",
+    textAlign: "center",
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 8,
-    elevation: 2,
+    borderRadius: 12,
+    elevation: 3,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "600",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
     marginBottom: 16,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#999",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  locationName: {
+    fontSize: 24,
+    fontWeight: "700",
     color: "#1a1a1a",
+    letterSpacing: 0.5,
   },
-  subtitle: {
-    fontSize: 18,
-    marginBottom: 8,
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
-  image: {
-    width: "48%",
-    aspectRatio: 1,
-    marginBottom: 8,
-  },
-  text: {
-    marginBottom: 10,
-    fontSize: 15,
-    paddingLeft: 10,
-    color: "#333",
-  },
-  subtitleText: {
-    marginBottom: 10,
-    paddingLeft: 10,
+  infoLabel: {
     fontSize: 15,
     fontWeight: "600",
     color: "#666",
   },
-  mainContainer: {
-    flexDirection: "row",
-    marginTop: 10,
-    marginBottom: 8,
-    alignItems: "flex-start",
+  infoValue: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#1a1a1a",
   },
-  textContainer: {
-    width: "60%",
-  },
-  subtitleContainer: {
-    width: "40%",
-    alignItems: "flex-start",
+  detailsText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#333",
   },
   noJumpContainer: {
     flex: 1,
@@ -247,15 +279,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f6f6f6",
   },
   loadingText: {
     marginTop: 10,
     fontSize: 15,
-    color: "#666",
+    color: "#fff",
   },
   deleteButton: {
-    marginTop: 24,
+    marginTop: 8,
     marginBottom: 10,
     borderRadius: 8,
   },
