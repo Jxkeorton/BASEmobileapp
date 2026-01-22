@@ -9,7 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { LinearGradient } from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
@@ -123,19 +122,19 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
             style={styles.jumpCard}
             onPress={() => onCardPress(index)}
           >
-            <LinearGradient
-              colors={["#00ABF0", "#0088CC", "#006699"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.backgroundImage}
-            >
+            <View style={styles.backgroundImage}>
               <View style={styles.jumpCardContent}>
-                <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                  {jump.jump_date && (
+                    <Text style={styles.dateText}>{jump.jump_date}</Text>
+                  )}
+                </View>
                 <Text style={styles.locationTextWhite}>
                   {jump.location_name}
                 </Text>
               </View>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         ))
       ) : (
@@ -175,12 +174,12 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
   },
   searchBox: {
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: "#f6f6f6",
+    backgroundColor: "transparent",
   },
   textInputContainer: {
     flexDirection: "row",
@@ -190,7 +189,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   searchInput: {
     flex: 1,
@@ -202,30 +206,42 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     borderRadius: 8,
     overflow: "hidden",
-    elevation: 2,
+    backgroundColor: "#fff",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   backgroundImage: {
     height: 75,
     justifyContent: "flex-end",
+    backgroundColor: "#fff",
   },
   jumpCardContent: {
     padding: 12,
     zIndex: 1,
   },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
   contentText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: "600",
-    color: "#fff",
-    marginBottom: 2,
+    color: "#1a1a1a",
   },
   locationTextWhite: {
-    fontSize: 14,
-    color: "#fff",
-    opacity: 0.95,
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "500",
+  },
+  dateText: {
+    fontSize: 12,
+    color: "#999",
+    fontWeight: "500",
   },
   emptyMessage: {
     flex: 1,
@@ -236,7 +252,7 @@ const styles = StyleSheet.create({
   },
   emptyMessageText: {
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
     textAlign: "center",
     lineHeight: 24,
   },

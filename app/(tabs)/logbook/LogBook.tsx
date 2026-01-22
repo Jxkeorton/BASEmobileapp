@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import {
   ActivityIndicator,
   PaperProvider,
@@ -52,14 +53,17 @@ const LogBook = () => {
 
   if (profileLoading) {
     return (
-      <View
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={[
           styles.container,
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" />
-      </View>
+        <ActivityIndicator size="large" color="#fff" />
+      </LinearGradient>
     );
   }
 
@@ -69,55 +73,66 @@ const LogBook = () => {
 
   return (
     <PaperProvider>
-      <ScrollView style={styles.container}>
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <View>
-            <Portal>
-              <LogbookEntryModal
-                visible={visible}
-                onClose={hideModal}
-                isLoading={loading}
-              />
-            </Portal>
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.container}
+      >
+        <ScrollView>
+          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <View>
+              <Portal>
+                <LogbookEntryModal
+                  visible={visible}
+                  onClose={hideModal}
+                  isLoading={loading}
+                />
+              </Portal>
 
-            <View style={styles.infoBoxWrapper}>
-              <View
-                style={[
-                  styles.infoBox,
-                  {
-                    borderRightColor: "#dddddd",
-                    borderRightWidth: 1,
-                  },
-                ]}
-              >
-                <Text variant="titleLarge">{profile?.jump_number || 0}</Text>
-                <Text variant="bodySmall">Total Base Jumps</Text>
-              </View>
-              <View style={styles.infoBox}>
-                <TouchableHighlight
-                  onPress={showModal}
-                  underlayColor="#e8f7fd"
-                  disabled={loading}
-                  style={styles.addButton}
+              <View style={styles.infoBoxWrapper}>
+                <View
+                  style={[
+                    styles.infoBox,
+                    {
+                      borderRightColor: "rgba(255, 255, 255, 0.2)",
+                      borderRightWidth: 1,
+                    },
+                  ]}
                 >
-                  <View style={styles.addButtonContent}>
-                    <FontAwesome
-                      name="plus"
-                      size={18}
-                      color="#fff"
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text style={styles.addButtonText}>Log Jump</Text>
-                  </View>
-                </TouchableHighlight>
+                  <Text variant="titleLarge" style={styles.whiteText}>
+                    {profile?.jump_number || 0}
+                  </Text>
+                  <Text variant="bodySmall" style={styles.lightWhiteText}>
+                    Total Base Jumps
+                  </Text>
+                </View>
+                <View style={styles.infoBox}>
+                  <TouchableHighlight
+                    onPress={showModal}
+                    underlayColor="rgba(255, 255, 255, 0.2)"
+                    disabled={loading}
+                    style={styles.addButton}
+                  >
+                    <View style={styles.addButtonContent}>
+                      <FontAwesome
+                        name="plus"
+                        size={18}
+                        color="#00ABF0"
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text style={styles.addButtonText}>Log Jump</Text>
+                    </View>
+                  </TouchableHighlight>
+                </View>
               </View>
-            </View>
 
-            <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
-            <APIErrorHandler error={profileError} />
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+              <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
+              <APIErrorHandler error={profileError} />
+            </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </LinearGradient>
     </PaperProvider>
   );
 };
@@ -127,17 +142,16 @@ export default LogBook;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f6f6f6",
   },
   infoBoxWrapper: {
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: "rgba(255, 255, 255, 0.2)",
     borderBottomWidth: 1,
-    borderTopColor: "#e0e0e0",
+    borderTopColor: "rgba(255, 255, 255, 0.2)",
     borderTopWidth: 1,
     flexDirection: "row",
     height: 85,
     marginTop: 0,
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   infoBox: {
     width: "50%",
@@ -145,19 +159,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   addButton: {
-    backgroundColor: "#00ABF0",
+    backgroundColor: "#fff",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   addButtonContent: {
     flexDirection: "row",
     alignItems: "center",
   },
   addButtonText: {
-    color: "#fff",
+    color: "#00ABF0",
     fontSize: 16,
     fontWeight: "600",
+  },
+  whiteText: {
+    color: "#fff",
+    fontWeight: "600",
+  },
+  lightWhiteText: {
+    color: "rgba(255, 255, 255, 0.9)",
   },
   userInfoSection: {
     paddingHorizontal: 30,
