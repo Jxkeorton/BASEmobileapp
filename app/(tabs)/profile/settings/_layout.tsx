@@ -1,12 +1,26 @@
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Stack, router } from "expo-router";
-import { Button } from "react-native-paper";
+import React from "react";
+import { TouchableOpacity } from "react-native";
+
+const BackButton = React.memo(() => (
+  <TouchableOpacity
+    onPress={() => router.back()}
+    style={{
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    }}
+  >
+    <FontAwesome name="chevron-left" size={20} color="#000000" />
+  </TouchableOpacity>
+));
 
 export default () => {
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "black",
+          backgroundColor: "#4DB8E8",
         },
         headerTintColor: "#fff",
         headerBackTitle: "Back",
@@ -16,16 +30,7 @@ export default () => {
         name="Settings"
         options={{
           title: "Settings",
-          headerLeft: () => (
-            <Button
-              mode="contained-tonal"
-              buttonColor="black"
-              textColor="white"
-              onPress={() => router.back()}
-            >
-              Back
-            </Button>
-          ),
+          headerLeft: () => <BackButton />,
         }}
       />
       <Stack.Screen

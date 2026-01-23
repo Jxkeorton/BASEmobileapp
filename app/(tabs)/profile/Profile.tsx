@@ -143,104 +143,113 @@ const Profile = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.profileCard}>
           <View style={styles.profileHeader}>
-            <View style={styles.avatarPlaceholder}>
-              <FontAwesome name="user" size={36} color="#00ABF0" />
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>
-                {profile?.name || "No name set"}
-              </Text>
-              <Text style={styles.profileUsername}>
-                @{profile.username || "No username"}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{profile.jump_number || 0}</Text>
-              <Text style={styles.statLabel}>Total Jumps</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.actionsCard}>
-          <Text style={styles.sectionLabel}>Quick Actions</Text>
-          <View style={styles.actionsGrid}>
-            <TouchableRipple
-              onPress={() => router.replace("/(tabs)/profile/EditProfile")}
-              style={styles.actionButton}
-              borderless
+            <View
+              style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
-              <View style={styles.actionButtonContent}>
-                <View style={styles.actionIconContainer}>
-                  <MaterialCommunityIcons
-                    name="account-edit"
-                    color="#00ABF0"
-                    size={20}
-                  />
-                </View>
-                <Text style={styles.actionButtonText}>Edit Profile</Text>
+              <View style={styles.avatarPlaceholder}>
+                <FontAwesome name="user" size={24} color="#00ABF0" />
               </View>
-            </TouchableRipple>
-            <TouchableRipple
-              onPress={myCustomShare}
-              style={styles.actionButton}
-              borderless
-            >
-              <View style={styles.actionButtonContent}>
-                <View style={styles.actionIconContainer}>
-                  <MaterialCommunityIcons
-                    name="share-variant"
-                    color="#00ABF0"
-                    size={20}
-                  />
-                </View>
-                <Text style={styles.actionButtonText}>Share App</Text>
+              <View style={styles.profileInfo}>
+                <Text style={styles.profileName}>
+                  {profile?.name || "No name set"}
+                </Text>
+                <Text style={styles.profileUsername}>
+                  @{profile.username || "No username"}
+                </Text>
               </View>
-            </TouchableRipple>
-            <TouchableRipple
-              onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
-              style={styles.actionButton}
-              borderless
-            >
-              <View style={styles.actionButtonContent}>
-                <View style={styles.actionIconContainer}>
-                  <MaterialCommunityIcons
-                    name="map-marker-plus"
-                    color="#00ABF0"
-                    size={20}
-                  />
-                </View>
-                <Text style={styles.actionButtonText}>Submit Location</Text>
+            </View>
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNumber}>
+                  {profile.jump_number || 0}
+                </Text>
+                <Text style={styles.statLabel}>Total BASE Jumps</Text>
               </View>
-            </TouchableRipple>
+            </View>
           </View>
         </View>
-
-        <View style={styles.savedSection}>
-          <Text style={styles.sectionTitle}>Saved Locations</Text>
-          {locationsLoading ? (
-            <View style={styles.loadingSection}>
-              <ActivityIndicator size="small" color="#fff" />
-              <Text style={styles.loadingSectionText}>Loading...</Text>
-            </View>
-          ) : (
-            <>
-              {locationsError ? (
-                <View style={styles.errorContainer}>
-                  <Text style={styles.errorText}>
-                    Error loading saved locations
-                  </Text>
-                  <Text style={styles.errorDetails}>
-                    {locationsError.message}
-                  </Text>
+        <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+          <View style={styles.actionsCard}>
+            <Text style={styles.sectionLabel}>Quick Actions</Text>
+            <View style={styles.actionsGrid}>
+              <TouchableRipple
+                onPress={() => router.replace("/(tabs)/profile/EditProfile")}
+                style={styles.actionButton}
+                borderless
+              >
+                <View style={styles.actionButtonContent}>
+                  <View style={styles.actionIconContainer}>
+                    <MaterialCommunityIcons
+                      name="account-edit"
+                      color="#00ABF0"
+                      size={20}
+                    />
+                  </View>
+                  <Text style={styles.actionButtonText}>Edit Profile</Text>
                 </View>
-              ) : (
-                <SavedLocationCard data={savedLocations} onDelete={onDelete} />
-              )}
-            </>
-          )}
+              </TouchableRipple>
+              <TouchableRipple
+                onPress={myCustomShare}
+                style={styles.actionButton}
+                borderless
+              >
+                <View style={styles.actionButtonContent}>
+                  <View style={styles.actionIconContainer}>
+                    <MaterialCommunityIcons
+                      name="share-variant"
+                      color="#00ABF0"
+                      size={20}
+                    />
+                  </View>
+                  <Text style={styles.actionButtonText}>Share App</Text>
+                </View>
+              </TouchableRipple>
+              <TouchableRipple
+                onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
+                style={styles.actionButton}
+                borderless
+              >
+                <View style={styles.actionButtonContent}>
+                  <View style={styles.actionIconContainer}>
+                    <MaterialCommunityIcons
+                      name="map-marker-plus"
+                      color="#00ABF0"
+                      size={20}
+                    />
+                  </View>
+                  <Text style={styles.actionButtonText}>Submit Location</Text>
+                </View>
+              </TouchableRipple>
+            </View>
+          </View>
+
+          <View style={styles.savedSection}>
+            <Text style={styles.sectionTitle}>Saved Locations</Text>
+            {locationsLoading ? (
+              <View style={styles.loadingSection}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.loadingSectionText}>Loading...</Text>
+              </View>
+            ) : (
+              <>
+                {locationsError ? (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>
+                      Error loading saved locations
+                    </Text>
+                    <Text style={styles.errorDetails}>
+                      {locationsError.message}
+                    </Text>
+                  </View>
+                ) : (
+                  <SavedLocationCard
+                    data={savedLocations}
+                    onDelete={onDelete}
+                  />
+                )}
+              </>
+            )}
+          </View>
         </View>
       </ScrollView>
       <APIErrorHandler
@@ -258,7 +267,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
     paddingBottom: 100,
   },
   loadingContainer: {
@@ -303,9 +311,9 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     backgroundColor: "#fff",
-    borderRadius: 20,
     padding: 20,
     marginBottom: 16,
+    height: 100,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -315,55 +323,51 @@ const styles = StyleSheet.create({
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
   },
   avatarPlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: "rgba(0, 171, 240, 0.1)",
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: "rgba(0, 171, 240, 0.2)",
   },
   profileInfo: {
-    marginLeft: 16,
+    marginLeft: 12,
     flex: 1,
   },
   profileName: {
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "700",
     color: "#1a1a1a",
-    marginBottom: 4,
+    marginBottom: 2,
   },
   profileUsername: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#666",
     fontWeight: "500",
   },
   statsContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    alignItems: "center",
   },
   statItem: {
-    flex: 1,
     alignItems: "center",
   },
   statNumber: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: "800",
     color: "#00ABF0",
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#888",
     fontWeight: "600",
     textTransform: "uppercase",
     letterSpacing: 0.5,
-    marginTop: 4,
+    marginTop: 2,
   },
   actionsCard: {
     backgroundColor: "#fff",
@@ -419,7 +423,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#fff",
-    marginBottom: 12,
     marginLeft: 4,
   },
 });

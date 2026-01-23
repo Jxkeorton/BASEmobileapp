@@ -7,13 +7,11 @@ const SettingsButton = React.memo(() => (
   <TouchableOpacity
     onPress={() => router.navigate("/profile/settings")}
     style={{
-      marginRight: 10,
-      padding: 8,
-      justifyContent: "center",
-      alignItems: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 8,
     }}
   >
-    <FontAwesome name="cog" size={22} color="#fff" />
+    <FontAwesome name="cog" size={22} color="#1a1a1a" />
   </TouchableOpacity>
 ));
 
@@ -21,12 +19,11 @@ const CancelButton = React.memo(() => (
   <TouchableOpacity
     onPress={() => router.replace("/profile/Profile")}
     style={{
-      padding: 8,
-      justifyContent: "center",
-      alignItems: "center",
+      paddingHorizontal: 12,
+      paddingVertical: 8,
     }}
   >
-    <FontAwesome name="times" size={22} color="#fff" />
+    <FontAwesome name="times" size={22} color="#1a1a1a" />
   </TouchableOpacity>
 ));
 
@@ -35,7 +32,7 @@ export default () => {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "black",
+          backgroundColor: "#4DB8E8",
         },
         headerTintColor: "#fff",
         headerBackTitle: "Back",

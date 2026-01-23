@@ -5,7 +5,7 @@ export default () => {
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "black",
+          backgroundColor: "#4DB8E8",
         },
         headerTintColor: "#fff",
         headerBackTitle: "Back",

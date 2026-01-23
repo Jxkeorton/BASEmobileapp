@@ -102,6 +102,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.sectionTitle}>Jump History</Text>
       <View style={styles.searchBox}>
         <View style={styles.textInputContainer}>
           <TextInput
@@ -162,7 +163,8 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
+    padding: 16,
     paddingBottom: 20,
   },
   loadingContainer: {
@@ -177,8 +179,8 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   searchBox: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    width: "100%",
+    paddingBottom: 15,
     backgroundColor: "transparent",
   },
   textInputContainer: {
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   jumpCard: {
-    marginHorizontal: 20,
+    width: "100%",
     marginVertical: 6,
     borderRadius: 8,
     overflow: "hidden",
@@ -214,13 +216,16 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   backgroundImage: {
+    flex: 1,
     height: 75,
     justifyContent: "flex-end",
     backgroundColor: "#fff",
   },
   jumpCardContent: {
+    flex: 1,
     padding: 12,
     zIndex: 1,
+    justifyContent: "space-between",
   },
   cardHeader: {
     flexDirection: "row",
@@ -255,6 +260,13 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     lineHeight: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 12,
+    marginLeft: 4,
   },
 });
 

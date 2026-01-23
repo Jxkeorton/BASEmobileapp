@@ -118,7 +118,6 @@ const LogBook = () => {
               </View>
 
               <View style={styles.entriesSection}>
-                <Text style={styles.sectionTitle}>Jump History</Text>
                 <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
               </View>
               <APIErrorHandler error={profileError} />
@@ -137,14 +136,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: 16,
     paddingBottom: 100,
   },
   statsCard: {
     backgroundColor: "#fff",
-    borderRadius: 20,
     padding: 20,
-    marginBottom: 16,
+    height: 100,
     elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
@@ -207,12 +204,5 @@ const styles = StyleSheet.create({
   },
   entriesSection: {
     marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#fff",
-    marginBottom: 12,
-    marginLeft: 4,
   },
 });

@@ -411,7 +411,7 @@ export default function Location() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    padding: 16,
+    paddingHorizontal: 16,
     paddingBottom: 100,
   },
   buttonContainer: {

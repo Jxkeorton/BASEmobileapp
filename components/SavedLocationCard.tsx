@@ -68,8 +68,7 @@ export default SavedLocationCard;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
-    padding: 20,
+    marginBottom: 10,
     backgroundColor: "transparent",
   },
   title: {
