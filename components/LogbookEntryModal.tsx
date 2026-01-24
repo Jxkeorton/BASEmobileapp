@@ -23,7 +23,7 @@ import {
   type LogbookJumpFormData,
 } from "../utils/validationSchemas";
 import APIErrorHandler from "./APIErrorHandler";
-import { ControlledPaperTextInput } from "./form";
+import { ControlledDatePicker, ControlledPaperTextInput } from "./form";
 import { LogbookJump } from "./LogbookEntryCard";
 
 interface LogbookEntryModalProps {
@@ -228,15 +228,11 @@ const LogbookEntryModal = ({
               />
 
               <Text style={styles.panelSubtitle}>Date of jump</Text>
-              <ControlledPaperTextInput
+              <ControlledDatePicker
                 control={control}
                 name="jump_date"
-                style={styles.input}
-                mode="outlined"
-                placeholder="YYYY-MM-DD"
-                autoCapitalize="none"
-                textColor="black"
-                activeOutlineColor="black"
+                placeholder="Select jump date"
+                maximumDate={new Date()}
               />
 
               <Text style={styles.panelSubtitle}>Details</Text>

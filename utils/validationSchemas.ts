@@ -426,7 +426,11 @@ export const logbookJumpSchema = yup.object({
     .notRequired(),
   jump_date: yup
     .string()
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in format YYYY-MM-DD")
+    .test(
+      "valid-date-format",
+      "Date must be in format YYYY-MM-DD",
+      (value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value),
+    )
     .notRequired(),
 });
 

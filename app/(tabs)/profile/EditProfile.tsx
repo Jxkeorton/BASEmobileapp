@@ -19,18 +19,16 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
-import { useUpdateProfile } from "../../../hooks/useUpdateProfile";
+import {
+  UpdateProfileData,
+  useUpdateProfile,
+} from "../../../hooks/useUpdateProfile";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
-import { paths } from "../../../types/api";
 import {
   editProfileSchema,
   type EditProfileFormData,
 } from "../../../utils/validationSchemas";
-
-type UpdateProfileData = NonNullable<
-  paths["/profile"]["patch"]["requestBody"]
->["content"]["application/json"];
 
 const EditProfile = () => {
   const [error, setError] = useState<any>(null);

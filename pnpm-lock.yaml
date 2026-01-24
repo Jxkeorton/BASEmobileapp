@@ -32,6 +32,9 @@ importers:
       '@react-native-clipboard/clipboard':
         specifier: ^1.12.1
         version: 1.16.3(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      '@react-native-community/datetimepicker':
+        specifier: ^8.6.0
+        version: 8.6.0(expo@54.0.31)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       '@rnmapbox/maps':
         specifier: ^10.2.10
         version: 10.2.10(expo@54.0.31)(react-dom@19.1.0(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -1252,6 +1255,19 @@ packages:
       react-native-windows: '>= 0.61.0'
     peerDependenciesMeta:
       react-native-macos:
+        optional: true
+      react-native-windows:
+        optional: true
+
+  '@react-native-community/datetimepicker@8.6.0':
+    resolution: {integrity: sha512-yxPSqNfxgpGaqHQIpatqe6ykeBdU/1pdsk/G3x01mY2bpTflLpmVTLqFSJYd3MiZzxNZcMs/j1dQakUczSjcYA==}
+    peerDependencies:
+      expo: '>=52.0.0'
+      react: '*'
+      react-native: '*'
+      react-native-windows: '*'
+    peerDependenciesMeta:
+      expo:
         optional: true
       react-native-windows:
         optional: true
@@ -6019,6 +6035,14 @@ snapshots:
     dependencies:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)
+
+  '@react-native-community/datetimepicker@8.6.0(expo@54.0.31)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      invariant: 2.2.4
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)
+    optionalDependencies:
+      expo: 54.0.31(@babel/core@7.28.5)(@expo/metro-runtime@5.0.5(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0)))(expo-router@6.0.21)(react-native@0.81.5(@babel/core@7.28.5)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
   '@react-native/assets-registry@0.81.5': {}
 

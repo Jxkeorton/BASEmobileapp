@@ -2,13 +2,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
 
-type UpdateProfileData = NonNullable<
+export type UpdateProfileData = NonNullable<
   paths["/profile"]["patch"]["requestBody"]
 >["content"]["application/json"];
 
+type UpdateProfileResponse = NonNullable<
+  paths["/profile"]["patch"]["responses"][200]["content"]["application/json"]
+>;
+
 interface UseUpdateProfileOptions {
-  onSuccess?: (data: any) => void;
-  onError?: (error: any) => void;
+  onSuccess?: (data: UpdateProfileResponse) => void;
+  onError?: (error: Error) => void;
 }
 
 export const useUpdateProfile = (options?: UseUpdateProfileOptions) => {
