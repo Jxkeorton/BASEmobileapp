@@ -162,7 +162,7 @@ const JumpDetails = () => {
       style={{ flex: 1 }}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text variant="titleLarge" style={styles.pageTitle}>
+        <Text variant="headlineLarge" style={styles.pageTitle}>
           Jump {jumpNumber || "N/A"}
         </Text>
 
@@ -235,7 +235,6 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   pageTitle: {
-    fontSize: 32,
     fontWeight: "800",
     marginBottom: 20,
     color: "#fff",
