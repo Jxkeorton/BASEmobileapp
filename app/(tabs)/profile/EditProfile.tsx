@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -19,6 +19,7 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
+import { useUpdateProfile } from "../../../hooks/useUpdateProfile";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
@@ -73,25 +74,9 @@ const EditProfile = () => {
     retry: 3,
   });
 
-  const updateProfileMutation = useMutation({
-    mutationFn: async (profileData: UpdateProfileData) => {
-      return client
-        .PATCH("/profile", {
-          body: profileData,
-        })
-        .then((res) => {
-          if (res.error) {
-            throw new Error("Failed to update profile");
-          }
-          return res.data;
-        });
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-
-        router.back();
-      }
+  const updateProfileMutation = useUpdateProfile({
+    onSuccess: () => {
+      router.replace("/(tabs)/profile/Profile");
     },
     onError: (err) => {
       setError(err);

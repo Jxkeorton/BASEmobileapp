@@ -5,6 +5,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { Button, Card, Text } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
+import { useUpdateProfile } from "../../../hooks/useUpdateProfile";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
@@ -18,6 +19,8 @@ const JumpDetails = () => {
   const [error, setError] = useState<any>(null);
   const params = useLocalSearchParams();
   const client = useKyClient();
+
+  const updateProfileMutation = useUpdateProfile();
 
   // Type assertions for params
   const jumpindex = Number(params.jumpindex);
@@ -58,9 +61,24 @@ const JumpDetails = () => {
           return res.data;
         });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ["logbook", user?.id] });
-      router.back();
+
+      // Decrement jump_number in profile
+      const currentProfile = queryClient.getQueryData(["profile", user?.id]);
+      if (
+        currentProfile &&
+        (currentProfile as any).data?.jump_number !== undefined
+      ) {
+        const currentJumpNumber = (currentProfile as any).data.jump_number;
+        if (currentJumpNumber > 0) {
+          await updateProfileMutation.mutateAsync({
+            jump_number: currentJumpNumber - 1,
+          });
+        }
+      }
+
+      router.dismiss();
     },
     onError: (err) => {
       setError(err);

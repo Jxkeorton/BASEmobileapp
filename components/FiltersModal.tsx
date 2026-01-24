@@ -54,6 +54,7 @@ const FiltersModal = ({
       unknownRockdrop: false,
     });
 
+    onApplyFilter("", "", false);
     onClose();
 
     Toast.show({

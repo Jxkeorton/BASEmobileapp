@@ -15,6 +15,8 @@ import {
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
+import { useUpdateProfile } from "../hooks/useUpdateProfile";
+import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
 import {
   logbookJumpSchema,
@@ -39,6 +41,9 @@ const LogbookEntryModal = ({
   const [error, setError] = useState<any>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const updateProfileMutation = useUpdateProfile();
 
   const {
     control,
@@ -87,10 +92,21 @@ const LogbookEntryModal = ({
       });
       return response.response;
     },
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       if (response.status === 201) {
         queryClient.invalidateQueries({ queryKey: ["logbook"] });
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+        // Increment jump_number in profile
+        const currentProfile = queryClient.getQueryData(["profile", user?.id]);
+        if (
+          currentProfile &&
+          (currentProfile as any).data?.jump_number !== undefined
+        ) {
+          const currentJumpNumber = (currentProfile as any).data.jump_number;
+          await updateProfileMutation.mutateAsync({
+            jump_number: currentJumpNumber + 1,
+          });
+        }
 
         Toast.show({
           type: "success",
