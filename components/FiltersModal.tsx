@@ -16,7 +16,7 @@ import { filterSchema, type FilterFormData } from "../utils/validationSchemas";
 import { ControlledPaperTextInput } from "./form";
 
 interface FiltersModalProps {
-  visible: boolean;
+  isModalOpen: boolean;
   onClose: () => void;
   onApplyFilter: (
     minRockDrop: string,
@@ -28,7 +28,7 @@ interface FiltersModalProps {
 }
 
 const FiltersModal = ({
-  visible,
+  isModalOpen,
   onClose,
   onApplyFilter,
   minRockDrop,
@@ -53,6 +53,9 @@ const FiltersModal = ({
       maxRockDrop: "",
       unknownRockdrop: false,
     });
+
+    onApplyFilter("", "", false);
+    onClose();
 
     Toast.show({
       type: "info",
@@ -80,7 +83,7 @@ const FiltersModal = ({
   });
 
   return (
-    <Modal visible={visible} onRequestClose={onClose} transparent={true}>
+    <Modal visible={isModalOpen} onRequestClose={onClose} transparent={true}>
       <TouchableWithoutFeedback onPress={onClose}>
         <View style={styles.modalContainer}>
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
@@ -123,16 +126,16 @@ const FiltersModal = ({
 
                 <View style={styles.modalFooter}>
                   <TouchableOpacity
-                    onPress={clearFilter}
-                    style={styles.borderButton}
-                  >
-                    <Text style={styles.imageButtonTitle}>Clear Filter</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
                     onPress={handleFormSubmit}
                     style={styles.panelButton}
                   >
                     <Text style={styles.panelButtonTitle}>Apply Filter</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={clearFilter}
+                    style={styles.clearButton}
+                  >
+                    <Text style={styles.clearButtonTitle}>Clear Filter</Text>
                   </TouchableOpacity>
                 </View>
               </ScrollView>
@@ -146,65 +149,71 @@ const FiltersModal = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "80%",
+    width: "85%",
+    maxWidth: 400,
     backgroundColor: "#FFFFFF",
-    padding: 20,
+    padding: 24,
+    borderRadius: 12,
     alignItems: "center",
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
   },
-  // modal styles
   panelTitle: {
-    fontSize: 27,
-    height: 35,
-    marginBottom: 10,
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 20,
+    color: "#1a1a1a",
   },
   panelSubtitle: {
-    fontSize: 14,
-    color: "black",
-    height: 30,
+    fontSize: 13,
+    color: "#666",
+    marginBottom: 6,
+    marginTop: 10,
+    fontWeight: "500",
   },
   input: {
+    height: 42,
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    width: 200,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    width: "100%",
+    fontSize: 15,
   },
   modalFooter: {
     marginTop: 20,
     alignItems: "center",
   },
   panelButton: {
-    padding: 13,
-    borderRadius: 10,
+    padding: 14,
+    borderRadius: 8,
     backgroundColor: "#00ABF0",
     alignItems: "center",
-    marginVertical: 7,
+    marginTop: 8,
+    marginBottom: 8,
+    width: "100%",
   },
   panelButtonTitle: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "black",
+    fontSize: 16,
+    fontWeight: "600",
+    color: "white",
   },
-  borderButton: {
-    padding: 13,
-    borderRadius: 10,
-    borderWidth: 1, // Add a border width
-    borderColor: "black", // Specify the border color
+  clearButton: {
+    padding: 14,
+    borderRadius: 8,
     alignItems: "center",
-    marginVertical: 7,
-    backgroundColor: "transparent", // Make the background transparent
+    marginBottom: 8,
+    width: "100%",
+    backgroundColor: "#6c757d",
   },
-  imageButtonTitle: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "black",
+  clearButtonTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "white",
   },
 });
 

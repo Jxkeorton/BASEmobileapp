@@ -1,4 +1,3 @@
-import { FontAwesome } from "@expo/vector-icons";
 import Mapbox, {
   Camera,
   CircleLayer,
@@ -9,21 +8,22 @@ import Mapbox, {
   Terrain,
 } from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Keyboard,
   StyleSheet,
-  Text,
-  TextInput,
-  TouchableHighlight,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider, Portal } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import FiltersModal from "../../../components/FiltersModal";
-import { MarkerDetails } from "../../../components/Map/MarkerDetails";
+import {
+  MapControls,
+  MarkerDetails,
+  SearchBox,
+  SubmitLocationButton,
+} from "../../../components/Map";
 import { useUnitSystem } from "../../../providers/UnitSystemProvider";
 import { useKyClient } from "../../../services/kyClient";
 import type { paths } from "../../../types/api";
@@ -52,6 +52,7 @@ type OnPressEvent = {
 
 export default function Map() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [satelliteActive, setSatelliteActive] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
     null,
@@ -59,7 +60,6 @@ export default function Map() {
   const client = useKyClient();
 
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
-  const [isMapLoading, setIsMapLoading] = useState(false);
 
   // Filter modal state
   const [minRockDrop, setMinRockDrop] = useState("");
@@ -70,11 +70,20 @@ export default function Map() {
   const { isMetric, toggleUnitSystem } = useUnitSystem();
   const cameraRef = useRef<Camera>(null);
 
+  // Debounce search term to avoid API calls on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const apiFilters: LocationsFilters = useMemo(() => {
     const filters: LocationsFilters = {};
 
-    if (searchTerm.trim()) {
-      filters.search = searchTerm.trim();
+    if (debouncedSearchTerm.trim()) {
+      filters.search = debouncedSearchTerm.trim();
     }
 
     if (minRockDrop !== "") {
@@ -92,11 +101,11 @@ export default function Map() {
     }
 
     return filters;
-  }, [searchTerm, minRockDrop, maxRockDrop, isMetric]);
+  }, [debouncedSearchTerm, minRockDrop, maxRockDrop, isMetric]);
 
   const {
     data: locationsResponse,
-    isLoading: loadingMap,
+    isFetching,
     error,
   } = useQuery({
     queryKey: ["locations", apiFilters],
@@ -158,12 +167,17 @@ export default function Map() {
 
     // Check if it's a cluster
     if (feature.properties?.cluster) {
-      // Zoom into the cluster
       const coordinates = (feature.geometry as GeoJSON.Point).coordinates;
+      const pointCount = feature.properties.point_count || 0;
+
+      // Calculate zoom based on cluster size
+      const currentZoom = event.coordinates?.zoom || 5;
+      const zoomIncrement = pointCount > 50 ? 3 : pointCount > 10 ? 2.5 : 2;
+
       cameraRef.current?.setCamera({
         centerCoordinate: coordinates,
-        zoomLevel: (event.coordinates?.zoom || 5) + 2,
-        animationDuration: 500,
+        zoomLevel: currentZoom + zoomIncrement,
+        animationDuration: 300,
       });
     } else {
       // It's an individual marker - find the location and select it
@@ -177,14 +191,11 @@ export default function Map() {
 
   const handleMapStyleChange = () => {
     setSatelliteLoading(true);
-    setIsMapLoading(true);
     setTimeout(() => {
       setSatelliteActive(!satelliteActive);
       setSatelliteLoading(false);
     }, 100);
   };
-
-  const isFullyLoaded = !loadingMap && !isMapLoading;
 
   return (
     <PaperProvider>
@@ -192,7 +203,7 @@ export default function Map() {
         <View style={styles.container}>
           <Portal>
             <FiltersModal
-              visible={isFiltersVisible}
+              isModalOpen={isFiltersVisible}
               onClose={() => setFiltersVisible(false)}
               onApplyFilter={(min: string, max: string, unknown: boolean) => {
                 setMinRockDrop(min);
@@ -224,10 +235,6 @@ export default function Map() {
                 setSelectedLocation(null);
               }
             }}
-            onWillStartLoadingMap={() => setIsMapLoading(true)}
-            onDidFinishLoadingMap={() => setIsMapLoading(false)}
-            onDidFinishLoadingStyle={() => setIsMapLoading(false)}
-            onMapLoadingError={() => setIsMapLoading(false)}
           >
             <Camera
               ref={cameraRef}
@@ -249,11 +256,11 @@ export default function Map() {
               id="locationsSource"
               shape={geoJsonSource}
               cluster={true}
-              clusterRadius={50}
-              clusterMaxZoomLevel={14}
+              clusterRadius={30}
+              clusterMaxZoomLevel={6}
               onPress={handleMarkerPress}
             >
-              {/* Cluster circles */}
+              {/* Cluster circles - all clusters */}
               <CircleLayer
                 id="clusterCircles"
                 filter={["has", "point_count"]}
@@ -261,23 +268,28 @@ export default function Map() {
                   circleColor: [
                     "step",
                     ["get", "point_count"],
-                    "#000000",
-                    10,
-                    "#000000",
-                    50,
-                    "#000000",
+                    "#3B82F6",
+                    25,
+                    "#3B82F6",
+                    100,
+                    "#182d4e",
                   ],
                   circleRadius: [
-                    "step",
+                    "interpolate",
+                    ["linear"],
                     ["get", "point_count"],
-                    20,
+                    2,
+                    18, // 2 points = 18px
                     10,
-                    25,
+                    22, // 10 points = 22px
                     50,
-                    30,
+                    28, // 50 points = 28px
+                    100,
+                    34, // 100+ points = 34px
                   ],
-                  circleStrokeWidth: 2,
+                  circleStrokeWidth: 3,
                   circleStrokeColor: "#ffffff",
+                  circleOpacity: 0.9,
                 }}
               />
 
@@ -293,7 +305,7 @@ export default function Map() {
                 }}
               />
 
-              {/* Individual markers (non-clustered) */}
+              {/* Individual markers only (not clustered at all) */}
               <CircleLayer
                 id="singlePoint"
                 filter={["!", ["has", "point_count"]]}
@@ -314,93 +326,27 @@ export default function Map() {
             )}
           </MapView>
 
-          {/* Loading overlay */}
-          {(loadingMap || isMapLoading) && (
-            <View style={styles.loadingOverlay}>
-              <ActivityIndicator size="large" color="#00ABF0" />
-              <Text style={styles.loadingText}>
-                {loadingMap ? "Loading locations..." : "Loading map..."}
-              </Text>
+          {/* Subtle loading indicator for search/filter refetches */}
+          {isFetching && (
+            <View style={styles.refetchIndicator}>
+              <ActivityIndicator size="small" color="#00ABF0" />
             </View>
           )}
 
           {/* Map controls container */}
-          {isFullyLoaded && (
-            <View style={styles.mapControlsContainer}>
-              {/* Satellite toggle button */}
-              <TouchableHighlight
-                onPress={handleMapStyleChange}
-                underlayColor="#E0E0E0"
-                style={styles.controlButton}
-              >
-                <View style={styles.controlButtonContent}>
-                  {satelliteViewLoading ? (
-                    <ActivityIndicator size="small" color="#00ABF0" />
-                  ) : (
-                    <FontAwesome
-                      name={satelliteActive ? "globe" : "map"}
-                      size={20}
-                      color="#333"
-                    />
-                  )}
-                </View>
-              </TouchableHighlight>
-
-              {/* Unit toggle button */}
-              <TouchableHighlight
-                onPress={toggleUnitSystem}
-                underlayColor="#E0E0E0"
-                style={styles.controlButton}
-              >
-                <View style={styles.controlButtonContent}>
-                  <Text style={styles.unitButtonText}>
-                    {isMetric ? "M" : "Ft"}
-                  </Text>
-                </View>
-              </TouchableHighlight>
-
-              {/* Filter button */}
-              <TouchableHighlight
-                onPress={() => setFiltersVisible(true)}
-                underlayColor="#E0E0E0"
-                style={styles.controlButton}
-              >
-                <View style={styles.controlButtonContent}>
-                  <FontAwesome name="filter" size={20} color="#333" />
-                </View>
-              </TouchableHighlight>
-            </View>
-          )}
+          <MapControls
+            satelliteActive={satelliteActive}
+            satelliteViewLoading={satelliteViewLoading}
+            isMetric={isMetric}
+            onSatelliteToggle={handleMapStyleChange}
+            onUnitToggle={toggleUnitSystem}
+            onFilterPress={() => setFiltersVisible(true)}
+          />
 
           {/* Submit Location Button */}
-          {isFullyLoaded && (
-            <TouchableHighlight
-              onPress={() => router.push("/(tabs)/profile/SubmitLocation")}
-              underlayColor="#E0E0E0"
-              style={styles.submitLocationButton}
-            >
-              <View style={styles.controlButtonContent}>
-                <FontAwesome name="plus" size={20} color="#333" />
-              </View>
-            </TouchableHighlight>
-          )}
+          <SubmitLocationButton />
 
-          <View style={styles.searchBox}>
-            <FontAwesome
-              name="search"
-              size={18}
-              color="#666"
-              style={styles.searchIcon}
-            />
-            <TextInput
-              placeholder="Search here"
-              placeholderTextColor="#000"
-              autoCapitalize="none"
-              style={styles.searchInput}
-              onChangeText={(text) => setSearchTerm(text)}
-              value={searchTerm}
-            />
-          </View>
+          <SearchBox value={searchTerm} onChangeText={setSearchTerm} />
           <APIErrorHandler error={error} />
         </View>
       </TouchableWithoutFeedback>
@@ -417,231 +363,18 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  bubble: {
-    flexDirection: "row",
-    alignSelf: "flex-start",
-    backgroundColor: "#fff",
-    borderRadius: 6,
-    borderColor: "#ccc",
-    borderWidth: 0.5,
-    padding: 15,
-    width: 150,
-  },
-  name: {
-    fontSize: 16,
-    marginBottom: 5,
-  },
-  arrowBorder: {
-    backgroundColor: "transparent",
-    borderColor: "transparent",
-    borderTopColor: "#007a87",
-    borderWidth: 16,
-    alignSelf: "center",
-    marginTop: -0.5,
-  },
-  arrow: {
-    backgroundColor: "transparent",
-    borderColor: "transparent",
-    borderTopColor: "#fff",
-    borderWidth: 16,
-    alignSelf: "center",
-    marginTop: -32,
-  },
-  submitLocationButton: {
+  refetchIndicator: {
     position: "absolute",
-    top: 60,
-    left: 10,
-    backgroundColor: "white",
-    borderRadius: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    width: 44,
-    height: 44,
-    zIndex: 1000,
-  },
-  searchBox: {
-    position: "absolute",
-    backgroundColor: "#fff",
-    right: 10,
-    width: "80%",
-    alignSelf: "center",
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: "#ccc",
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
-    elevation: 10,
-    marginTop: 60,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    padding: 0,
-    fontSize: 16,
-  },
-  button: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginLeft: 10,
-    backgroundColor: "black",
-  },
-  text: {
-    color: "white",
-  },
-  buttonSatellite: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    backgroundColor: "black",
-  },
-  switchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 10,
-    marginTop: 10,
-  },
-  switchLabel: {
-    marginHorizontal: 5,
-    color: "black",
-  },
-  // modal styles
-  dropdownIcon: {
-    marginLeft: 10,
-    marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  dropdownModal: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  panelTitle: {
-    fontSize: 27,
-    height: 35,
-    marginBottom: 10,
-  },
-  panelSubtitle: {
-    fontSize: 14,
-    color: "gray",
-    height: 30,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    width: 200,
-  },
-  modalFooter: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  panelButton: {
-    padding: 13,
-    borderRadius: 10,
-    backgroundColor: "#00ABF0",
-    alignItems: "center",
-    marginVertical: 7,
-  },
-  panelButtonTitle: {
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "white",
-  },
-  filterButton: {
-    marginLeft: 10,
-    marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "white",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: "#666",
-  },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginHorizontal: 20,
-  },
-  resultsContainer: {
-    position: "absolute",
-    bottom: 50,
-    alignSelf: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    paddingHorizontal: 15,
-    paddingVertical: 8,
+    top: "50%",
+    left: "50%",
+    transform: [{ translateX: -20 }, { translateY: -20 }],
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
     borderRadius: 20,
-  },
-  resultsText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  markerContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  marker: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: "red",
-    borderWidth: 2,
-    borderColor: "white",
-  },
-  mapControlsContainer: {
-    position: "absolute",
-    top: 115,
-    right: 10,
-    gap: 10,
-    zIndex: 1000,
-  },
-  controlButton: {
-    backgroundColor: "white",
-    borderRadius: 5,
+    padding: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 4,
     elevation: 5,
-    width: 44,
-    height: 44,
-  },
-  controlButtonContent: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  unitButtonText: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#333",
   },
 });

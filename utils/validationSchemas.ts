@@ -288,6 +288,106 @@ export const submitDetailsSchema = yup.object({
 
 export type SubmitDetailsFormData = yup.InferType<typeof submitDetailsSchema>;
 
+/**
+ * Unified Location Submission Schema
+ * Used for both new location submissions and updates
+ */
+export const unifiedLocationSchema = yup.object({
+  name: yup
+    .string()
+    .max(200, "Location name must be less than 200 characters")
+    .trim()
+    .when("$isNewLocation", {
+      is: true,
+      then: (schema) => schema.required("Exit name is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  coordinates: yup.string().when("$isNewLocation", {
+    is: true,
+    then: (schema) =>
+      schema
+        .required("Coordinates are required")
+        .test(
+          "is-valid-coordinates",
+          "Invalid coordinates. Use format: latitude, longitude (e.g., 60.140582, -2.111822)",
+          (val) => {
+            if (!val) return false;
+            const coords = val.replace(/[^\d.,-]/g, "").split(",");
+            if (coords.length !== 2) return false;
+            const lat = coords[0] ? parseFloat(coords[0].trim()) : NaN;
+            const lng = coords[1] ? parseFloat(coords[1].trim()) : NaN;
+            return (
+              !isNaN(lat) &&
+              !isNaN(lng) &&
+              lat >= -90 &&
+              lat <= 90 &&
+              lng >= -180 &&
+              lng <= 180
+            );
+          },
+        ),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  country: yup
+    .string()
+    .max(100, "Country name must be less than 100 characters")
+    .trim()
+    .notRequired(),
+  rock_drop: yup
+    .string()
+    .test(
+      "is-valid-number",
+      "Rock drop must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .when("$isNewLocation", {
+      is: true,
+      then: (schema) => schema.required("Rock drop is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  total_height: yup
+    .string()
+    .test(
+      "is-valid-number",
+      "Total height must be a valid number",
+      (value) => !value || /^\d+(\.\d+)?$/.test(value),
+    )
+    .notRequired(),
+  cliff_aspect: yup
+    .string()
+    .oneOf(
+      [...cliffAspectValues, ""],
+      "Cliff aspect must be one of: N, NE, E, SE, S, SW, W, NW",
+    )
+    .notRequired(),
+  anchor_info: yup
+    .string()
+    .max(500, "Anchor info must be less than 500 characters")
+    .notRequired(),
+  access_info: yup
+    .string()
+    .max(1000, "Access info must be less than 1000 characters")
+    .notRequired(),
+  notes: yup
+    .string()
+    .max(1000, "Notes must be less than 1000 characters")
+    .notRequired(),
+  opened_by_name: yup
+    .string()
+    .max(100, "Opened by must be less than 100 characters")
+    .notRequired(),
+  opened_date: yup.string().notRequired(),
+  video_link: yup.string().url("Video link must be a valid URL").notRequired(),
+  selectedUnit: yup
+    .string()
+    .oneOf(["Meters", "Feet"])
+    .required("Unit selection is required"),
+});
+
+export type UnifiedLocationFormData = yup.InferType<
+  typeof unifiedLocationSchema
+>;
+
 // ============================================================================
 // Logbook Schemas
 // ============================================================================
@@ -326,7 +426,11 @@ export const logbookJumpSchema = yup.object({
     .notRequired(),
   jump_date: yup
     .string()
-    .matches(/^\d{4}-\d{2}-\d{2}$/, "Date must be in format YYYY-MM-DD")
+    .test(
+      "valid-date-format",
+      "Date must be in format YYYY-MM-DD",
+      (value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value),
+    )
     .notRequired(),
 });
 

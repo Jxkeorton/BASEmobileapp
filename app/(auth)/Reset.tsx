@@ -93,7 +93,8 @@ const Reset = () => {
                 mode="contained"
                 style={styles.sendResetButton}
                 onPress={onSubmit}
-                disabled={isSubmitting}
+                disabled={isSubmitting || resetPasswordMutation.isPending}
+                loading={resetPasswordMutation.isPending}
               >
                 Send Reset Email
               </Button>

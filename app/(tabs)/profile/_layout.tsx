@@ -1,13 +1,38 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { Stack, router } from "expo-router";
-import { Button } from "react-native-paper";
+import React from "react";
+import { TouchableOpacity } from "react-native";
+
+const SettingsButton = React.memo(() => (
+  <TouchableOpacity
+    onPress={() => router.navigate("/profile/settings")}
+    style={{
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    }}
+  >
+    <FontAwesome name="cog" size={22} color="#1a1a1a" />
+  </TouchableOpacity>
+));
+
+const CancelButton = React.memo(() => (
+  <TouchableOpacity
+    onPress={() => router.replace("/profile/Profile")}
+    style={{
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+    }}
+  >
+    <FontAwesome name="times" size={22} color="#1a1a1a" />
+  </TouchableOpacity>
+));
 
 export default () => {
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: "black",
+          backgroundColor: "#4DB8E8",
         },
         headerTintColor: "#fff",
         headerBackTitle: "Back",
@@ -16,38 +41,13 @@ export default () => {
       <Stack.Screen
         name="Profile"
         options={{
-          headerRight: () => (
-            <Button
-              mode="contained-tonal"
-              buttonColor="black"
-              onPress={() => router.navigate("/profile/settings")}
-            >
-              <FontAwesome name="cog" size={20} color="#fff" />
-            </Button>
-          ),
-          headerTitle: "",
+          headerRight: () => <SettingsButton />,
         }}
       />
       <Stack.Screen
         name="EditProfile"
         options={{
           title: "Edit Profile",
-        }}
-      />
-      <Stack.Screen
-        name="SubmitLocation"
-        options={{
-          title: "Submit A New Exit",
-          headerLeft: () => (
-            <Button
-              mode="contained-tonal"
-              buttonColor="black"
-              textColor="white"
-              onPress={() => router.replace("/profile/Profile")}
-            >
-              Cancel
-            </Button>
-          ),
         }}
       />
       <Stack.Screen

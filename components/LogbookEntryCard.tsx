@@ -102,6 +102,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.sectionTitle}>Jump History</Text>
       <View style={styles.searchBox}>
         <View style={styles.textInputContainer}>
           <TextInput
@@ -122,9 +123,14 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
             style={styles.jumpCard}
             onPress={() => onCardPress(index)}
           >
-            <View style={[styles.backgroundImage, styles.blackBackground]}>
+            <View style={styles.backgroundImage}>
               <View style={styles.jumpCardContent}>
-                <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                  {jump.jump_date && (
+                    <Text style={styles.dateText}>{jump.jump_date}</Text>
+                  )}
+                </View>
                 <Text style={styles.locationTextWhite}>
                   {jump.location_name}
                 </Text>
@@ -157,7 +163,8 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
+    padding: 16,
     paddingBottom: 20,
   },
   loadingContainer: {
@@ -169,12 +176,12 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
   },
   searchBox: {
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#f6f6f6",
+    width: "100%",
+    paddingBottom: 15,
+    backgroundColor: "transparent",
   },
   textInputContainer: {
     flexDirection: "row",
@@ -184,7 +191,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "rgba(255, 255, 255, 0.3)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   searchInput: {
     flex: 1,
@@ -192,36 +204,49 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   jumpCard: {
-    marginHorizontal: 20,
-    marginVertical: 8,
-    borderRadius: 12,
+    width: "100%",
+    marginVertical: 6,
+    borderRadius: 8,
     overflow: "hidden",
-    elevation: 3,
+    backgroundColor: "#fff",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
+    elevation: 4,
   },
   backgroundImage: {
-    height: 120,
+    flex: 1,
+    height: 75,
     justifyContent: "flex-end",
-  },
-  blackBackground: {
-    backgroundColor: "#333",
+    backgroundColor: "#fff",
   },
   jumpCardContent: {
-    padding: 15,
+    flex: 1,
+    padding: 12,
     zIndex: 1,
+    justifyContent: "space-between",
   },
-  contentText: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#fff",
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4,
   },
+  contentText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1a1a1a",
+  },
   locationTextWhite: {
-    fontSize: 16,
-    color: "#fff",
+    fontSize: 15,
+    color: "#333",
+    fontWeight: "500",
+  },
+  dateText: {
+    fontSize: 12,
+    color: "#999",
+    fontWeight: "500",
   },
   emptyMessage: {
     flex: 1,
@@ -232,9 +257,16 @@ const styles = StyleSheet.create({
   },
   emptyMessageText: {
     fontSize: 16,
-    color: "#666",
+    color: "#fff",
     textAlign: "center",
     lineHeight: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#fff",
+    marginBottom: 12,
+    marginLeft: 4,
   },
 });
 

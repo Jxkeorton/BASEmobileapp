@@ -164,7 +164,8 @@ const Register = () => {
               mode="contained"
               style={styles.registerButton}
               onPress={onSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || signUpMutation.isPending}
+              loading={signUpMutation.isPending}
             >
               Register
             </Button>

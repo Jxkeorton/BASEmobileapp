@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import {
   ActivityIndicator,
   PaperProvider,
@@ -23,9 +24,7 @@ import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
 
 const LogBook = () => {
-  const [visible, setVisible] = useState(false);
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const client = useKyClient();
 
   const { user, loading } = useAuth();
@@ -52,14 +51,17 @@ const LogBook = () => {
 
   if (profileLoading) {
     return (
-      <View
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
         style={[
           styles.container,
           { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator size="large" />
-      </View>
+        <ActivityIndicator size="large" color="#fff" />
+      </LinearGradient>
     );
   }
 
@@ -69,50 +71,58 @@ const LogBook = () => {
 
   return (
     <PaperProvider>
-      <ScrollView style={styles.container}>
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-          <View>
-            <Portal>
-              <LogbookEntryModal
-                visible={visible}
-                onClose={hideModal}
-                isLoading={loading}
-              />
-            </Portal>
+      <LinearGradient
+        colors={["#00ABF0", "#0088CC", "#006699"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <View>
+              <Portal>
+                <LogbookEntryModal
+                  isModalOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
+                  isLoading={loading}
+                />
+              </Portal>
 
-            <View style={styles.infoBoxWrapper}>
-              <View
-                style={[
-                  styles.infoBox,
-                  {
-                    borderRightColor: "#dddddd",
-                    borderRightWidth: 1,
-                  },
-                ]}
-              >
-                <Text variant="titleLarge">{profile?.jump_number || 0}</Text>
-                <Text variant="bodySmall">Total Base Jumps</Text>
+              <View style={styles.statsCard}>
+                <View style={styles.statsRow}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statNumber}>
+                      {profile?.jump_number || 0}
+                    </Text>
+                    <Text style={styles.statLabel}>Total Jumps</Text>
+                  </View>
+                  <View style={styles.divider} />
+                  <View style={styles.actionItem}>
+                    <TouchableHighlight
+                      onPress={() => setIsModalOpen(true)}
+                      underlayColor="rgba(0, 171, 240, 0.1)"
+                      disabled={loading}
+                      style={styles.addButton}
+                    >
+                      <View style={styles.addButtonContent}>
+                        <View style={styles.addIconContainer}>
+                          <FontAwesome name="plus" size={16} color="#fff" />
+                        </View>
+                        <Text style={styles.addButtonText}>Log Jump</Text>
+                      </View>
+                    </TouchableHighlight>
+                  </View>
+                </View>
               </View>
-              <View style={styles.infoBox}>
-                <TouchableHighlight
-                  onPress={showModal}
-                  underlayColor="#DDDDDD"
-                  disabled={loading}
-                >
-                  <FontAwesome
-                    name="plus"
-                    size={30}
-                    color={loading ? "#ccc" : "#000"}
-                  />
-                </TouchableHighlight>
+
+              <View style={styles.entriesSection}>
+                <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
               </View>
+              <APIErrorHandler error={profileError} />
             </View>
-
-            <LogbookEntryCard jumpNumber={profile?.jump_number || 0} />
-            <APIErrorHandler error={profileError} />
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </LinearGradient>
     </PaperProvider>
   );
 };
@@ -122,24 +132,75 @@ export default LogBook;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f6f6f6",
   },
-  infoBoxWrapper: {
-    borderBottomColor: "#dddddd",
-    borderBottomWidth: 1,
-    borderTopColor: "#dddddd",
-    borderTopWidth: 1,
-    flexDirection: "row",
+  scrollContent: {
+    paddingBottom: 100,
+  },
+  statsCard: {
+    backgroundColor: "#fff",
+    padding: 20,
     height: 100,
-    marginTop: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
-  infoBox: {
-    width: "50%",
+  statsRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
   },
-  userInfoSection: {
-    paddingHorizontal: 30,
-    marginBottom: 25,
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statNumber: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: "#00ABF0",
+  },
+  statLabel: {
+    fontSize: 11,
+    color: "#888",
+    fontWeight: "600",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginTop: 4,
+  },
+  divider: {
+    width: 1,
+    height: 50,
+    backgroundColor: "#f0f0f0",
+  },
+  actionItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  addButton: {
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  addButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  addIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#00ABF0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  addButtonText: {
+    color: "#1a1a1a",
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  entriesSection: {
+    marginBottom: 16,
   },
 });

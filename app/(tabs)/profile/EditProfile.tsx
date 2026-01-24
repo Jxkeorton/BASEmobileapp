@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -19,17 +19,16 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
+import {
+  UpdateProfileData,
+  useUpdateProfile,
+} from "../../../hooks/useUpdateProfile";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
-import { paths } from "../../../types/api";
 import {
   editProfileSchema,
   type EditProfileFormData,
 } from "../../../utils/validationSchemas";
-
-type UpdateProfileData = NonNullable<
-  paths["/profile"]["patch"]["requestBody"]
->["content"]["application/json"];
 
 const EditProfile = () => {
   const [error, setError] = useState<any>(null);
@@ -73,25 +72,9 @@ const EditProfile = () => {
     retry: 3,
   });
 
-  const updateProfileMutation = useMutation({
-    mutationFn: async (profileData: UpdateProfileData) => {
-      return client
-        .PATCH("/profile", {
-          body: profileData,
-        })
-        .then((res) => {
-          if (res.error) {
-            throw new Error("Failed to update profile");
-          }
-          return res.data;
-        });
-    },
-    onSuccess: (response) => {
-      if (response.success) {
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-
-        router.back();
-      }
+  const updateProfileMutation = useUpdateProfile({
+    onSuccess: () => {
+      router.replace("/(tabs)/profile/Profile");
     },
     onError: (err) => {
       setError(err);
@@ -328,7 +311,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     padding: 15,
     borderRadius: 10,
-    backgroundColor: "#FF0000",
+    backgroundColor: "#dc3545",
     alignItems: "center",
     marginTop: 20,
   },

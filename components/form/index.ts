@@ -4,6 +4,7 @@
  */
 
 export { ControlledCheckbox } from "./ControlledCheckbox";
+export { ControlledDatePicker } from "./ControlledDatePicker";
 export {
   ControlledPaperEmailInput,
   ControlledPaperSecureTextInput,

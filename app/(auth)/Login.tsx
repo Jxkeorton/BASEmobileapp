@@ -116,8 +116,9 @@ export default function Login() {
                 <Button
                   mode="contained"
                   onPress={onSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || signInMutation.isPending}
                   style={styles.loginButton}
+                  loading={signInMutation.isPending}
                 >
                   Login
                 </Button>

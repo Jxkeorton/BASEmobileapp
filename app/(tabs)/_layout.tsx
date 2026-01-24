@@ -1,45 +1,52 @@
-import { Entypo, FontAwesome } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import {
+  Icon,
+  Label,
+  NativeTabs,
+  VectorIcon,
+} from "expo-router/unstable-native-tabs";
+import { Platform } from "react-native";
 
-export default () => {
+export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: "#00ABF0",
-        tabBarStyle: { backgroundColor: "black", height: 100 },
-      }}
-    >
-      <Tabs.Screen
-        name="map"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <Entypo name="pin" size={24} color={color} />
+    <NativeTabs minimizeBehavior="onScrollDown">
+      <NativeTabs.Trigger name="map">
+        <Label>Map</Label>
+        {Platform.select({
+          ios: <Icon sf={{ default: "map", selected: "map.fill" }} />,
+          android: (
+            <Icon
+              src={<VectorIcon family={MaterialIcons} name="location-pin" />}
+            />
           ),
-          title: "Map",
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="logbook"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="list" size={24} color={color} />
+        })}
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="logbook">
+        <Label>Logbook</Label>
+        {Platform.select({
+          ios: (
+            <Icon sf={{ default: "list.bullet", selected: "list.bullet" }} />
           ),
-          title: "Logbook",
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="user" size={24} color={color} />
+          android: (
+            <Icon src={<VectorIcon family={MaterialIcons} name="list" />} />
           ),
-          title: "Profile",
-          headerShown: false,
-        }}
-      />
-    </Tabs>
+        })}
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="profile">
+        <Label>Profile</Label>
+        {Platform.select({
+          ios: (
+            <Icon
+              sf={{ default: "person.circle", selected: "person.circle.fill" }}
+            />
+          ),
+          android: (
+            <Icon src={<VectorIcon family={MaterialIcons} name="person" />} />
+          ),
+        })}
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
-};
+}

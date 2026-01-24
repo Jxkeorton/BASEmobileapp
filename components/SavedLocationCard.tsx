@@ -19,9 +19,8 @@ const SavedLocationCard = ({ data, onDelete }: SavedLocationCardProps) => {
   if (data.length === 0) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>No Saved Locations</Text>
         <View style={{ justifyContent: "center" }}>
-          <Text>Visit the Map to save locations</Text>
+          <Text style={styles.emptyText}>Visit the Map to save locations</Text>
         </View>
       </View>
     );
@@ -29,26 +28,34 @@ const SavedLocationCard = ({ data, onDelete }: SavedLocationCardProps) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Saved Locations</Text>
       {data.map((item) => (
         <View key={item.save_id} style={styles.card}>
-          <Card>
-            <Card.Content>
-              <Text2 variant="titleLarge">{item.location.name}</Text2>
+          <Card style={styles.cardStyle}>
+            <Card.Content style={styles.cardContent}>
+              <Text2 variant="titleMedium" style={styles.locationName}>
+                {item.location.name}
+              </Text2>
               <Text style={styles.calloutCoordinates}>
                 Rock Drop:{" "}
                 {getHeightInPreferredUnit(item.location.rock_drop_ft, isMetric)}
               </Text>
             </Card.Content>
-            <Card.Actions>
+            <Card.Actions style={styles.cardActions}>
               <Button
-                textColor="black"
+                mode="text"
+                textColor="#00ABF0"
                 onPress={() => onDetailsPress(item.location.id)}
               >
                 Details
               </Button>
               <Button
-                style={styles.button}
+                style={styles.unsaveButton}
+                mode="contained"
+                buttonColor={"#dc3545"}
+                textColor={"#fff"}
+                icon={"heart-off"}
+                labelStyle={styles.unsaveButtonLabel}
+                contentStyle={styles.unsaveButtonContent}
                 onPress={() => onDelete(item.location.id)}
               >
                 Unsave
@@ -65,25 +72,61 @@ export default SavedLocationCard;
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
-    padding: 10,
-    backgroundColor: "#f4f4f4",
+    marginBottom: 10,
+    backgroundColor: "transparent",
   },
   title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    fontSize: 20,
+    fontWeight: "700",
+    marginBottom: 16,
+    color: "#fff",
+  },
+  emptyText: {
+    color: "rgba(255, 255, 255, 0.9)",
+    fontSize: 15,
   },
   card: {
-    marginVertical: 10,
-    marginLeft: 5,
-    width: "98%",
-    backgroundColor: "#f4f4f4",
+    marginVertical: 6,
+    width: "100%",
   },
-  button: {
-    backgroundColor: "#00ABF0",
+  cardStyle: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+  },
+  cardContent: {
+    paddingBottom: 8,
+  },
+  locationName: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1a1a1a",
+    marginBottom: 4,
   },
   calloutCoordinates: {
     marginBottom: 5,
+    fontSize: 14,
+    color: "#666",
+  },
+  cardActions: {
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+  },
+  unsaveButton: {
+    borderRadius: 12,
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  unsaveButtonLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  unsaveButtonContent: {
+    height: 44,
   },
 });

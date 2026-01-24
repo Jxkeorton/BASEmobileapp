@@ -10,9 +10,9 @@ import {
 const Contact = () => {
   const handleInstagramPress = () => {
     // Use the Instagram URL scheme to open the Instagram app.
-    Linking.openURL("instagram://user?username=jakeorton_").catch(() => {
+    Linking.openURL("instagram://user?username=traversebase_").catch(() => {
       // If the Instagram app is not installed, handle the error.
-      Linking.openURL("https://www.instagram.com/jakeorton_");
+      Linking.openURL("https://www.instagram.com/traversebase_");
     });
   };
 
@@ -24,7 +24,6 @@ const Contact = () => {
           We value your feedback on how we can improve the app{" "}
         </Text>
         <Text style={styles.text}>worldbasemap@gmail.com</Text>
-        <Text style={styles.text}>(+44) 7986273803</Text>
         <TouchableOpacity onPress={handleInstagramPress}>
           <FontAwesome
             name="instagram"
