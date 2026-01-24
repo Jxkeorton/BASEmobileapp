@@ -1,3 +1,4 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -394,23 +395,13 @@ const SubmitLocationModal = ({
         </View>
 
         {/* Secondary action buttons */}
-        <View style={styles.secondaryButtons}>
-          {currentPhase > 1 && (
+        {currentPhase > 1 && (
+          <View style={styles.secondaryButtons}>
             <TouchableOpacity style={styles.backButton} onPress={handleBack}>
               <Text style={styles.backButtonText}>← Back</Text>
             </TouchableOpacity>
-          )}
-
-          <TouchableOpacity
-            style={[
-              styles.cancelButton,
-              currentPhase === 1 && styles.fullWidth,
-            ]}
-            onPress={handleCancel}
-          >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
       </View>
     );
   };
@@ -421,6 +412,12 @@ const SubmitLocationModal = ({
         <View style={styles.modalContainer}>
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.container}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={handleCancel}
+              >
+                <FontAwesome name="times" size={24} color="#666" />
+              </TouchableOpacity>
               <Text style={styles.panelTitle}>{getPhaseTitle()}</Text>
 
               {renderProgressIndicator()}
@@ -471,6 +468,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     padding: 24,
     borderRadius: 12,
+    position: "relative",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    zIndex: 10,
+    padding: 8,
   },
   panelTitle: {
     fontSize: 22,
@@ -527,8 +532,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   secondaryButtons: {
-    flexDirection: "row",
-    gap: 8,
+    marginTop: 8,
   },
   submitButton: {
     flex: 1,
@@ -545,19 +549,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   backButton: {
-    flex: 1,
     padding: 14,
     borderRadius: 8,
     backgroundColor: "#f8f9fa",
     borderWidth: 1,
     borderColor: "#dee2e6",
-    alignItems: "center",
-  },
-  cancelButton: {
-    flex: 1,
-    padding: 14,
-    borderRadius: 8,
-    backgroundColor: "#dc3545",
     alignItems: "center",
   },
   fullWidth: {

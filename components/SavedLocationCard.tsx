@@ -49,9 +49,13 @@ const SavedLocationCard = ({ data, onDelete }: SavedLocationCardProps) => {
                 Details
               </Button>
               <Button
+                style={styles.unsaveButton}
                 mode="contained"
-                buttonColor="#00ABF0"
-                textColor="#fff"
+                buttonColor={"#dc3545"}
+                textColor={"#fff"}
+                icon={"heart-off"}
+                labelStyle={styles.unsaveButtonLabel}
+                contentStyle={styles.unsaveButtonContent}
                 onPress={() => onDelete(item.location.id)}
               >
                 Unsave
@@ -111,5 +115,18 @@ const styles = StyleSheet.create({
   cardActions: {
     paddingHorizontal: 16,
     paddingBottom: 12,
+  },
+  unsaveButton: {
+    borderRadius: 12,
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  unsaveButtonLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  unsaveButtonContent: {
+    height: 44,
   },
 });
