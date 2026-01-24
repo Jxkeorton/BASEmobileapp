@@ -8,7 +8,6 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
@@ -26,9 +25,13 @@ import {
   type UnifiedLocationFormData,
 } from "../utils/validationSchemas";
 import APIErrorHandler from "./APIErrorHandler";
-import { ControlledPaperTextInput } from "./form";
-
-export type SubmitLocationMode = "new" | "update";
+import {
+  AdditionalInfoPhase,
+  LocationDetailsPhase,
+  RequiredFieldsPhase,
+  SubmissionPhase,
+  SubmitLocationMode,
+} from "./SubmitLocation";
 
 export type SubmitLocationData = NonNullable<
   paths["/locations/submissions"]["post"]["requestBody"]
@@ -42,6 +45,8 @@ interface SubmitLocationModalProps {
   location?: Location;
 }
 
+const TOTAL_PHASES = 3;
+
 const SubmitLocationModal = ({
   visible,
   onClose,
@@ -49,6 +54,7 @@ const SubmitLocationModal = ({
   location,
 }: SubmitLocationModalProps) => {
   const [error, setError] = useState<any>(null);
+  const [currentPhase, setCurrentPhase] = useState<SubmissionPhase>(1);
   const queryClient = useQueryClient();
   const client = useKyClient();
 
@@ -76,6 +82,7 @@ const SubmitLocationModal = ({
     reset,
     watch,
     setValue,
+    trigger,
     formState: { isSubmitting },
   } = useForm<UnifiedLocationFormData>({
     resolver: yupResolver(unifiedLocationSchema) as any,
@@ -84,10 +91,11 @@ const SubmitLocationModal = ({
     defaultValues: getDefaultValues(),
   });
 
-  // Reset form when modal opens/closes or mode changes
+  // Reset form and phase when modal opens/closes or mode changes
   useEffect(() => {
     if (visible) {
       reset(getDefaultValues());
+      setCurrentPhase(1);
     }
   }, [visible, mode, reset]);
 
@@ -110,6 +118,7 @@ const SubmitLocationModal = ({
       if (response?.success) {
         onClose();
         reset();
+        setCurrentPhase(1);
         queryClient.invalidateQueries({ queryKey: ["submissions"] });
 
         if (isNewLocation) {
@@ -249,284 +258,196 @@ const SubmitLocationModal = ({
   const handleCancel = () => {
     onClose();
     reset();
+    setCurrentPhase(1);
   };
 
-  const getPlaceholder = (
-    field: keyof Location | "coordinates",
-    defaultPlaceholder: string,
-  ) => {
+  const validatePhase1 = async (): Promise<boolean> => {
     if (isNewLocation) {
-      return defaultPlaceholder;
+      const result = await trigger(["name", "coordinates", "rock_drop"]);
+      return result;
     }
-    if (!location) return defaultPlaceholder;
+    // For updates, phase 1 is always valid (fields are optional)
+    return true;
+  };
 
-    if (field === "coordinates") {
-      return `${location.latitude}, ${location.longitude}`;
+  const handleNext = async () => {
+    if (currentPhase === 1) {
+      const isValid = await validatePhase1();
+      if (!isValid) return;
     }
-    const value = location[field as keyof Location];
-    return value ? String(value) : defaultPlaceholder;
+
+    if (currentPhase < TOTAL_PHASES) {
+      setCurrentPhase((prev) => (prev + 1) as SubmissionPhase);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentPhase > 1) {
+      setCurrentPhase((prev) => (prev - 1) as SubmissionPhase);
+    }
+  };
+
+  const getPhaseTitle = (): string => {
+    if (!isNewLocation) {
+      return "Submit Details";
+    }
+
+    switch (currentPhase) {
+      case 1:
+        return "Required Information";
+      case 2:
+        return "Location Details";
+      case 3:
+        return "Additional Information";
+      default:
+        return "Submit Location";
+    }
+  };
+
+  const renderPhase = () => {
+    switch (currentPhase) {
+      case 1:
+        return (
+          <RequiredFieldsPhase
+            control={control}
+            mode={mode}
+            location={location}
+            selectedUnit={selectedUnit}
+            onUnitChange={(unit) => setValue("selectedUnit", unit)}
+          />
+        );
+      case 2:
+        return (
+          <LocationDetailsPhase
+            control={control}
+            mode={mode}
+            location={location}
+            selectedUnit={selectedUnit}
+          />
+        );
+      case 3:
+        return (
+          <AdditionalInfoPhase
+            control={control}
+            mode={mode}
+            location={location}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderProgressIndicator = () => (
+    <View style={styles.progressContainer}>
+      {[1, 2, 3].map((phase) => (
+        <View
+          key={phase}
+          style={[
+            styles.progressDot,
+            currentPhase >= phase && styles.progressDotActive,
+          ]}
+        />
+      ))}
+    </View>
+  );
+
+  const renderButtons = () => {
+    if (submitMutation.isPending || isSubmitting) {
+      return (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator animating={true} color="#00ABF0" size="large" />
+          <Text style={styles.loadingText}>
+            {isNewLocation ? "Submitting location..." : "Submitting details..."}
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.buttonContainer}>
+        {/* Primary action buttons */}
+        <View style={styles.primaryButtons}>
+          {currentPhase < TOTAL_PHASES && (
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleFormSubmit}
+            >
+              <Text style={styles.buttonText}>Submit</Text>
+            </TouchableOpacity>
+          )}
+
+          {currentPhase < TOTAL_PHASES ? (
+            <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
+              <Text style={styles.buttonText}>Next →</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.submitButton, styles.fullWidth]}
+              onPress={handleFormSubmit}
+            >
+              <Text style={styles.buttonText}>
+                {isNewLocation ? "Submit Location" : "Submit Details"}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Secondary action buttons */}
+        <View style={styles.secondaryButtons}>
+          {currentPhase > 1 && (
+            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+              <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            style={[
+              styles.cancelButton,
+              currentPhase === 1 && styles.fullWidth,
+            ]}
+            onPress={handleCancel}
+          >
+            <Text style={styles.cancelButtonText}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
   };
 
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
-      <TouchableWithoutFeedback onPress={onClose}>
+      <TouchableWithoutFeedback onPress={handleCancel}>
         <View style={styles.modalContainer}>
           <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
             <View style={styles.container}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={styles.panelTitle}>
-                  {isNewLocation ? "Submit New Location" : "Submit Details"}
+              <Text style={styles.panelTitle}>{getPhaseTitle()}</Text>
+
+              {renderProgressIndicator()}
+
+              {!isNewLocation && location && currentPhase === 1 && (
+                <Text style={styles.subtitle}>
+                  Help improve the database by submitting additional details for{" "}
+                  <Text style={styles.locationName}>{location?.name}</Text>
                 </Text>
+              )}
 
-                {!isNewLocation && location && (
-                  <Text style={styles.subtitle}>
-                    Help improve the database by submitting additional details
-                    for{" "}
-                    <Text style={styles.locationName}>{location?.name}</Text>
-                  </Text>
-                )}
-
-                {isNewLocation && (
-                  <Text style={styles.instructionText}>
-                    Fields marked with * are required
-                  </Text>
-                )}
-
-                <View style={styles.switchContainer}>
-                  <Text style={styles.switchLabel}>
-                    Unit: <Text style={styles.switchValue}>{selectedUnit}</Text>
-                  </Text>
-                  <Switch
-                    value={selectedUnit === "Feet"}
-                    onValueChange={(value) =>
-                      setValue("selectedUnit", value ? "Feet" : "Meters")
-                    }
-                    trackColor={{ false: "#767577", true: "#00ABF0" }}
-                    thumbColor={selectedUnit === "Feet" ? "#fff" : "#f4f3f4"}
-                  />
-                </View>
-
-                <Text style={styles.panelSubtitle}>
-                  {isNewLocation
-                    ? "Exit Name *"
-                    : "Location Name (if different)"}
+              {isNewLocation && currentPhase === 1 && (
+                <Text style={styles.instructionText}>
+                  Fields marked with * are required
                 </Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="name"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder("name", "Enter location name")}
-                  autoCapitalize="words"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
+              )}
 
-                {isNewLocation && (
-                  <>
-                    <Text style={styles.panelSubtitle}>
-                      Exact Coordinates * (lat, lng)
-                    </Text>
-                    <ControlledPaperTextInput
-                      control={control}
-                      name="coordinates"
-                      style={styles.input}
-                      mode="outlined"
-                      placeholder="e.g., 60.140582, -2.111822"
-                      autoCapitalize="none"
-                      textColor="black"
-                      activeOutlineColor="black"
-                    />
-
-                    <Text style={styles.panelSubtitle}>Country</Text>
-                    <ControlledPaperTextInput
-                      control={control}
-                      name="country"
-                      style={styles.input}
-                      mode="outlined"
-                      placeholder="Enter country"
-                      autoCapitalize="words"
-                      textColor="black"
-                      activeOutlineColor="black"
-                    />
-                  </>
-                )}
-
-                <Text style={styles.panelSubtitle}>
-                  Rock Drop{isNewLocation ? " *" : ""} ({selectedUnit})
-                </Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="rock_drop"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "rock_drop_ft",
-                    `Height in ${selectedUnit.toLowerCase()}`,
-                  )}
-                  keyboardType="numeric"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>
-                  Total Height ({selectedUnit})
-                </Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="total_height"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "total_height_ft",
-                    `Total height in ${selectedUnit.toLowerCase()}`,
-                  )}
-                  keyboardType="numeric"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>Cliff Aspect</Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="cliff_aspect"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "cliff_aspect",
-                    "e.g., N, NE, E, SE, S, SW, W, NW",
-                  )}
-                  autoCapitalize="characters"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>Anchor Information</Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="anchor_info"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "anchor_info",
-                    "Anchor type and details",
-                  )}
-                  autoCapitalize="sentences"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>Access Information</Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="access_info"
-                  style={[styles.input, styles.multilineInput]}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "access_info",
-                    "How to access this location...",
-                  )}
-                  multiline
-                  numberOfLines={3}
-                  autoCapitalize="sentences"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>Opened By</Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="opened_by_name"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "opened_by_name",
-                    "Person who first jumped this location",
-                  )}
-                  autoCapitalize="words"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>Opened Date</Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="opened_date"
-                  style={styles.input}
-                  mode="outlined"
-                  placeholder={getPlaceholder("opened_date", "YYYY-MM-DD")}
-                  autoCapitalize="none"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                <Text style={styles.panelSubtitle}>Additional Notes</Text>
-                <ControlledPaperTextInput
-                  control={control}
-                  name="notes"
-                  style={[styles.input, styles.multilineInput]}
-                  mode="outlined"
-                  placeholder={getPlaceholder(
-                    "notes",
-                    "Any additional information about this location...",
-                  )}
-                  multiline
-                  numberOfLines={4}
-                  autoCapitalize="sentences"
-                  textColor="black"
-                  activeOutlineColor="black"
-                />
-
-                {isNewLocation && (
-                  <>
-                    <Text style={styles.panelSubtitle}>Video Link</Text>
-                    <ControlledPaperTextInput
-                      control={control}
-                      name="video_link"
-                      style={styles.input}
-                      mode="outlined"
-                      placeholder="https://..."
-                      autoCapitalize="none"
-                      keyboardType="url"
-                      textColor="black"
-                      activeOutlineColor="black"
-                    />
-                  </>
-                )}
-
-                {submitMutation.isPending || isSubmitting ? (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator
-                      animating={true}
-                      color="#00ABF0"
-                      size="large"
-                    />
-                    <Text style={styles.loadingText}>
-                      {isNewLocation
-                        ? "Submitting location..."
-                        : "Submitting details..."}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={styles.modalFooter}>
-                    <TouchableOpacity
-                      style={styles.panelButton}
-                      onPress={handleFormSubmit}
-                    >
-                      <Text style={styles.panelButtonTitle}>
-                        {isNewLocation ? "Submit Location" : "Submit Details"}
-                      </Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={handleCancel}
-                    >
-                      <Text style={styles.panelButtonTitle}>Cancel</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
+              <ScrollView
+                style={styles.phaseScrollView}
+                contentContainerStyle={styles.phaseContent}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {renderPhase()}
               </ScrollView>
+
+              {renderButtons()}
             </View>
           </TouchableWithoutFeedback>
         </View>
@@ -558,6 +479,22 @@ const styles = StyleSheet.create({
     color: "#1a1a1a",
     textAlign: "center",
   },
+  progressContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+    gap: 8,
+  },
+  progressDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#E0E0E0",
+  },
+  progressDotActive: {
+    backgroundColor: "#00ABF0",
+  },
   subtitle: {
     fontSize: 14,
     color: "#666",
@@ -575,64 +512,71 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
-  switchContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-    paddingHorizontal: 4,
+  phaseScrollView: {
+    maxHeight: 300,
   },
-  switchLabel: {
-    fontSize: 15,
-    color: "#1a1a1a",
+  phaseContent: {
+    paddingBottom: 10,
   },
-  switchValue: {
-    fontWeight: "600",
-    color: "#00ABF0",
-  },
-  panelSubtitle: {
-    fontSize: 13,
-    color: "#666",
-    marginBottom: 6,
-    marginTop: 10,
-    fontWeight: "500",
-  },
-  input: {
-    height: 42,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    width: "100%",
-    fontSize: 15,
-  },
-  multilineInput: {
-    height: 80,
-  },
-  modalFooter: {
+  buttonContainer: {
     marginTop: 20,
-    alignItems: "center",
   },
-  panelButton: {
+  primaryButtons: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 8,
+  },
+  secondaryButtons: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  submitButton: {
+    flex: 1,
     padding: 14,
     borderRadius: 8,
     backgroundColor: "#00ABF0",
     alignItems: "center",
-    marginBottom: 8,
-    width: "100%",
   },
-  panelButtonTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "white",
-  },
-  cancelButton: {
+  nextButton: {
+    flex: 1,
     padding: 14,
     borderRadius: 8,
     backgroundColor: "#6c757d",
     alignItems: "center",
-    marginBottom: 8,
-    width: "100%",
+  },
+  backButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: "#f8f9fa",
+    borderWidth: 1,
+    borderColor: "#dee2e6",
+    alignItems: "center",
+  },
+  cancelButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 8,
+    backgroundColor: "#dc3545",
+    alignItems: "center",
+  },
+  fullWidth: {
+    flex: 1,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "white",
+  },
+  backButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#495057",
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "white",
   },
   loadingContainer: {
     alignItems: "center",
