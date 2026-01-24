@@ -24,9 +24,7 @@ import { useKyClient } from "../../../services/kyClient";
 import type { ProfileData } from "../profile/Profile";
 
 const LogBook = () => {
-  const [visible, setVisible] = useState(false);
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const client = useKyClient();
 
   const { user, loading } = useAuth();
@@ -84,8 +82,8 @@ const LogBook = () => {
             <View>
               <Portal>
                 <LogbookEntryModal
-                  visible={visible}
-                  onClose={hideModal}
+                  isModalOpen={isModalOpen}
+                  onClose={() => setIsModalOpen(false)}
                   isLoading={loading}
                 />
               </Portal>
@@ -101,7 +99,7 @@ const LogBook = () => {
                   <View style={styles.divider} />
                   <View style={styles.actionItem}>
                     <TouchableHighlight
-                      onPress={showModal}
+                      onPress={() => setIsModalOpen(true)}
                       underlayColor="rgba(0, 171, 240, 0.1)"
                       disabled={loading}
                       style={styles.addButton}

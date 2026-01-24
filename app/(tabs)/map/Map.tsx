@@ -60,7 +60,6 @@ export default function Map() {
   const client = useKyClient();
 
   const [satelliteViewLoading, setSatelliteLoading] = useState(false);
-  const [isMapLoading, setIsMapLoading] = useState(false);
 
   // Filter modal state
   const [minRockDrop, setMinRockDrop] = useState("");
@@ -192,7 +191,6 @@ export default function Map() {
 
   const handleMapStyleChange = () => {
     setSatelliteLoading(true);
-    setIsMapLoading(true);
     setTimeout(() => {
       setSatelliteActive(!satelliteActive);
       setSatelliteLoading(false);
@@ -205,7 +203,7 @@ export default function Map() {
         <View style={styles.container}>
           <Portal>
             <FiltersModal
-              visible={isFiltersVisible}
+              isModalOpen={isFiltersVisible}
               onClose={() => setFiltersVisible(false)}
               onApplyFilter={(min: string, max: string, unknown: boolean) => {
                 setMinRockDrop(min);
@@ -237,10 +235,6 @@ export default function Map() {
                 setSelectedLocation(null);
               }
             }}
-            onWillStartLoadingMap={() => setIsMapLoading(true)}
-            onDidFinishLoadingMap={() => setIsMapLoading(false)}
-            onDidFinishLoadingStyle={() => setIsMapLoading(false)}
-            onMapLoadingError={() => setIsMapLoading(false)}
           >
             <Camera
               ref={cameraRef}

@@ -25,13 +25,13 @@ import { ControlledPaperTextInput } from "./form";
 import { LogbookJump } from "./LogbookEntryCard";
 
 interface LogbookEntryModalProps {
-  visible: boolean;
+  isModalOpen: boolean;
   onClose: () => void;
   isLoading: boolean;
 }
 
 const LogbookEntryModal = ({
-  visible,
+  isModalOpen,
   onClose,
   isLoading,
 }: LogbookEntryModalProps) => {
@@ -124,7 +124,7 @@ const LogbookEntryModal = ({
   };
 
   return (
-    <Modal visible={visible} transparent={true}>
+    <Modal visible={isModalOpen} transparent={true}>
       <View style={styles.modalContainer}>
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View style={styles.container}>
