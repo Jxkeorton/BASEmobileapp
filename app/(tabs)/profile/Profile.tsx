@@ -8,6 +8,7 @@ import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import SavedLocationCard from "../../../components/SavedLocationCard";
+import SubmitLocationModal from "../../../components/SubmitLocationModal";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import { paths } from "../../../types/api";
@@ -24,6 +25,7 @@ const Profile = () => {
   const queryClient = useQueryClient();
   const client = useKyClient();
   const [error, setError] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data: profileResponse,
@@ -205,7 +207,7 @@ const Profile = () => {
                 </View>
               </TouchableRipple>
               <TouchableRipple
-                onPress={() => router.replace("/(tabs)/profile/SubmitLocation")}
+                onPress={() => setIsModalOpen(true)}
                 style={styles.actionButton}
                 borderless
               >
@@ -255,6 +257,12 @@ const Profile = () => {
       <APIErrorHandler
         error={error || profileError || locationsError}
         onDismiss={() => setError(null)}
+      />
+
+      <SubmitLocationModal
+        visible={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mode="new"
       />
     </LinearGradient>
   );

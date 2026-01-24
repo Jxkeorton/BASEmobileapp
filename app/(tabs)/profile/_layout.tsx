@@ -51,13 +51,6 @@ export default () => {
         }}
       />
       <Stack.Screen
-        name="SubmitLocation"
-        options={{
-          title: "Submit A New Exit",
-          headerLeft: () => <CancelButton />,
-        }}
-      />
-      <Stack.Screen
         name="settings"
         options={{
           title: "Settings",

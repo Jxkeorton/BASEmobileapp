@@ -1,18 +1,28 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, TouchableHighlight, View } from "react-native";
+import SubmitLocationModal from "../SubmitLocationModal";
 
 export const SubmitLocationButton = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
-    <TouchableHighlight
-      onPress={() => router.push("/(tabs)/profile/SubmitLocation")}
-      underlayColor="#E0E0E0"
-      style={styles.submitLocationButton}
-    >
-      <View style={styles.controlButtonContent}>
-        <FontAwesome name="plus" size={20} color="#333" />
-      </View>
-    </TouchableHighlight>
+    <>
+      <TouchableHighlight
+        onPress={() => setIsModalOpen(true)}
+        underlayColor="#E0E0E0"
+        style={styles.submitLocationButton}
+      >
+        <View style={styles.controlButtonContent}>
+          <FontAwesome name="plus" size={20} color="#333" />
+        </View>
+      </TouchableHighlight>
+      <SubmitLocationModal
+        visible={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        mode="new"
+      />
+    </>
   );
 };
 

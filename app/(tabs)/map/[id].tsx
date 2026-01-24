@@ -22,7 +22,7 @@ import {
 } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../../components/APIErrorHandler";
-import SubmitLocationDetailsModal from "../../../components/SubmitLocationDetailsModal";
+import SubmitLocationModal from "../../../components/SubmitLocationModal";
 import { useProtectedRoute } from "../../../hooks/useProtectedRoute";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useUnitSystem } from "../../../providers/UnitSystemProvider";
@@ -241,9 +241,10 @@ export default function Location() {
         style={{ flex: 1 }}
       >
         <Portal>
-          <SubmitLocationDetailsModal
+          <SubmitLocationModal
             visible={isSubmitDetailsModalVisible}
             onClose={() => setIsSubmitDetailsModalVisible(false)}
+            mode="update"
             location={location}
           />
         </Portal>
