@@ -1,10 +1,13 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -33,7 +36,7 @@ import {
 const EditProfile = () => {
   const [error, setError] = useState<any>(null);
   const { user, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
+  const [image, setImage] = useState<string | null>(null);
   const client = useKyClient();
 
   const {
@@ -128,6 +131,35 @@ const EditProfile = () => {
     await updateProfileMutation.mutateAsync(profileData);
   });
 
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library.
+    // Manually request permissions for videos on iOS when `allowsEditing` is set to `false`
+    // and `videoExportPreset` is `'Passthrough'` (the default), ideally before launching the picker
+    // so the app users aren't surprised by a system dialog after picking a video.
+    // See "Invoke permissions for videos" sub section for more details.
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Permission required",
+        "Permission to access the media library is required.",
+      );
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "videos"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImage(result.assets?.[0]?.uri || "");
+    }
+  };
+
   if (profileLoading) {
     return (
       <PaperProvider>
@@ -152,9 +184,19 @@ const EditProfile = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ alignItems: "center", marginBottom: 30 }}>
-            <View style={styles.profilePlaceholder}>
-              <FontAwesome name="user" size={40} color="#ccc" />
-            </View>
+            {image ? (
+              <View style={styles.imageContainer}>
+                <Image
+                  source={{ uri: image }}
+                  style={styles.image}
+                  contentFit="fill"
+                />
+              </View>
+            ) : (
+              <View style={styles.profilePlaceholder}>
+                <FontAwesome name="user" size={40} color="#ccc" />
+              </View>
+            )}
             <Text style={styles.profileName}>{name || "No name set"}</Text>
           </View>
 
@@ -221,6 +263,14 @@ const EditProfile = () => {
               />
             </View>
           </View>
+
+          <TouchableOpacity
+            style={[styles.commandButton, { backgroundColor: "#17c33a" }]}
+            onPress={pickImage}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.panelButtonTitle}>Add profile image</Text>
+          </TouchableOpacity>
 
           {updateProfileMutation.isPending || isSubmitting ? (
             <View style={styles.loadingButtonContainer}>
@@ -336,6 +386,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     backgroundColor: "#fff",
+    height: 40,
   },
   readOnlyInput: {
     color: "#999",
@@ -343,5 +394,17 @@ const styles = StyleSheet.create({
   loadingButtonContainer: {
     alignItems: "center",
     marginTop: 20,
+  },
+  imageContainer: {
+    width: 100,
+    height: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: "#0553",
+    borderRadius: 50,
   },
 });
