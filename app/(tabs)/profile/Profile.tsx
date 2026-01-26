@@ -1,8 +1,8 @@
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useState } from "react";
-
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { ScrollView, Share, StyleSheet, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator, Text, TouchableRipple } from "react-native-paper";
@@ -148,9 +148,22 @@ const Profile = () => {
             <View
               style={{ flexDirection: "row", alignItems: "center", flex: 1 }}
             >
-              <View style={styles.avatarPlaceholder}>
-                <FontAwesome name="user" size={24} color="#00ABF0" />
-              </View>
+              {profile.image_url ? (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{
+                      uri: profile.image_url,
+                    }}
+                    style={styles.image}
+                    contentFit="fill"
+                  />
+                </View>
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <FontAwesome name="user" size={24} color="#00ABF0" />
+                </View>
+              )}
+
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>
                   {profile?.name || "No name set"}
@@ -334,8 +347,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   avatarPlaceholder: {
-    width: 48,
-    height: 48,
+    width: 70,
+    height: 70,
     borderRadius: 24,
     backgroundColor: "rgba(0, 171, 240, 0.1)",
     justifyContent: "center",
@@ -432,5 +445,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#fff",
     marginLeft: 4,
+  },
+  imageContainer: {
+    width: 70,
+    height: 70,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: "#0553",
+    borderRadius: "50%",
   },
 });
