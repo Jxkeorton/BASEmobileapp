@@ -37,60 +37,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/admin/locations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Create a new BASE jumping location (Admin only) */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        name: string;
-                        country?: string;
-                        latitude: number;
-                        longitude: number;
-                        rock_drop_ft?: number;
-                        total_height_ft?: number;
-                        cliff_aspect?: string;
-                        anchor_info?: string;
-                        access_info?: string;
-                        notes?: string;
-                        opened_by_name?: string;
-                        opened_date?: string;
-                        /** Format: uri */
-                        video_link?: string;
-                        is_hidden?: boolean;
-                    };
-                };
-            };
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/admin/locations/{locationId}": {
         parameters: {
             query?: never;
@@ -152,6 +98,7 @@ export interface paths {
                         /** Format: uri */
                         video_link?: string;
                         is_hidden?: boolean;
+                        images?: string[] | null;
                     };
                 };
             };
@@ -165,6 +112,61 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/admin/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Create a new BASE jumping location (Admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        country?: string;
+                        latitude: number;
+                        longitude: number;
+                        rock_drop_ft?: number;
+                        total_height_ft?: number;
+                        cliff_aspect?: string;
+                        anchor_info?: string;
+                        access_info?: string;
+                        notes?: string;
+                        opened_by_name?: string;
+                        opened_date?: string;
+                        /** Format: uri */
+                        video_link?: string;
+                        is_hidden?: boolean;
+                        images?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/admin/submissions": {
@@ -284,6 +286,1001 @@ export interface paths {
                                 submission?: Record<string, never>;
                                 created_location?: Record<string, never>;
                                 updated_location?: Record<string, never>;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/delete-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Delete user account and all associated data */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        confirmation: string;
+                        password?: string;
+                        verification_method?: "password" | "reauthentication" | "trusted_session";
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Refresh access token using refresh token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        refresh_token: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/signin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sign in with email and password */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: email */
+                        email: string;
+                        password: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                user: {
+                                    /** Format: uuid */
+                                    id: string;
+                                    /** Format: email */
+                                    email: string;
+                                };
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/signout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sign out current user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reset-password/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Confirm password reset with new password */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        access_token: string;
+                        refresh_token: string;
+                        new_password: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Send password reset email to user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: email */
+                        email: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/confirm-email": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Confirm email address */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        token: string;
+                        type: "signup" | "recovery" | "email_change";
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                user: {
+                                    id: string;
+                                    /** Format: email */
+                                    email: string;
+                                    email_confirmed_at: string | null;
+                                };
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
+                                };
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/resend-confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Resend email confirmation */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: email */
+                        email: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Sign up with email and password */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: email */
+                        email: string;
+                        password: string;
+                        name?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                user: {
+                                    id: string;
+                                    /** Format: email */
+                                    email: string;
+                                    email_confirmed_at?: string | null;
+                                };
+                                session?: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at?: number;
+                                } | null;
+                                requiresEmailConfirmation: boolean;
+                                message: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get all BASE jumping locations */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Filter by country */
+                    country?: string;
+                    /** @description Minimum height in feet */
+                    min_height?: number;
+                    /** @description Maximum height in feet */
+                    max_height?: number;
+                    /** @description Search in name, country, or notes */
+                    search?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: number;
+                                name: string;
+                                country?: string | null;
+                                latitude: number;
+                                longitude: number;
+                                rock_drop_ft?: number | null;
+                                total_height_ft?: number | null;
+                                cliff_aspect?: string | null;
+                                anchor_info?: string | null;
+                                access_info?: string | null;
+                                notes?: string | null;
+                                opened_by_name?: string | null;
+                                opened_date?: string | null;
+                                video_link?: string | null;
+                                images: string[];
+                                /** Format: date-time */
+                                created_at: string;
+                                /** Format: date-time */
+                                updated_at: string;
+                                created_by?: string | null;
+                                updated_by?: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Save a location to user favorites */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description ID of the location to save */
+                        location_id: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                            data?: {
+                                save_id?: string;
+                                location_id?: number;
+                                saved_at?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/saved": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user saved locations with full location details */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Number of locations to return */
+                    limit?: number;
+                    /** @description Number of locations to skip */
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                saved_locations: {
+                                    save_id: string;
+                                    /** Format: date-time */
+                                    saved_at: string;
+                                    location: {
+                                        id: number;
+                                        name: string;
+                                        country?: string | null;
+                                        latitude: number;
+                                        longitude: number;
+                                        rock_drop_ft?: number | null;
+                                        total_height_ft?: number | null;
+                                        cliff_aspect?: string | null;
+                                        anchor_info?: string | null;
+                                        access_info?: string | null;
+                                        notes?: string | null;
+                                        opened_by_name?: string | null;
+                                        opened_date?: string | null;
+                                        video_link?: string | null;
+                                        images: string[];
+                                        /** Format: date-time */
+                                        created_at: string;
+                                        /** Format: date-time */
+                                        updated_at: string;
+                                    };
+                                }[];
+                                total_count: number;
+                                has_more: boolean;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/locations/unsave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Remove a location from user favorites */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description ID of the location to unsave */
+                        location_id: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/logbook/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Delete a logbook entry */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Logbook entry ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Update a logbook entry */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Logbook entry ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        location_name?: string;
+                        exit_type?: "Building" | "Antenna" | "Span" | "Earth" | null;
+                        delay_seconds?: number | null;
+                        jump_date?: string | null;
+                        details?: string | null;
+                        images?: string[] | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/logbook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user logbook entries */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Number of entries to return */
+                    limit?: number;
+                    /** @description Number of entries to skip */
+                    offset?: number;
+                    /** @description Search in location name or details */
+                    search?: string;
+                    /** @description Filter by exit type */
+                    exit_type?: "Building" | "Antenna" | "Span" | "Earth";
+                    /** @description Filter entries from this date (YYYY-MM-DD) */
+                    date_from?: string;
+                    /** @description Filter entries to this date (YYYY-MM-DD) */
+                    date_to?: string;
+                    /** @description Sort order by jump date */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                entries: {
+                                    id: string;
+                                    user_id: string;
+                                    location_name: string;
+                                    /** @enum {string|null} */
+                                    exit_type?: "Building" | "Antenna" | "Span" | "Earth" | null;
+                                    delay_seconds?: number | null;
+                                    /** Format: date */
+                                    jump_date?: string | null;
+                                    details?: string | null;
+                                    images: string[];
+                                    /** Format: date-time */
+                                    created_at: string;
+                                    /** Format: date-time */
+                                    updated_at: string;
+                                }[];
+                                total_count: number;
+                                has_more: boolean;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Create a new logbook entry */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        location_name: string;
+                        exit_type?: "Building" | "Antenna" | "Span" | "Earth";
+                        delay_seconds?: number;
+                        /** Format: date */
+                        jump_date?: string;
+                        details?: string;
+                        images?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                            data?: {
+                                id?: string;
+                                location_name?: string;
+                                exit_type?: string;
+                                delay_seconds?: number;
+                                jump_date?: string;
+                                details?: string;
+                                images?: string[];
+                                created_at?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get current user profile with role information */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: string;
+                                email?: string | null;
+                                name?: string | null;
+                                username?: string | null;
+                                jump_number: number;
+                                /** @enum {string} */
+                                role: "USER" | "ADMIN" | "SUPERUSER";
+                                /** @enum {string} */
+                                subscription_status: "free" | "trial" | "active" | "expired";
+                                /** Format: date-time */
+                                subscription_expires_at?: string | null;
+                                /** Format: date-time */
+                                subscription_updated_at?: string;
+                                /** Format: date-time */
+                                created_at: string;
+                                /** Format: date-time */
+                                updated_at: string;
+                                image_url?: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Update current user profile */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        username?: string;
+                        jump_number?: number;
+                        image_url?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id?: string;
+                                email?: string;
+                                name?: string | null;
+                                username?: string | null;
+                                jump_number?: number;
+                                updated_at?: string;
+                                image_url?: string | null;
                             };
                         };
                     };
@@ -550,76 +1547,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/locations": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get all BASE jumping locations */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Filter by country */
-                    country?: string;
-                    /** @description Minimum height in feet */
-                    min_height?: number;
-                    /** @description Maximum height in feet */
-                    max_height?: number;
-                    /** @description Search in name, country, or notes */
-                    search?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            data?: {
-                                id: number;
-                                name: string;
-                                country?: string | null;
-                                latitude: number;
-                                longitude: number;
-                                rock_drop_ft?: number | null;
-                                total_height_ft?: number | null;
-                                cliff_aspect?: string | null;
-                                anchor_info?: string | null;
-                                access_info?: string | null;
-                                notes?: string | null;
-                                opened_by_name?: string | null;
-                                opened_date?: string | null;
-                                video_link?: string | null;
-                                /** Format: date-time */
-                                created_at: string;
-                                /** Format: date-time */
-                                updated_at: string;
-                                created_by?: string | null;
-                                updated_by?: string | null;
-                            }[];
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/locations/save": {
+    "/subscriptions/webhook": {
         parameters: {
             query?: never;
             header?: never;
@@ -628,7 +1556,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Save a location to user favorites */
+        /** @description RevenueCat webhook for subscription updates */
         post: {
             parameters: {
                 query?: never;
@@ -639,8 +1567,18 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        /** @description ID of the location to save */
-                        location_id: number;
+                        api_version: string;
+                        event: {
+                            type: string;
+                            app_user_id: string;
+                            product_id?: string;
+                            period_type?: string;
+                            purchased_at_ms?: number;
+                            expiration_at_ms?: number;
+                            is_trial_period?: boolean;
+                            price?: number;
+                            currency?: string;
+                        };
                     };
                 };
             };
@@ -650,17 +1588,7 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            message?: string;
-                            data?: {
-                                save_id?: string;
-                                location_id?: number;
-                                saved_at?: string;
-                            };
-                        };
-                    };
+                    content?: never;
                 };
             };
         };
@@ -670,7 +1598,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/locations/unsave": {
+    "/api/v2/admin/locations/{locationId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -680,19 +1608,58 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** @description Remove a location from user favorites */
+        /** @description Delete a location (Superuser only) */
         delete: {
             parameters: {
                 query?: never;
                 header?: never;
-                path?: never;
+                path: {
+                    locationId: number;
+                };
                 cookie?: never;
             };
-            requestBody: {
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Update an existing location (Admin only) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    locationId: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
                 content: {
                     "application/json": {
-                        /** @description ID of the location to unsave */
-                        location_id: number;
+                        name?: string;
+                        country?: string;
+                        latitude?: number;
+                        longitude?: number;
+                        rock_drop_ft?: number;
+                        total_height_ft?: number;
+                        cliff_aspect?: string;
+                        anchor_info?: string;
+                        access_info?: string;
+                        notes?: string;
+                        opened_by_name?: string;
+                        opened_date?: string;
+                        /** Format: uri */
+                        video_link?: string;
+                        is_hidden?: boolean;
+                        images?: string[] | null;
                     };
                 };
             };
@@ -702,35 +1669,85 @@ export interface paths {
                     headers: {
                         [name: string]: unknown;
                     };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            message?: string;
-                        };
-                    };
+                    content?: never;
                 };
             };
         };
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
-    "/locations/saved": {
+    "/api/v2/admin/locations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Get user saved locations with full location details */
+        get?: never;
+        put?: never;
+        /** @description Create a new BASE jumping location (Admin only) */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        country?: string;
+                        latitude: number;
+                        longitude: number;
+                        rock_drop_ft?: number;
+                        total_height_ft?: number;
+                        cliff_aspect?: string;
+                        anchor_info?: string;
+                        access_info?: string;
+                        notes?: string;
+                        opened_by_name?: string;
+                        opened_date?: string;
+                        /** Format: uri */
+                        video_link?: string;
+                        is_hidden?: boolean;
+                        images?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/admin/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get all location submissions for admin review */
         get: {
             parameters: {
                 query?: {
-                    /** @description Number of locations to return */
+                    status?: "pending" | "approved" | "rejected";
+                    submission_type?: "new" | "update";
+                    user_id?: string;
                     limit?: number;
-                    /** @description Number of locations to skip */
                     offset?: number;
+                    sort_by?: "created_at" | "name" | "status";
+                    sort_order?: "asc" | "desc";
                 };
                 header?: never;
                 path?: never;
@@ -747,33 +1764,14 @@ export interface paths {
                         "application/json": {
                             success?: boolean;
                             data?: {
-                                saved_locations: {
-                                    save_id: string;
-                                    /** Format: date-time */
-                                    saved_at: string;
-                                    location: {
-                                        id: number;
-                                        name: string;
-                                        country?: string | null;
-                                        latitude: number;
-                                        longitude: number;
-                                        rock_drop_ft?: number | null;
-                                        total_height_ft?: number | null;
-                                        cliff_aspect?: string | null;
-                                        anchor_info?: string | null;
-                                        access_info?: string | null;
-                                        notes?: string | null;
-                                        opened_by_name?: string | null;
-                                        opened_date?: string | null;
-                                        video_link?: string | null;
-                                        /** Format: date-time */
-                                        created_at: string;
-                                        /** Format: date-time */
-                                        updated_at: string;
-                                    };
-                                }[];
-                                total_count: number;
-                                has_more: boolean;
+                                submissions?: unknown[];
+                                total_count?: number;
+                                has_more?: boolean;
+                                summary?: {
+                                    pending?: number;
+                                    approved?: number;
+                                    rejected?: number;
+                                };
                             };
                         };
                     };
@@ -788,7 +1786,176 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/signin": {
+    "/api/v2/admin/submissions/{submissionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Review a location submission (approve or reject) */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    submissionId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        status: "approved" | "rejected";
+                        admin_notes?: string;
+                        override_data?: {
+                            name?: string;
+                            country?: string;
+                            latitude?: number;
+                            longitude?: number;
+                            rock_drop_ft?: number;
+                            total_height_ft?: number;
+                            cliff_aspect?: string;
+                            anchor_info?: string;
+                            access_info?: string;
+                            notes?: string;
+                            opened_by_name?: string;
+                            opened_date?: string;
+                            /** Format: uri */
+                            video_link?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                            data?: {
+                                submission?: Record<string, never>;
+                                created_location?: Record<string, never>;
+                                updated_location?: Record<string, never>;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v2/delete-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Delete user account and all associated data */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        confirmation: string;
+                        password?: string;
+                        verification_method?: "password" | "reauthentication" | "trusted_session";
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/refresh": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Refresh access token using refresh token */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        refresh_token: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            data: {
+                                session: {
+                                    access_token: string;
+                                    refresh_token: string;
+                                    expires_at: number;
+                                };
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/signin": {
         parameters: {
             query?: never;
             header?: never;
@@ -848,7 +2015,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/signup": {
+    "/api/v2/signout": {
         parameters: {
             query?: never;
             header?: never;
@@ -857,7 +2024,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Sign up with email and password */
+        /** @description Sign out current user */
         post: {
             parameters: {
                 query?: never;
@@ -865,72 +2032,7 @@ export interface paths {
                 path?: never;
                 cookie?: never;
             };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: email */
-                        email: string;
-                        password: string;
-                        name?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            data: {
-                                user: {
-                                    id: string;
-                                    email: string | null;
-                                    email_confirmed_at: string | null;
-                                };
-                                session: Record<string, never> | null;
-                                requiresEmailConfirmation: boolean;
-                                message: string;
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/reset-password": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Send password reset email to user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        /** Format: email */
-                        email: string;
-                    };
-                };
-            };
+            requestBody?: never;
             responses: {
                 /** @description Default Response */
                 200: {
@@ -953,7 +2055,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/reset-password/confirm": {
+    "/api/v2/reset-password/confirm": {
         parameters: {
             query?: never;
             header?: never;
@@ -1001,7 +2103,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/confirm-email": {
+    "/api/v2/reset-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Send password reset email to user */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** Format: email */
+                        email: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @enum {boolean} */
+                            success: true;
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/confirm-email": {
         parameters: {
             query?: never;
             header?: never;
@@ -1061,7 +2210,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/resend-confirmation": {
+    "/api/v2/resend-confirmation": {
         parameters: {
             query?: never;
             header?: never;
@@ -1108,7 +2257,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/signout": {
+    "/api/v2/signup": {
         parameters: {
             query?: never;
             header?: never;
@@ -1117,95 +2266,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description Sign out current user */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/delete-account": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** @description Delete user account and all associated data */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        confirmation: string;
-                        password?: string;
-                        verification_method?: "password" | "reauthentication" | "trusted_session";
-                    };
-                };
-            };
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            /** @enum {boolean} */
-                            success: true;
-                            message: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Refresh access token using refresh token */
+        /** @description Sign up with email and password */
         post: {
             parameters: {
                 query?: never;
@@ -1216,7 +2277,10 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        refresh_token: string;
+                        /** Format: email */
+                        email: string;
+                        password: string;
+                        name?: string;
                     };
                 };
             };
@@ -1231,11 +2295,19 @@ export interface paths {
                             /** @enum {boolean} */
                             success: true;
                             data: {
-                                session: {
+                                user: {
+                                    id: string;
+                                    /** Format: email */
+                                    email: string;
+                                    email_confirmed_at?: string | null;
+                                };
+                                session?: {
                                     access_token: string;
                                     refresh_token: string;
-                                    expires_at: number;
-                                };
+                                    expires_at?: number;
+                                } | null;
+                                requiresEmailConfirmation: boolean;
+                                message: string;
                             };
                         };
                     };
@@ -1248,17 +2320,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/profile": {
+    "/api/v2/locations": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** @description Get current user profile with role information */
+        /** @description Get all BASE jumping locations */
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    /** @description Filter by country */
+                    country?: string;
+                    /** @description Minimum height in feet */
+                    min_height?: number;
+                    /** @description Maximum height in feet */
+                    max_height?: number;
+                    /** @description Search in name, country, or notes */
+                    search?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -1274,24 +2355,151 @@ export interface paths {
                         "application/json": {
                             success?: boolean;
                             data?: {
-                                id: string;
-                                email?: string | null;
-                                name?: string | null;
-                                username?: string | null;
-                                jump_number: number;
-                                /** @enum {string} */
-                                role: "USER" | "ADMIN" | "SUPERUSER";
-                                /** @enum {string} */
-                                subscription_status: "free" | "trial" | "active" | "expired";
-                                /** Format: date-time */
-                                subscription_expires_at?: string | null;
-                                /** Format: date-time */
-                                subscription_updated_at?: string;
-                                revenuecat_customer_id?: string | null;
+                                id: number;
+                                name: string;
+                                country?: string | null;
+                                latitude: number;
+                                longitude: number;
+                                rock_drop_ft?: number | null;
+                                total_height_ft?: number | null;
+                                cliff_aspect?: string | null;
+                                anchor_info?: string | null;
+                                access_info?: string | null;
+                                notes?: string | null;
+                                opened_by_name?: string | null;
+                                opened_date?: string | null;
+                                video_link?: string | null;
+                                images: string[];
                                 /** Format: date-time */
                                 created_at: string;
                                 /** Format: date-time */
                                 updated_at: string;
+                                created_by?: string | null;
+                                updated_by?: string | null;
+                            }[];
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/locations/save": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Save a location to user favorites */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description ID of the location to save */
+                        location_id: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                            data?: {
+                                save_id?: string;
+                                location_id?: number;
+                                saved_at?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/locations/saved": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user saved locations with full location details */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Number of locations to return */
+                    limit?: number;
+                    /** @description Number of locations to skip */
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                saved_locations: {
+                                    save_id: string;
+                                    /** Format: date-time */
+                                    saved_at: string;
+                                    location: {
+                                        id: number;
+                                        name: string;
+                                        country?: string | null;
+                                        latitude: number;
+                                        longitude: number;
+                                        rock_drop_ft?: number | null;
+                                        total_height_ft?: number | null;
+                                        cliff_aspect?: string | null;
+                                        anchor_info?: string | null;
+                                        access_info?: string | null;
+                                        notes?: string | null;
+                                        opened_by_name?: string | null;
+                                        opened_date?: string | null;
+                                        video_link?: string | null;
+                                        images: string[];
+                                        /** Format: date-time */
+                                        created_at: string;
+                                        /** Format: date-time */
+                                        updated_at: string;
+                                    };
+                                }[];
+                                total_count: number;
+                                has_more: boolean;
                             };
                         };
                     };
@@ -1303,48 +2511,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** @description Update current user profile */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: {
-                content: {
-                    "application/json": {
-                        name?: string;
-                        username?: string;
-                        jump_number?: number;
-                    };
-                };
-            };
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            data?: {
-                                id?: string;
-                                email?: string;
-                                name?: string | null;
-                                username?: string | null;
-                                jump_number?: number;
-                                updated_at?: string;
-                            };
-                        };
-                    };
-                };
-            };
-        };
+        patch?: never;
         trace?: never;
     };
-    "/subscriptions/webhook": {
+    "/api/v2/locations/unsave": {
         parameters: {
             query?: never;
             header?: never;
@@ -1353,8 +2523,9 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** @description RevenueCat webhook for subscription updates */
-        post: {
+        post?: never;
+        /** @description Remove a location from user favorites */
+        delete: {
             parameters: {
                 query?: never;
                 header?: never;
@@ -1364,169 +2535,14 @@ export interface paths {
             requestBody: {
                 content: {
                     "application/json": {
-                        api_version: string;
-                        event: {
-                            type: string;
-                            app_user_id: string;
-                            product_id?: string;
-                            period_type?: string;
-                            purchased_at_ms?: number;
-                            expiration_at_ms?: number;
-                            is_trial_period?: boolean;
-                            price?: number;
-                            currency?: string;
-                        };
+                        /** @description ID of the location to unsave */
+                        location_id: number;
                     };
                 };
             };
             responses: {
                 /** @description Default Response */
                 200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/subscriptions/restore": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** @description Restore user subscription from RevenueCat */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        revenuecat_customer_id: string;
-                        subscription_status: "free" | "trial" | "active" | "expired";
-                        /** Format: date-time */
-                        subscription_expires_at?: string;
-                        subscription_product_id?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/logbook": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description Get user logbook entries */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Number of entries to return */
-                    limit?: number;
-                    /** @description Number of entries to skip */
-                    offset?: number;
-                    /** @description Search in location name or details */
-                    search?: string;
-                    /** @description Filter by exit type */
-                    exit_type?: "Building" | "Antenna" | "Span" | "Earth";
-                    /** @description Filter entries from this date (YYYY-MM-DD) */
-                    date_from?: string;
-                    /** @description Filter entries to this date (YYYY-MM-DD) */
-                    date_to?: string;
-                    /** @description Sort order by jump date */
-                    order?: "asc" | "desc";
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description Default Response */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            success?: boolean;
-                            data?: {
-                                entries: {
-                                    id: string;
-                                    user_id: string;
-                                    location_name: string;
-                                    /** @enum {string|null} */
-                                    exit_type?: "Building" | "Antenna" | "Span" | "Earth" | null;
-                                    delay_seconds?: number | null;
-                                    /** Format: date */
-                                    jump_date?: string | null;
-                                    details?: string | null;
-                                    /** Format: date-time */
-                                    created_at: string;
-                                    /** Format: date-time */
-                                    updated_at: string;
-                                }[];
-                                total_count: number;
-                                has_more: boolean;
-                            };
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /** @description Create a new logbook entry */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": {
-                        location_name: string;
-                        exit_type?: "Building" | "Antenna" | "Span" | "Earth";
-                        delay_seconds?: number;
-                        /** Format: date */
-                        jump_date?: string;
-                        details?: string;
-                    };
-                };
-            };
-            responses: {
-                /** @description Default Response */
-                201: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -1534,27 +2550,17 @@ export interface paths {
                         "application/json": {
                             success?: boolean;
                             message?: string;
-                            data?: {
-                                id?: string;
-                                location_name?: string;
-                                exit_type?: string;
-                                delay_seconds?: number;
-                                jump_date?: string;
-                                details?: string;
-                                created_at?: string;
-                            };
                         };
                     };
                 };
             };
         };
-        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/logbook/{id}": {
+    "/api/v2/logbook/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1612,6 +2618,7 @@ export interface paths {
                         delay_seconds?: number | null;
                         jump_date?: string | null;
                         details?: string | null;
+                        images?: string[] | null;
                     };
                 };
             };
@@ -1625,6 +2632,529 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/api/v2/logbook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user logbook entries */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Number of entries to return */
+                    limit?: number;
+                    /** @description Number of entries to skip */
+                    offset?: number;
+                    /** @description Search in location name or details */
+                    search?: string;
+                    /** @description Filter by exit type */
+                    exit_type?: "Building" | "Antenna" | "Span" | "Earth";
+                    /** @description Filter entries from this date (YYYY-MM-DD) */
+                    date_from?: string;
+                    /** @description Filter entries to this date (YYYY-MM-DD) */
+                    date_to?: string;
+                    /** @description Sort order by jump date */
+                    order?: "asc" | "desc";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                entries: {
+                                    id: string;
+                                    user_id: string;
+                                    location_name: string;
+                                    /** @enum {string|null} */
+                                    exit_type?: "Building" | "Antenna" | "Span" | "Earth" | null;
+                                    delay_seconds?: number | null;
+                                    /** Format: date */
+                                    jump_date?: string | null;
+                                    details?: string | null;
+                                    images: string[];
+                                    /** Format: date-time */
+                                    created_at: string;
+                                    /** Format: date-time */
+                                    updated_at: string;
+                                }[];
+                                total_count: number;
+                                has_more: boolean;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Create a new logbook entry */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        location_name: string;
+                        exit_type?: "Building" | "Antenna" | "Span" | "Earth";
+                        delay_seconds?: number;
+                        /** Format: date */
+                        jump_date?: string;
+                        details?: string;
+                        images?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                            data?: {
+                                id?: string;
+                                location_name?: string;
+                                exit_type?: string;
+                                delay_seconds?: number;
+                                jump_date?: string;
+                                details?: string;
+                                created_at?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get current user profile with role information */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id: string;
+                                email?: string | null;
+                                name?: string | null;
+                                username?: string | null;
+                                jump_number: number;
+                                /** @enum {string} */
+                                role: "USER" | "ADMIN" | "SUPERUSER";
+                                /** @enum {string} */
+                                subscription_status: "free" | "trial" | "active" | "expired";
+                                /** Format: date-time */
+                                subscription_expires_at?: string | null;
+                                /** Format: date-time */
+                                subscription_updated_at?: string;
+                                /** Format: date-time */
+                                created_at: string;
+                                /** Format: date-time */
+                                updated_at: string;
+                                image_url?: string | null;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** @description Update current user profile */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        username?: string;
+                        jump_number?: number;
+                        image_url?: string | null;
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                id?: string;
+                                email?: string;
+                                name?: string | null;
+                                username?: string | null;
+                                jump_number?: number;
+                                updated_at?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v2/locations/submission-limits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user submission limits and current counts */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                max_pending_submissions?: number;
+                                current_pending_count?: number;
+                                max_daily_submissions?: number;
+                                current_daily_count?: number;
+                                can_submit?: boolean;
+                                next_submission_available?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/locations/submissions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** @description Delete a pending submission */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** @description Update a pending submission */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": {
+                        name?: string;
+                        country?: string;
+                        latitude?: number;
+                        longitude?: number;
+                        rock_drop_ft?: number;
+                        total_height_ft?: number;
+                        cliff_aspect?: string;
+                        anchor_info?: string;
+                        access_info?: string;
+                        notes?: string;
+                        opened_by_name?: string;
+                        opened_date?: string;
+                        /** Format: uri */
+                        video_link?: string;
+                        image_urls?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/v2/locations/submissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user submission requests */
+        get: {
+            parameters: {
+                query?: {
+                    status?: "pending" | "approved" | "rejected";
+                    submission_type?: "new" | "update";
+                    limit?: number;
+                    offset?: number;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            data?: {
+                                submissions: {
+                                    id: string;
+                                    user_id: string;
+                                    name: string;
+                                    country?: string | null;
+                                    latitude: number;
+                                    longitude: number;
+                                    rock_drop_ft?: number | null;
+                                    total_height_ft?: number | null;
+                                    cliff_aspect?: string | null;
+                                    anchor_info?: string | null;
+                                    access_info?: string | null;
+                                    notes?: string | null;
+                                    opened_by_name?: string | null;
+                                    opened_date?: string | null;
+                                    video_link?: string | null;
+                                    /** @enum {string} */
+                                    status: "pending" | "approved" | "rejected";
+                                    /** @enum {string} */
+                                    submission_type: "new" | "update";
+                                    existing_location_id?: number | null;
+                                    admin_notes?: string | null;
+                                    /** Format: date-time */
+                                    created_at: string;
+                                    /** Format: date-time */
+                                    updated_at: string;
+                                    /** Format: date-time */
+                                    reviewed_at?: string | null;
+                                    reviewed_by?: string | null;
+                                    /** @description Array of image URLs sorted by image_order */
+                                    images: string[];
+                                    /** @description Name of existing location for updates */
+                                    existing_location_name: string | null;
+                                }[];
+                                total_count: number;
+                                has_more: boolean;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /** @description Submit a new location or update request */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        name: string;
+                        country?: string;
+                        latitude: number;
+                        longitude: number;
+                        rock_drop_ft?: number;
+                        total_height_ft?: number;
+                        cliff_aspect?: string;
+                        anchor_info?: string;
+                        access_info?: string;
+                        notes?: string;
+                        opened_by_name?: string;
+                        opened_date?: string;
+                        /** Format: uri */
+                        video_link?: string;
+                        submission_type: "new" | "update";
+                        existing_location_id?: number;
+                        image_urls?: string[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            success?: boolean;
+                            message?: string;
+                            data?: {
+                                id?: string;
+                                status?: string;
+                                submission_type?: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v2/subscriptions/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description RevenueCat webhook for subscription updates */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        api_version: string;
+                        event: {
+                            type: string;
+                            app_user_id: string;
+                            product_id?: string;
+                            period_type?: string;
+                            purchased_at_ms?: number;
+                            expiration_at_ms?: number;
+                            is_trial_period?: boolean;
+                            price?: number;
+                            currency?: string;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Default Response */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
 }

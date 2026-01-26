@@ -7,30 +7,64 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
   public: {
     Tables: {
+      location_images: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          location_id: number
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          location_id: number
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          location_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_images_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_submission_images: {
         Row: {
           created_at: string | null
           id: string
-          image_order: number | null
           image_url: string
           submission_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
-          image_order?: number | null
           image_url: string
           submission_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          image_order?: number | null
           image_url?: string
           submission_id?: string
         }
@@ -269,6 +303,65 @@ export type Database = {
           },
         ]
       }
+      logbook_images: {
+        Row: {
+          caption: string | null
+          created_at: string | null
+          display_order: number | null
+          id: string
+          image_url: string
+          logbook_entry_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url: string
+          logbook_entry_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          logbook_entry_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logbook_images_logbook_entry_id_fkey"
+            columns: ["logbook_entry_id"]
+            isOneToOne: false
+            referencedRelation: "logbook_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_images: {
+        Row: {
+          created_at: string | null
+          id: string
+          image_url: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image_url: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image_url?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -277,7 +370,6 @@ export type Database = {
           id: string
           jump_number: number | null
           name: string | null
-          revenuecat_customer_id: string | null
           role: string | null
           subscription_expires_at: string | null
           subscription_status: string | null
@@ -292,7 +384,6 @@ export type Database = {
           id: string
           jump_number?: number | null
           name?: string | null
-          revenuecat_customer_id?: string | null
           role?: string | null
           subscription_expires_at?: string | null
           subscription_status?: string | null
@@ -307,7 +398,6 @@ export type Database = {
           id?: string
           jump_number?: number | null
           name?: string | null
-          revenuecat_customer_id?: string | null
           role?: string | null
           subscription_expires_at?: string | null
           subscription_status?: string | null
@@ -358,18 +448,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      can_manage_locations: {
-        Args: { user_id?: string }
-        Returns: boolean
-      }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_user_role: {
-        Args: { user_id?: string }
-        Returns: string
-      }
+      can_manage_locations: { Args: { user_id?: string }; Returns: boolean }
+      get_current_user_role: { Args: never; Returns: string }
+      get_user_role: { Args: { user_id?: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

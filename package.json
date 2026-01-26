@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "expo start --dev-client",
     "build": "eas build --profile development",
-    "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts",
+    "types:generate": "npx supabase gen types typescript --project-id weuykpwegwaopmzakmbh > types/supabase.ts",
     "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",
     "types:all": "pnpm run types:generate && npm run openapi:generate",
     "lint": "eslint ."
