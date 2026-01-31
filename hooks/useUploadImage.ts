@@ -1,5 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
-import { File } from "expo-file-system";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
 
@@ -7,7 +6,11 @@ type UploadResponse = NonNullable<
   paths["/image"]["post"]["responses"][200]["content"]["application/json"]
 >;
 
-type PresetType = "profile" | "logbook" | "locations" | "location_submissions";
+type PresetType =
+  | "profile_images"
+  | "logbook_images"
+  | "location_images"
+  | "location_submissions";
 
 interface UploadImageParams {
   imageUri: string;
@@ -21,27 +24,38 @@ interface UseUploadImageOptions {
 
 export const useUploadImage = (options?: UseUploadImageOptions) => {
   const client = useKyClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ imageUri, preset }: UploadImageParams) => {
-      const file = new File(imageUri);
-      if (!file.exists) {
-        throw new Error("File does not exist");
-      }
+      const uriParts = imageUri.split(".");
+      const fileExtension =
+        uriParts[uriParts.length - 1]?.toLowerCase() || "jpg";
+      const mimeType = `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
+
+      const filename = imageUri.split("/").pop() || `photo.${fileExtension}`;
 
       const formData = new FormData();
-      formData.append("file", file, file.name);
+
+      // For React Native:
+      formData.append("file", {
+        uri: imageUri,
+        name: filename,
+        type: mimeType,
+      } as any);
 
       const res = await client.POST("/image", {
         params: {
           query: { preset },
         },
-        body: formData as any, // OpenAPI incorrectly types FormData body as string
+        body: formData as any,
       });
 
       if (!res.data) {
         throw new Error("Failed to upload image");
       }
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+
       return res.data;
     },
     onSuccess: (data, variables, context) => {
@@ -49,6 +63,7 @@ export const useUploadImage = (options?: UseUploadImageOptions) => {
     },
     onError: (error, variables, context) => {
       options?.onError?.(error as Error);
+      throw error;
     },
   });
 };

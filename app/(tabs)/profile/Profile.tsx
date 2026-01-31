@@ -151,11 +151,9 @@ const Profile = () => {
               {profile.image_url ? (
                 <View style={styles.imageContainer}>
                   <Image
-                    source={{
-                      uri: profile.image_url,
-                    }}
+                    source={{ uri: profile.image_url }}
                     style={styles.image}
-                    contentFit="fill"
+                    contentFit="cover"
                   />
                 </View>
               ) : (

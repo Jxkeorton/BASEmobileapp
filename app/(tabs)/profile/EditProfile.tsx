@@ -17,6 +17,7 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import {
   ControlledPaperEmailInput,
@@ -26,6 +27,7 @@ import {
   UpdateProfileData,
   useUpdateProfile,
 } from "../../../hooks/useUpdateProfile";
+import { useUploadImage } from "../../../hooks/useUploadImage";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import {
@@ -38,6 +40,16 @@ const EditProfile = () => {
   const { user, isAuthenticated } = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const client = useKyClient();
+  const { mutateAsync: uploadImageMutation, error: uploadError } =
+    useUploadImage({
+      onError: (error) => {
+        Toast.show({
+          type: "error",
+          text1: "Image Upload Failed",
+          text2: error.message,
+        });
+      },
+    });
 
   const {
     control,
@@ -96,6 +108,10 @@ const EditProfile = () => {
       if (profile.jump_number !== null && profile.jump_number !== undefined) {
         setValue("jump_number", profile.jump_number.toString());
       }
+
+      if (profile.image_url) {
+        setImage(profile.image_url);
+      }
     }
   }, [profileResponse, setValue]);
 
@@ -120,6 +136,24 @@ const EditProfile = () => {
           ? parseInt(data.jump_number, 10)
           : data.jump_number;
       profileData.jump_number = jumpNumber;
+    }
+
+    if (image) {
+      const { success, secureUrl } = await uploadImageMutation({
+        imageUri: image,
+        preset: "profile_images",
+      });
+
+      if (success === false || !secureUrl) {
+        Toast.show({
+          type: "error",
+          text1: "Image Upload Failed",
+          text2: "Failed to upload profile image. Please try again.",
+        });
+        return;
+      }
+
+      profileData.image_url = secureUrl;
     }
 
     // Only submit if there are changes
@@ -296,7 +330,7 @@ const EditProfile = () => {
         </ScrollView>
       </KeyboardAvoidingView>
       <APIErrorHandler
-        error={error || profileError}
+        error={error || profileError || uploadError}
         onDismiss={() => setError(null)}
       />
     </PaperProvider>
