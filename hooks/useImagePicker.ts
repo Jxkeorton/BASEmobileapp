@@ -26,7 +26,7 @@ export const useImagePicker = async ({
 
   let result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images"],
-    quality: 1,
+    quality: 0.8,
     ...imagePickerOptions,
   });
 

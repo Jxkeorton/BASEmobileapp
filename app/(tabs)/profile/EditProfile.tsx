@@ -131,7 +131,7 @@ const EditProfile = () => {
 
     if (image) {
       const { success, secureUrl } = await uploadImageMutation({
-        imageUri: image,
+        imageUris: [image],
         preset: "profile_images",
       });
 

@@ -1,10 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useKyClient } from "../services/kyClient";
-import { paths } from "../types/api";
-
-type UploadResponse = NonNullable<
-  paths["/image"]["post"]["responses"][200]["content"]["application/json"]
->;
+import { getBaseUrl, kyInstance } from "../services/kyClient";
 
 type PresetType =
   | "profile_images"
@@ -13,56 +8,88 @@ type PresetType =
   | "location_submissions";
 
 interface UploadImageParams {
-  imageUri: string;
+  imageUris: string[];
   preset: PresetType;
 }
 
+interface CloudinaryUploadResponse {
+  success: boolean;
+  url?: string;
+  secureUrl?: string;
+  publicId?: string;
+  error?: string;
+}
+
+export interface UploadImageResult {
+  success: boolean;
+  secureUrl?: string | undefined;
+  secureUrls: string[];
+}
+
 interface UseUploadImageOptions {
-  onSuccess?: (data: UploadResponse) => void;
+  onSuccess?: (data: UploadImageResult) => void;
   onError?: (error: Error) => void;
 }
 
 export const useUploadImage = (options?: UseUploadImageOptions) => {
-  const client = useKyClient();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ imageUri, preset }: UploadImageParams) => {
-      const uriParts = imageUri.split(".");
-      const fileExtension =
-        uriParts[uriParts.length - 1]?.toLowerCase() || "jpg";
-      const mimeType = `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
+    mutationFn: async ({
+      imageUris,
+      preset,
+    }: UploadImageParams): Promise<UploadImageResult> => {
+      const baseUrl = getBaseUrl();
+      const ky = kyInstance(60000);
+      const allSecureUrls: string[] = [];
 
-      const filename = imageUri.split("/").pop() || `photo.${fileExtension}`;
+      for (const imageUri of imageUris) {
+        const formData = new FormData();
 
-      const formData = new FormData();
+        const uriParts = imageUri.split(".");
+        const fileExtension =
+          uriParts[uriParts.length - 1]?.toLowerCase() || "jpg";
+        const mimeType = `image/${fileExtension === "jpg" ? "jpeg" : fileExtension}`;
+        const filename = imageUri.split("/").pop() || `photo.${fileExtension}`;
 
-      // For React Native:
-      formData.append("file", {
-        uri: imageUri,
-        name: filename,
-        type: mimeType,
-      } as any);
+        formData.append("file", {
+          uri: imageUri,
+          name: filename,
+          type: mimeType,
+        } as any);
 
-      const res = await client.POST("/image", {
-        params: {
-          query: { preset },
-        },
-        body: formData as any,
-      });
+        const response = await ky.post(`${baseUrl}/image`, {
+          searchParams: { preset },
+          body: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
 
-      if (!res.data) {
-        throw new Error("Failed to upload image");
+        const data: CloudinaryUploadResponse = await response.json();
+
+        if (!data?.success || !data.secureUrl) {
+          console.error(`Upload failed for ${filename}:`, JSON.stringify(data));
+          throw new Error(data?.error || `Failed to upload ${filename}`);
+        }
+
+        allSecureUrls.push(data.secureUrl);
       }
+
       queryClient.invalidateQueries({ queryKey: ["profile"] });
 
-      return res.data;
+      return {
+        success: true,
+        secureUrl: allSecureUrls[0],
+        secureUrls: allSecureUrls,
+      };
     },
     onSuccess: (data, variables, context) => {
       options?.onSuccess?.(data);
     },
     onError: (error, variables, context) => {
       options?.onError?.(error as Error);
+      console.error("Image upload error:", error);
       throw error;
     },
   });

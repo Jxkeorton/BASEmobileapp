@@ -15,7 +15,9 @@ import {
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
+import { useImagePicker } from "../hooks/useImagePicker";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
+import { useUploadImage } from "../hooks/useUploadImage";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
 import {
@@ -32,16 +34,23 @@ interface LogbookEntryModalProps {
   isLoading: boolean;
 }
 
+interface LogbookMutationData extends LogbookJumpFormData {
+  images?: string[];
+}
+
 const LogbookEntryModal = ({
   isModalOpen,
   onClose,
   isLoading,
 }: LogbookEntryModalProps) => {
   const [showExitTypes, setShowExitTypes] = useState(false);
+  const [images, setImages] = useState<Array<{ uri: string }>>([]);
   const [error, setError] = useState<any>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { mutateAsync: uploadImageMutation, error: uploadError } =
+    useUploadImage();
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -74,12 +83,30 @@ const LogbookEntryModal = ({
   ];
 
   const submitJumpMutation = useMutation({
-    mutationFn: async (jumpData: LogbookJumpFormData) => {
+    mutationFn: async (jumpData: LogbookMutationData) => {
+      // Upload images to Cloudinary first if any are selected
+      let imageUrls: string[] = [];
+      if (images.length > 0) {
+        const imageUris = images.map((img) => img.uri);
+        const uploadResult = await uploadImageMutation({
+          imageUris,
+          preset: "logbook_images",
+        });
+
+        if (!uploadResult.success || uploadResult.secureUrls.length === 0) {
+          console.log("Image upload failed:", uploadError);
+          throw new Error("Failed to upload images");
+        }
+
+        imageUrls = uploadResult.secureUrls;
+      }
+
       const requestBody: any = {
         location_name: jumpData.location_name,
         exit_type: jumpData.exit_type ?? "Earth",
         delay_seconds: jumpData.delay_seconds ?? 0,
         details: jumpData.details ?? "",
+        images: imageUrls,
       };
 
       // Only include jump_date if it's not empty
@@ -121,6 +148,7 @@ const LogbookEntryModal = ({
 
         // Clear the form
         reset();
+        setImages([]);
       } else {
         setError({ message: "Failed to submit jump" });
       }
@@ -137,6 +165,25 @@ const LogbookEntryModal = ({
   const handleCancel = () => {
     onClose();
     reset();
+    setImages([]);
+  };
+
+  const pickImages = async () => {
+    const result = await useImagePicker({
+      imagePickerOptions: {
+        allowsMultipleSelection: true,
+        selectionLimit: 5,
+      },
+    });
+
+    if (result) {
+      setImages(result);
+    } else {
+      Toast.show({
+        type: "info",
+        text1: "No images selected",
+      });
+    }
   };
 
   return (
@@ -146,6 +193,17 @@ const LogbookEntryModal = ({
           <View style={styles.container}>
             <ScrollView>
               <Text style={styles.panelTitle}>Log a jump !</Text>
+
+              <Text style={styles.panelSubtitle}>
+                Images selected: {images.length}
+              </Text>
+              <TouchableOpacity
+                style={[styles.panelButton, { backgroundColor: "#17c33a" }]}
+                onPress={pickImages}
+                disabled={isSubmitting}
+              >
+                <Text style={styles.panelButtonTitle}>Add profile image</Text>
+              </TouchableOpacity>
 
               <Text style={styles.panelSubtitle}>Location</Text>
               <ControlledPaperTextInput

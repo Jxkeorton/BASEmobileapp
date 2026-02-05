@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
@@ -123,19 +124,46 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
             style={styles.jumpCard}
             onPress={() => onCardPress(index)}
           >
-            <View style={styles.backgroundImage}>
-              <View style={styles.jumpCardContent}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.contentText}>{jump.jumpNumber}</Text>
-                  {jump.jump_date && (
-                    <Text style={styles.dateText}>{jump.jump_date}</Text>
-                  )}
+            {jump.images && jump.images.length > 0 ? (
+              <ImageBackground
+                source={{ uri: jump.images[0] }}
+                style={styles.backgroundImage}
+                imageStyle={styles.thumbnailImage}
+                resizeMode="cover"
+              >
+                <View style={[styles.jumpCardContent, styles.overlayContent]}>
+                  <View style={styles.cardHeader}>
+                    <Text style={[styles.contentText, styles.textWithShadow]}>
+                      {jump.jumpNumber}
+                    </Text>
+                    {jump.jump_date && (
+                      <Text style={[styles.dateText, styles.textWithShadow]}>
+                        {jump.jump_date}
+                      </Text>
+                    )}
+                  </View>
+                  <Text
+                    style={[styles.locationTextWhite, styles.textWithShadow]}
+                  >
+                    {jump.location_name}
+                  </Text>
                 </View>
-                <Text style={styles.locationTextWhite}>
-                  {jump.location_name}
-                </Text>
+              </ImageBackground>
+            ) : (
+              <View style={styles.backgroundImage}>
+                <View style={styles.jumpCardContent}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                    {jump.jump_date && (
+                      <Text style={styles.dateText}>{jump.jump_date}</Text>
+                    )}
+                  </View>
+                  <Text style={styles.locationTextWhite}>
+                    {jump.location_name}
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
           </TouchableOpacity>
         ))
       ) : (
@@ -220,6 +248,19 @@ const styles = StyleSheet.create({
     height: 75,
     justifyContent: "flex-end",
     backgroundColor: "#fff",
+  },
+  thumbnailImage: {
+    borderRadius: 8,
+  },
+  overlayContent: {
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
+    borderRadius: 8,
+  },
+  textWithShadow: {
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   jumpCardContent: {
     flex: 1,

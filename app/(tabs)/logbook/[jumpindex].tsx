@@ -1,7 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { Button, Card, Text } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
@@ -121,6 +128,8 @@ const JumpDetails = () => {
     }
   };
 
+  console.log("Jump Details Rendered with jump:", jump);
+
   if (loadingJumps || deleteJumpMutation.isPending) {
     return (
       <LinearGradient
@@ -204,6 +213,28 @@ const JumpDetails = () => {
               <Text style={styles.detailsText}>
                 {jump.details || "No details provided"}
               </Text>
+            </Card.Content>
+          </Card>
+        )}
+
+        {jump.images && jump.images.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text style={styles.sectionLabel}>Photos</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.imagesContainer}
+              >
+                {jump.images.map((imageUrl, idx) => (
+                  <Image
+                    key={idx}
+                    source={{ uri: imageUrl }}
+                    style={styles.jumpImage}
+                    resizeMode="cover"
+                  />
+                ))}
+              </ScrollView>
             </Card.Content>
           </Card>
         )}
@@ -304,6 +335,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#fff",
     fontWeight: "500",
+  },
+  imagesContainer: {
+    gap: 10,
+    paddingVertical: 4,
+  },
+  jumpImage: {
+    width: Dimensions.get("window").width * 0.6,
+    height: 200,
+    borderRadius: 12,
+    backgroundColor: "#f0f0f0",
   },
   deleteButton: {
     marginTop: 12,

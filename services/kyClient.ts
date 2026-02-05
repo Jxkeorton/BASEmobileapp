@@ -16,7 +16,7 @@ const getStorageItem = async (key: string): Promise<string | null> => {
   return SecureStore.getItemAsync(key);
 };
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
   if (__DEV__) {
     const devUrl =
       process.env.EXPO_PUBLIC_API_DEV_BASE_URL ||
