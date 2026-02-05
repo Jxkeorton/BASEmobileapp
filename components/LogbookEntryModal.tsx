@@ -1,11 +1,14 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -46,6 +49,7 @@ const LogbookEntryModal = ({
   const [showExitTypes, setShowExitTypes] = useState(false);
   const [images, setImages] = useState<Array<{ uri: string }>>([]);
   const [error, setError] = useState<any>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -188,22 +192,18 @@ const LogbookEntryModal = ({
 
   return (
     <Modal visible={isModalOpen} transparent={true}>
-      <View style={styles.modalContainer}>
+      <KeyboardAvoidingView
+        style={styles.modalContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View style={styles.container}>
-            <ScrollView>
-              <Text style={styles.panelTitle}>Log a jump !</Text>
-
-              <Text style={styles.panelSubtitle}>
-                Images selected: {images.length}
-              </Text>
-              <TouchableOpacity
-                style={[styles.panelButton, { backgroundColor: "#17c33a" }]}
-                onPress={pickImages}
-                disabled={isSubmitting}
-              >
-                <Text style={styles.panelButtonTitle}>Add profile image</Text>
-              </TouchableOpacity>
+            <ScrollView
+              ref={scrollViewRef}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.panelTitle}>Enter Jump Details</Text>
 
               <Text style={styles.panelSubtitle}>Location</Text>
               <ControlledPaperTextInput
@@ -305,7 +305,26 @@ const LogbookEntryModal = ({
                 autoCapitalize="sentences"
                 textColor="black"
                 activeOutlineColor="black"
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }, 300);
+                }}
               />
+
+              <TouchableOpacity
+                style={styles.imagePickerButton}
+                onPress={pickImages}
+                disabled={isSubmitting}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name="camera" size={20} color="#00ABF0" />
+                <Text style={styles.imagePickerText}>
+                  {images.length > 0
+                    ? `${images.length} image${images.length > 1 ? "s" : ""} selected`
+                    : "Add photos"}
+                </Text>
+              </TouchableOpacity>
 
               {isLoading || submitJumpMutation.isPending || isSubmitting ? (
                 <ActivityIndicator animating={true} color="#00ABF0" />
@@ -329,7 +348,7 @@ const LogbookEntryModal = ({
             </ScrollView>
           </View>
         </TouchableWithoutFeedback>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -352,7 +371,7 @@ const styles = StyleSheet.create({
   panelTitle: {
     fontSize: 22,
     fontWeight: "600",
-    marginBottom: 20,
+    marginBottom: 10,
     color: "#1a1a1a",
   },
   panelSubtitle: {
@@ -380,7 +399,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#00ABF0",
     alignItems: "center",
-    marginTop: 8,
     marginBottom: 8,
     width: "100%",
   },
@@ -450,6 +468,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#666",
     fontStyle: "italic",
+  },
+  imagePickerButton: {
+    borderWidth: 1.5,
+    borderColor: "#00ABF0",
+    borderStyle: "dashed",
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+    backgroundColor: "#f0f9ff",
+    marginVertical: 8,
+  },
+  imagePickerText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#00ABF0",
   },
 });
 

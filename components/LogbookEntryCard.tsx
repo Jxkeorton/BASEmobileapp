@@ -54,9 +54,18 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
   const processedJumps = useMemo(() => {
     if (jumps && !jumps.length) return [];
 
-    // Reverse to show newest first and add jump numbers
-    const reversedJumps = [...(jumps || [])].reverse();
-    return reversedJumps.map((jump, index) => ({
+    // Sort by date (newest first) and add jump numbers
+    const sortedJumps = [...(jumps || [])].sort((a, b) => {
+      // Handle missing dates - put them at the end
+      if (!a.jump_date && !b.jump_date) return 0;
+      if (!a.jump_date) return 1;
+      if (!b.jump_date) return -1;
+
+      // Compare dates (newest first)
+      return new Date(b.jump_date).getTime() - new Date(a.jump_date).getTime();
+    });
+
+    return sortedJumps.map((jump, index) => ({
       ...jump,
       jumpNumber: jumpNumber - index,
     }));

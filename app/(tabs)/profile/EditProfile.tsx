@@ -193,19 +193,28 @@ const EditProfile = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ alignItems: "center", marginBottom: 30 }}>
-            {image ? (
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{ uri: image }}
-                  style={styles.image}
-                  contentFit="fill"
-                />
+            <TouchableOpacity
+              onPress={pickImage}
+              disabled={isSubmitting}
+              activeOpacity={0.7}
+            >
+              {image ? (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: image }}
+                    style={styles.image}
+                    contentFit="fill"
+                  />
+                </View>
+              ) : (
+                <View style={styles.profilePlaceholder}>
+                  <FontAwesome name="user" size={40} color="#ccc" />
+                </View>
+              )}
+              <View style={styles.editIconOverlay}>
+                <FontAwesome name="pencil" size={14} color="#fff" />
               </View>
-            ) : (
-              <View style={styles.profilePlaceholder}>
-                <FontAwesome name="user" size={40} color="#ccc" />
-              </View>
-            )}
+            </TouchableOpacity>
             <Text style={styles.profileName}>{name || "No name set"}</Text>
           </View>
 
@@ -272,14 +281,6 @@ const EditProfile = () => {
               />
             </View>
           </View>
-
-          <TouchableOpacity
-            style={[styles.commandButton, { backgroundColor: "#17c33a" }]}
-            onPress={pickImage}
-            disabled={isSubmitting}
-          >
-            <Text style={styles.panelButtonTitle}>Add profile image</Text>
-          </TouchableOpacity>
 
           {updateProfileMutation.isPending || isSubmitting ? (
             <View style={styles.loadingButtonContainer}>
@@ -403,6 +404,19 @@ const styles = StyleSheet.create({
   loadingButtonContainer: {
     alignItems: "center",
     marginTop: 20,
+  },
+  editIconOverlay: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#00ABF0",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#f5f5f5",
   },
   imageContainer: {
     width: 100,
