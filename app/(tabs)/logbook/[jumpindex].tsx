@@ -30,7 +30,7 @@ const JumpDetails = () => {
   const updateProfileMutation = useUpdateProfile();
 
   // Type assertions for params
-  const jumpindex = Number(params.jumpindex);
+  const jumpId = params.jumpindex as string;
   const jumpNumber = params.jumpNumber as string | undefined;
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -98,17 +98,14 @@ const JumpDetails = () => {
         if (
           logbookResponse?.success &&
           logbookResponse?.data?.entries &&
-          typeof jumpindex === "number" &&
-          !isNaN(jumpindex)
+          jumpId
         ) {
           const jumps = logbookResponse.data.entries;
 
-          // Reverse the jumps array to match the original ordering
-          const reversedJumps = [...jumps].reverse();
+          // Find the jump by ID
+          const selectedJump = jumps.find((j) => j.id === jumpId);
 
-          // Check if jumpindex is a valid index in the reversedJumps array
-          if (jumpindex >= 0 && jumpindex < reversedJumps.length) {
-            const selectedJump = reversedJumps[jumpindex];
+          if (selectedJump) {
             setJump(selectedJump);
           }
         }
@@ -117,7 +114,7 @@ const JumpDetails = () => {
       if (logbookResponse) {
         loadData();
       }
-    }, [jumpindex, logbookResponse]),
+    }, [jumpId, logbookResponse]),
   );
 
   const handleDeleteJump = async () => {

@@ -84,10 +84,10 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     });
   }, [processedJumps, searchTerm]);
 
-  const onCardPress = (index: number) => {
+  const onCardPress = (jump: LogbookJump & { jumpNumber: number }) => {
     router.navigate({
-      pathname: `/(tabs)/logbook/${index}`,
-      params: { jumpNumber: jumpNumber - index },
+      pathname: `/(tabs)/logbook/${jump.id}`,
+      params: { jumpNumber: jump.jumpNumber.toString() },
     });
   };
 
@@ -131,7 +131,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
           <TouchableOpacity
             key={jump.id || index}
             style={styles.jumpCard}
-            onPress={() => onCardPress(index)}
+            onPress={() => onCardPress(jump)}
           >
             {jump.images && jump.images.length > 0 ? (
               <ImageBackground
