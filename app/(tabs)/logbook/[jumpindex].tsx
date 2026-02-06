@@ -125,8 +125,6 @@ const JumpDetails = () => {
     }
   };
 
-  console.log("Jump Details Rendered with jump:", jump);
-
   if (loadingJumps || deleteJumpMutation.isPending) {
     return (
       <LinearGradient
