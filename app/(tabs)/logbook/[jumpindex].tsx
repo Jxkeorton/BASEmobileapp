@@ -12,6 +12,7 @@ import {
 import LinearGradient from "react-native-linear-gradient";
 import { Button, Card, Text } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
+import { useDeleteImage } from "../../../hooks/useDeleteImage";
 import { useUpdateProfile } from "../../../hooks/useUpdateProfile";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
@@ -26,6 +27,8 @@ const JumpDetails = () => {
   const [error, setError] = useState<any>(null);
   const params = useLocalSearchParams();
   const client = useKyClient();
+  const { mutateAsync: deleteImageMutate, isPending: isDeletingImage } =
+    useDeleteImage();
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -119,13 +122,19 @@ const JumpDetails = () => {
 
   const handleDeleteJump = async () => {
     if (jump) {
+      const imageUrls = jump.images || [];
+
       await deleteJumpMutation.mutateAsync(jump.id);
+
+      for (const img of imageUrls) {
+        await deleteImageMutate({ secureUrl: img });
+      }
     } else {
       setError({ message: "Jump data is not available for deletion." });
     }
   };
 
-  if (loadingJumps || deleteJumpMutation.isPending) {
+  if (loadingJumps || deleteJumpMutation.isPending || isDeletingImage) {
     return (
       <LinearGradient
         colors={["#00ABF0", "#0088CC", "#006699"]}
@@ -135,7 +144,7 @@ const JumpDetails = () => {
       >
         <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.loadingText}>
-          {deleteJumpMutation.isPending
+          {deleteJumpMutation.isPending || isDeletingImage
             ? "Processing..."
             : "Loading jump details..."}
         </Text>
