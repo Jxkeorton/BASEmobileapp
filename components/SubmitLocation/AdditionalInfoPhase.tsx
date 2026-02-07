@@ -46,7 +46,7 @@ const AdditionalInfoPhase = ({
         mode="outlined"
         placeholder={getPlaceholder(
           "opened_by_name",
-          "Person who first jumped this location",
+          "Opened by...",
           isNewLocation,
           location,
         )}
@@ -61,25 +61,6 @@ const AdditionalInfoPhase = ({
         name="opened_date"
         placeholder="Select date"
         maximumDate={new Date()}
-      />
-
-      <Text style={styles.panelSubtitle}>Additional Notes</Text>
-      <ControlledPaperTextInput
-        control={control}
-        name="notes"
-        style={[styles.input, styles.multilineInput]}
-        mode="outlined"
-        placeholder={getPlaceholder(
-          "notes",
-          "Any additional information about this location...",
-          isNewLocation,
-          location,
-        )}
-        multiline
-        numberOfLines={4}
-        autoCapitalize="sentences"
-        textColor="black"
-        activeOutlineColor="black"
       />
 
       {isNewLocation && (
@@ -99,7 +80,6 @@ const AdditionalInfoPhase = ({
         </>
       )}
 
-      <Text style={styles.panelSubtitle}>Photos (optional)</Text>
       <TouchableOpacity
         style={localStyles.imagePickerButton}
         onPress={onPickImages}

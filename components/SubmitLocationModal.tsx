@@ -231,7 +231,6 @@ const SubmitLocationModal = ({
         data.cliff_aspect ||
         data.anchor_info ||
         data.access_info ||
-        data.notes ||
         data.opened_by_name ||
         data.opened_date;
 
@@ -261,7 +260,6 @@ const SubmitLocationModal = ({
         optionalFields.anchor_info = data.anchor_info.trim();
       if (data.access_info)
         optionalFields.access_info = data.access_info.trim();
-      if (data.notes) optionalFields.notes = data.notes.trim();
       if (data.opened_by_name)
         optionalFields.opened_by_name = data.opened_by_name.trim();
       if (data.opened_date)
@@ -512,7 +510,7 @@ const styles = StyleSheet.create({
   container: {
     width: "85%",
     maxWidth: 400,
-    maxHeight: "85%",
+    maxHeight: "95%",
     backgroundColor: "#FFFFFF",
     padding: 24,
     borderRadius: 12,
@@ -566,13 +564,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   phaseScrollView: {
-    maxHeight: 300,
+    flexGrow: 0,
+    flexShrink: 1,
   },
   phaseContent: {
     paddingBottom: 10,
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: 5,
   },
   primaryButtons: {
     flexDirection: "row",
