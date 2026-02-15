@@ -9,7 +9,9 @@
     "types:generate": "npx supabase gen types typescript --project-id weuykpwegwaopmzakmbh > types/supabase.ts",
     "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",
     "types:all": "pnpm run types:generate && npm run openapi:generate",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@babel/plugin-transform-class-properties": "^7.22.5",
