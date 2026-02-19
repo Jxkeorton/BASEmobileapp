@@ -239,8 +239,8 @@ export default function Map() {
             <Camera
               ref={cameraRef}
               defaultSettings={{
-                centerCoordinate: [0, 20],
-                zoomLevel: 2,
+                centerCoordinate: [-3.0, 54.5],
+                zoomLevel: 3.5,
                 pitch: 45,
               }}
             />
@@ -360,8 +360,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   map: {
-    width: "100%",
-    height: "100%",
+    flex: 1,
   },
   refetchIndicator: {
     position: "absolute",
