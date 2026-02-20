@@ -1,10 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Image,
+  ScrollView,
+  StyleSheet,
+  View,
+} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { Button, Card, Text } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
+import { useDeleteImage } from "../../../hooks/useDeleteImage";
 import { useUpdateProfile } from "../../../hooks/useUpdateProfile";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
@@ -19,11 +27,13 @@ const JumpDetails = () => {
   const [error, setError] = useState<any>(null);
   const params = useLocalSearchParams();
   const client = useKyClient();
+  const { mutateAsync: deleteImageMutate, isPending: isDeletingImage } =
+    useDeleteImage();
 
   const updateProfileMutation = useUpdateProfile();
 
   // Type assertions for params
-  const jumpindex = Number(params.jumpindex);
+  const jumpId = params.jumpindex as string;
   const jumpNumber = params.jumpNumber as string | undefined;
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -91,17 +101,14 @@ const JumpDetails = () => {
         if (
           logbookResponse?.success &&
           logbookResponse?.data?.entries &&
-          typeof jumpindex === "number" &&
-          !isNaN(jumpindex)
+          jumpId
         ) {
           const jumps = logbookResponse.data.entries;
 
-          // Reverse the jumps array to match the original ordering
-          const reversedJumps = [...jumps].reverse();
+          // Find the jump by ID
+          const selectedJump = jumps.find((j) => j.id === jumpId);
 
-          // Check if jumpindex is a valid index in the reversedJumps array
-          if (jumpindex >= 0 && jumpindex < reversedJumps.length) {
-            const selectedJump = reversedJumps[jumpindex];
+          if (selectedJump) {
             setJump(selectedJump);
           }
         }
@@ -110,18 +117,24 @@ const JumpDetails = () => {
       if (logbookResponse) {
         loadData();
       }
-    }, [jumpindex, logbookResponse]),
+    }, [jumpId, logbookResponse]),
   );
 
   const handleDeleteJump = async () => {
     if (jump) {
+      const imageUrls = jump.images || [];
+
       await deleteJumpMutation.mutateAsync(jump.id);
+
+      for (const img of imageUrls) {
+        await deleteImageMutate({ secureUrl: img });
+      }
     } else {
       setError({ message: "Jump data is not available for deletion." });
     }
   };
 
-  if (loadingJumps || deleteJumpMutation.isPending) {
+  if (loadingJumps || deleteJumpMutation.isPending || isDeletingImage) {
     return (
       <LinearGradient
         colors={["#00ABF0", "#0088CC", "#006699"]}
@@ -131,7 +144,7 @@ const JumpDetails = () => {
       >
         <ActivityIndicator size="large" color="#fff" />
         <Text style={styles.loadingText}>
-          {deleteJumpMutation.isPending
+          {deleteJumpMutation.isPending || isDeletingImage
             ? "Processing..."
             : "Loading jump details..."}
         </Text>
@@ -162,7 +175,7 @@ const JumpDetails = () => {
       style={{ flex: 1 }}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text variant="titleLarge" style={styles.pageTitle}>
+        <Text variant="headlineLarge" style={styles.pageTitle}>
           Jump {jumpNumber || "N/A"}
         </Text>
 
@@ -208,6 +221,28 @@ const JumpDetails = () => {
           </Card>
         )}
 
+        {jump.images && jump.images.length > 0 && (
+          <Card style={styles.card}>
+            <Card.Content>
+              <Text style={styles.sectionLabel}>Photos</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.imagesContainer}
+              >
+                {jump.images.map((imageUrl, idx) => (
+                  <Image
+                    key={idx}
+                    source={{ uri: imageUrl }}
+                    style={styles.jumpImage}
+                    resizeMode="cover"
+                  />
+                ))}
+              </ScrollView>
+            </Card.Content>
+          </Card>
+        )}
+
         <Button
           style={styles.deleteButton}
           mode="contained"
@@ -235,7 +270,6 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   pageTitle: {
-    fontSize: 32,
     fontWeight: "800",
     marginBottom: 20,
     color: "#fff",
@@ -305,6 +339,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#fff",
     fontWeight: "500",
+  },
+  imagesContainer: {
+    gap: 10,
+    paddingVertical: 4,
+  },
+  jumpImage: {
+    width: Dimensions.get("window").width * 0.6,
+    height: 200,
+    borderRadius: 12,
+    backgroundColor: "#f0f0f0",
   },
   deleteButton: {
     marginTop: 12,

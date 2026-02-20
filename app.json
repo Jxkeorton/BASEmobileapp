@@ -17,6 +17,12 @@
         {
           "locationWhenInUsePermission": "Show current location on map."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow BASEMap to access your photos to upload images."
+        }
       ]
     ],
     "splash": {
@@ -24,9 +30,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.jxkeorton.basemobileapp",
       "runtimeVersion": "1.0.4",

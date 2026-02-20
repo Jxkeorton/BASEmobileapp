@@ -17,6 +17,8 @@ import {
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { Location } from "../app/(tabs)/map/Map";
+import { useImagePicker } from "../hooks/useImagePicker";
+import { useUploadImage } from "../hooks/useUploadImage";
 import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
 import { convertToFeet } from "../utils/unitConversions";
@@ -56,8 +58,11 @@ const SubmitLocationModal = ({
 }: SubmitLocationModalProps) => {
   const [error, setError] = useState<any>(null);
   const [currentPhase, setCurrentPhase] = useState<SubmissionPhase>(1);
+  const [images, setImages] = useState<Array<{ uri: string }>>([]);
   const queryClient = useQueryClient();
   const client = useKyClient();
+  const { mutateAsync: uploadImageMutation, error: uploadError } =
+    useUploadImage();
 
   const isNewLocation = mode === "new";
 
@@ -97,6 +102,7 @@ const SubmitLocationModal = ({
     if (visible) {
       reset(getDefaultValues());
       setCurrentPhase(1);
+      setImages([]);
     }
   }, [visible, mode, reset]);
 
@@ -147,6 +153,24 @@ const SubmitLocationModal = ({
   const handleFormSubmit = handleSubmit(async (data) => {
     const isMetric = data.selectedUnit === "Meters";
 
+    // Upload images if any are selected
+    let imageUrls: string[] = [];
+    if (images.length > 0) {
+      const imageUris = images.map((img) => img.uri);
+      const uploadResult = await uploadImageMutation({
+        imageUris,
+        preset: "location_submissions",
+      });
+
+      if (!uploadResult.success || uploadResult.secureUrls.length === 0) {
+        console.log("Image upload failed:", uploadError);
+        setError({ message: "Failed to upload images. Please try again." });
+        return;
+      }
+
+      imageUrls = uploadResult.secureUrls;
+    }
+
     if (isNewLocation) {
       // New location submission
       const parsedCoords = parseCoordinates(data.coordinates || "");
@@ -188,6 +212,7 @@ const SubmitLocationModal = ({
           parseFloat(data.rock_drop || "0"),
           isMetric,
         ),
+        image_urls: imageUrls,
         ...optionalFields,
       } satisfies SubmitLocationData;
 
@@ -206,7 +231,6 @@ const SubmitLocationModal = ({
         data.cliff_aspect ||
         data.anchor_info ||
         data.access_info ||
-        data.notes ||
         data.opened_by_name ||
         data.opened_date;
 
@@ -236,7 +260,6 @@ const SubmitLocationModal = ({
         optionalFields.anchor_info = data.anchor_info.trim();
       if (data.access_info)
         optionalFields.access_info = data.access_info.trim();
-      if (data.notes) optionalFields.notes = data.notes.trim();
       if (data.opened_by_name)
         optionalFields.opened_by_name = data.opened_by_name.trim();
       if (data.opened_date)
@@ -249,6 +272,7 @@ const SubmitLocationModal = ({
         country: location.country || "",
         latitude: location.latitude,
         longitude: location.longitude,
+        image_urls: imageUrls,
         ...optionalFields,
       } satisfies SubmitLocationData;
 
@@ -260,6 +284,25 @@ const SubmitLocationModal = ({
     onClose();
     reset();
     setCurrentPhase(1);
+    setImages([]);
+  };
+
+  const pickImages = async () => {
+    const result = await useImagePicker({
+      imagePickerOptions: {
+        allowsMultipleSelection: true,
+        selectionLimit: 5,
+      },
+    });
+
+    if (result) {
+      setImages(result);
+    } else {
+      Toast.show({
+        type: "info",
+        text1: "No images selected",
+      });
+    }
   };
 
   const validatePhase1 = async (): Promise<boolean> => {
@@ -332,6 +375,9 @@ const SubmitLocationModal = ({
             control={control}
             mode={mode}
             location={location}
+            images={images}
+            onPickImages={pickImages}
+            isSubmitting={isSubmitting}
           />
         );
       default:
@@ -464,7 +510,7 @@ const styles = StyleSheet.create({
   container: {
     width: "85%",
     maxWidth: 400,
-    maxHeight: "85%",
+    maxHeight: "95%",
     backgroundColor: "#FFFFFF",
     padding: 24,
     borderRadius: 12,
@@ -518,13 +564,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   phaseScrollView: {
-    maxHeight: 300,
+    flexGrow: 0,
+    flexShrink: 1,
   },
   phaseContent: {
     paddingBottom: 10,
   },
   buttonContainer: {
-    marginTop: 20,
+    marginTop: 5,
   },
   primaryButtons: {
     flexDirection: "row",

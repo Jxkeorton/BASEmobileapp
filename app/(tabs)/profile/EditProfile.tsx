@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -14,15 +15,18 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, PaperProvider } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
+import { useImagePicker } from "../../../hooks/useImagePicker";
 import {
   UpdateProfileData,
   useUpdateProfile,
 } from "../../../hooks/useUpdateProfile";
+import { useUploadImage } from "../../../hooks/useUploadImage";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
 import {
@@ -33,8 +37,10 @@ import {
 const EditProfile = () => {
   const [error, setError] = useState<any>(null);
   const { user, isAuthenticated } = useAuth();
-  const queryClient = useQueryClient();
+  const [image, setImage] = useState<string | null>(null);
   const client = useKyClient();
+  const { mutateAsync: uploadImageMutation, error: uploadError } =
+    useUploadImage();
 
   const {
     control,
@@ -93,6 +99,10 @@ const EditProfile = () => {
       if (profile.jump_number !== null && profile.jump_number !== undefined) {
         setValue("jump_number", profile.jump_number.toString());
       }
+
+      if (profile.image_url) {
+        setImage(profile.image_url);
+      }
     }
   }, [profileResponse, setValue]);
 
@@ -119,6 +129,24 @@ const EditProfile = () => {
       profileData.jump_number = jumpNumber;
     }
 
+    if (image) {
+      const { success, secureUrl } = await uploadImageMutation({
+        imageUris: [image],
+        preset: "profile_images",
+      });
+
+      if (success === false || !secureUrl) {
+        Toast.show({
+          type: "error",
+          text1: "Image Upload Failed",
+          text2: "Failed to upload profile image. Please try again.",
+        });
+        return;
+      }
+
+      profileData.image_url = secureUrl;
+    }
+
     // Only submit if there are changes
     if (Object.keys(profileData).length === 0) {
       router.replace("/(tabs)/profile/Profile");
@@ -127,6 +155,19 @@ const EditProfile = () => {
 
     await updateProfileMutation.mutateAsync(profileData);
   });
+
+  const pickImage = async () => {
+    const result = await useImagePicker({});
+
+    if (result) {
+      setImage(result[0]?.uri || "");
+    } else {
+      Toast.show({
+        type: "info",
+        text1: "No image selected",
+      });
+    }
+  };
 
   if (profileLoading) {
     return (
@@ -152,9 +193,28 @@ const EditProfile = () => {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ alignItems: "center", marginBottom: 30 }}>
-            <View style={styles.profilePlaceholder}>
-              <FontAwesome name="user" size={40} color="#ccc" />
-            </View>
+            <TouchableOpacity
+              onPress={pickImage}
+              disabled={isSubmitting}
+              activeOpacity={0.7}
+            >
+              {image ? (
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: image }}
+                    style={styles.image}
+                    contentFit="fill"
+                  />
+                </View>
+              ) : (
+                <View style={styles.profilePlaceholder}>
+                  <FontAwesome name="user" size={40} color="#ccc" />
+                </View>
+              )}
+              <View style={styles.editIconOverlay}>
+                <FontAwesome name="pencil" size={14} color="#fff" />
+              </View>
+            </TouchableOpacity>
             <Text style={styles.profileName}>{name || "No name set"}</Text>
           </View>
 
@@ -246,7 +306,7 @@ const EditProfile = () => {
         </ScrollView>
       </KeyboardAvoidingView>
       <APIErrorHandler
-        error={error || profileError}
+        error={error || profileError || uploadError}
         onDismiss={() => setError(null)}
       />
     </PaperProvider>
@@ -336,6 +396,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     backgroundColor: "#fff",
+    height: 40,
   },
   readOnlyInput: {
     color: "#999",
@@ -343,5 +404,30 @@ const styles = StyleSheet.create({
   loadingButtonContainer: {
     alignItems: "center",
     marginTop: 20,
+  },
+  editIconOverlay: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#00ABF0",
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#f5f5f5",
+  },
+  imageContainer: {
+    width: 100,
+    height: 100,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  image: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: "#0553",
+    borderRadius: 50,
   },
 });

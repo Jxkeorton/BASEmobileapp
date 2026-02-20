@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import {
+  ImageBackground,
   ScrollView,
   StyleSheet,
   Text,
@@ -53,9 +54,18 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
   const processedJumps = useMemo(() => {
     if (jumps && !jumps.length) return [];
 
-    // Reverse to show newest first and add jump numbers
-    const reversedJumps = [...(jumps || [])].reverse();
-    return reversedJumps.map((jump, index) => ({
+    // Sort by date (newest first) and add jump numbers
+    const sortedJumps = [...(jumps || [])].sort((a, b) => {
+      // Handle missing dates - put them at the end
+      if (!a.jump_date && !b.jump_date) return 0;
+      if (!a.jump_date) return 1;
+      if (!b.jump_date) return -1;
+
+      // Compare dates (newest first)
+      return new Date(b.jump_date).getTime() - new Date(a.jump_date).getTime();
+    });
+
+    return sortedJumps.map((jump, index) => ({
       ...jump,
       jumpNumber: jumpNumber - index,
     }));
@@ -74,10 +84,10 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
     });
   }, [processedJumps, searchTerm]);
 
-  const onCardPress = (index: number) => {
+  const onCardPress = (jump: LogbookJump & { jumpNumber: number }) => {
     router.navigate({
-      pathname: `/(tabs)/logbook/${index}`,
-      params: { jumpNumber: jumpNumber - index },
+      pathname: `/(tabs)/logbook/${jump.id}`,
+      params: { jumpNumber: jump.jumpNumber.toString() },
     });
   };
 
@@ -121,21 +131,48 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
           <TouchableOpacity
             key={jump.id || index}
             style={styles.jumpCard}
-            onPress={() => onCardPress(index)}
+            onPress={() => onCardPress(jump)}
           >
-            <View style={styles.backgroundImage}>
-              <View style={styles.jumpCardContent}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.contentText}>{jump.jumpNumber}</Text>
-                  {jump.jump_date && (
-                    <Text style={styles.dateText}>{jump.jump_date}</Text>
-                  )}
+            {jump.images && jump.images.length > 0 ? (
+              <ImageBackground
+                source={{ uri: jump.images[0] }}
+                style={styles.backgroundImage}
+                imageStyle={styles.thumbnailImage}
+                resizeMode="cover"
+              >
+                <View style={[styles.jumpCardContent, styles.overlayContent]}>
+                  <View style={styles.cardHeader}>
+                    <Text style={[styles.contentText, styles.textWithShadow]}>
+                      {jump.jumpNumber}
+                    </Text>
+                    {jump.jump_date && (
+                      <Text style={[styles.dateText, styles.textWithShadow]}>
+                        {jump.jump_date}
+                      </Text>
+                    )}
+                  </View>
+                  <Text
+                    style={[styles.locationTextWhite, styles.textWithShadow]}
+                  >
+                    {jump.location_name}
+                  </Text>
                 </View>
-                <Text style={styles.locationTextWhite}>
-                  {jump.location_name}
-                </Text>
+              </ImageBackground>
+            ) : (
+              <View style={styles.backgroundImage}>
+                <View style={styles.jumpCardContent}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.contentText}>{jump.jumpNumber}</Text>
+                    {jump.jump_date && (
+                      <Text style={styles.dateText}>{jump.jump_date}</Text>
+                    )}
+                  </View>
+                  <Text style={styles.locationTextWhite}>
+                    {jump.location_name}
+                  </Text>
+                </View>
               </View>
-            </View>
+            )}
           </TouchableOpacity>
         ))
       ) : (
@@ -220,6 +257,19 @@ const styles = StyleSheet.create({
     height: 75,
     justifyContent: "flex-end",
     backgroundColor: "#fff",
+  },
+  thumbnailImage: {
+    borderRadius: 8,
+  },
+  overlayContent: {
+    backgroundColor: "rgba(0, 0, 0, 0.35)",
+    borderRadius: 8,
+  },
+  textWithShadow: {
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   jumpCardContent: {
     flex: 1,

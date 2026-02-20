@@ -1,12 +1,20 @@
-import { Text, View } from "react-native";
-import { ControlledPaperTextInput } from "../form";
-import { getPlaceholder, PhaseProps, phaseStyles as styles } from "./types";
+import { FontAwesome } from "@expo/vector-icons";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ControlledDatePicker, ControlledPaperTextInput } from "../form";
+import {
+  AdditionalInfoPhaseProps,
+  getPlaceholder,
+  phaseStyles as styles,
+} from "./types";
 
 const AdditionalInfoPhase = ({
   control,
   mode,
   location,
-}: Omit<PhaseProps, "selectedUnit">) => {
+  images,
+  onPickImages,
+  isSubmitting,
+}: AdditionalInfoPhaseProps) => {
   const isNewLocation = mode === "new";
 
   return (
@@ -38,7 +46,7 @@ const AdditionalInfoPhase = ({
         mode="outlined"
         placeholder={getPlaceholder(
           "opened_by_name",
-          "Person who first jumped this location",
+          "Opened by...",
           isNewLocation,
           location,
         )}
@@ -48,39 +56,11 @@ const AdditionalInfoPhase = ({
       />
 
       <Text style={styles.panelSubtitle}>Opened Date</Text>
-      <ControlledPaperTextInput
+      <ControlledDatePicker
         control={control}
         name="opened_date"
-        style={styles.input}
-        mode="outlined"
-        placeholder={getPlaceholder(
-          "opened_date",
-          "YYYY-MM-DD",
-          isNewLocation,
-          location,
-        )}
-        autoCapitalize="none"
-        textColor="black"
-        activeOutlineColor="black"
-      />
-
-      <Text style={styles.panelSubtitle}>Additional Notes</Text>
-      <ControlledPaperTextInput
-        control={control}
-        name="notes"
-        style={[styles.input, styles.multilineInput]}
-        mode="outlined"
-        placeholder={getPlaceholder(
-          "notes",
-          "Any additional information about this location...",
-          isNewLocation,
-          location,
-        )}
-        multiline
-        numberOfLines={4}
-        autoCapitalize="sentences"
-        textColor="black"
-        activeOutlineColor="black"
+        placeholder="Select date"
+        maximumDate={new Date()}
       />
 
       {isNewLocation && (
@@ -99,8 +79,44 @@ const AdditionalInfoPhase = ({
           />
         </>
       )}
+
+      <TouchableOpacity
+        style={localStyles.imagePickerButton}
+        onPress={onPickImages}
+        disabled={isSubmitting}
+        activeOpacity={0.7}
+      >
+        <FontAwesome name="camera" size={20} color="#00ABF0" />
+        <Text style={localStyles.imagePickerText}>
+          {images.length > 0
+            ? `${images.length} image${images.length > 1 ? "s" : ""} selected`
+            : "Add photos (up to 5)"}
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 };
+
+const localStyles = StyleSheet.create({
+  imagePickerButton: {
+    borderWidth: 1.5,
+    borderColor: "#00ABF0",
+    borderStyle: "dashed",
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+    backgroundColor: "#f0f9ff",
+    marginTop: 8,
+  },
+  imagePickerText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#00ABF0",
+  },
+});
 
 export default AdditionalInfoPhase;

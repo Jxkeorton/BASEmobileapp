@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "expo start --dev-client",
     "build": "eas build --profile development",
-    "types:generate": "npx supabase gen types typescript --project-id 'weuykpwegwaopmzakmbh' > types/supabase.ts",
+    "types:generate": "npx supabase gen types typescript --project-id weuykpwegwaopmzakmbh > types/supabase.ts",
     "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",
     "types:all": "pnpm run types:generate && npm run openapi:generate",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@babel/plugin-transform-class-properties": "^7.22.5",
@@ -26,6 +28,7 @@
     "expo": "^54.0.0",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "~6.0.20",
+    "expo-file-system": "^19.0.21",
     "expo-font": "~14.0.10",
     "expo-glass-effect": "~0.1.8",
     "expo-image": "~3.0.11",

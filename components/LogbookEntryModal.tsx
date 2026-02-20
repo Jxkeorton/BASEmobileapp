@@ -1,11 +1,14 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Keyboard,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,7 +18,9 @@ import {
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
+import { useImagePicker } from "../hooks/useImagePicker";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
+import { useUploadImage } from "../hooks/useUploadImage";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
 import {
@@ -32,16 +37,24 @@ interface LogbookEntryModalProps {
   isLoading: boolean;
 }
 
+interface LogbookMutationData extends LogbookJumpFormData {
+  images?: string[];
+}
+
 const LogbookEntryModal = ({
   isModalOpen,
   onClose,
   isLoading,
 }: LogbookEntryModalProps) => {
   const [showExitTypes, setShowExitTypes] = useState(false);
+  const [images, setImages] = useState<Array<{ uri: string }>>([]);
   const [error, setError] = useState<any>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { mutateAsync: uploadImageMutation, error: uploadError } =
+    useUploadImage();
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -74,12 +87,30 @@ const LogbookEntryModal = ({
   ];
 
   const submitJumpMutation = useMutation({
-    mutationFn: async (jumpData: LogbookJumpFormData) => {
+    mutationFn: async (jumpData: LogbookMutationData) => {
+      // Upload images to Cloudinary first if any are selected
+      let imageUrls: string[] = [];
+      if (images.length > 0) {
+        const imageUris = images.map((img) => img.uri);
+        const uploadResult = await uploadImageMutation({
+          imageUris,
+          preset: "logbook_images",
+        });
+
+        if (!uploadResult.success || uploadResult.secureUrls.length === 0) {
+          console.log("Image upload failed:", uploadError);
+          throw new Error("Failed to upload images");
+        }
+
+        imageUrls = uploadResult.secureUrls;
+      }
+
       const requestBody: any = {
         location_name: jumpData.location_name,
         exit_type: jumpData.exit_type ?? "Earth",
         delay_seconds: jumpData.delay_seconds ?? 0,
         details: jumpData.details ?? "",
+        images: imageUrls,
       };
 
       // Only include jump_date if it's not empty
@@ -121,6 +152,7 @@ const LogbookEntryModal = ({
 
         // Clear the form
         reset();
+        setImages([]);
       } else {
         setError({ message: "Failed to submit jump" });
       }
@@ -137,15 +169,41 @@ const LogbookEntryModal = ({
   const handleCancel = () => {
     onClose();
     reset();
+    setImages([]);
+  };
+
+  const pickImages = async () => {
+    const result = await useImagePicker({
+      imagePickerOptions: {
+        allowsMultipleSelection: true,
+        selectionLimit: 5,
+      },
+    });
+
+    if (result) {
+      setImages(result);
+    } else {
+      Toast.show({
+        type: "info",
+        text1: "No images selected",
+      });
+    }
   };
 
   return (
     <Modal visible={isModalOpen} transparent={true}>
-      <View style={styles.modalContainer}>
+      <KeyboardAvoidingView
+        style={styles.modalContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
         <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
           <View style={styles.container}>
-            <ScrollView>
-              <Text style={styles.panelTitle}>Log a jump !</Text>
+            <ScrollView
+              ref={scrollViewRef}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <Text style={styles.panelTitle}>Enter Jump Details</Text>
 
               <Text style={styles.panelSubtitle}>Location</Text>
               <ControlledPaperTextInput
@@ -247,7 +305,26 @@ const LogbookEntryModal = ({
                 autoCapitalize="sentences"
                 textColor="black"
                 activeOutlineColor="black"
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                  }, 300);
+                }}
               />
+
+              <TouchableOpacity
+                style={styles.imagePickerButton}
+                onPress={pickImages}
+                disabled={isSubmitting}
+                activeOpacity={0.7}
+              >
+                <FontAwesome name="camera" size={20} color="#00ABF0" />
+                <Text style={styles.imagePickerText}>
+                  {images.length > 0
+                    ? `${images.length} image${images.length > 1 ? "s" : ""} selected`
+                    : "Add photos"}
+                </Text>
+              </TouchableOpacity>
 
               {isLoading || submitJumpMutation.isPending || isSubmitting ? (
                 <ActivityIndicator animating={true} color="#00ABF0" />
@@ -271,7 +348,7 @@ const LogbookEntryModal = ({
             </ScrollView>
           </View>
         </TouchableWithoutFeedback>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -294,7 +371,7 @@ const styles = StyleSheet.create({
   panelTitle: {
     fontSize: 22,
     fontWeight: "600",
-    marginBottom: 20,
+    marginBottom: 10,
     color: "#1a1a1a",
   },
   panelSubtitle: {
@@ -322,7 +399,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: "#00ABF0",
     alignItems: "center",
-    marginTop: 8,
     marginBottom: 8,
     width: "100%",
   },
@@ -392,6 +468,25 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#666",
     fontStyle: "italic",
+  },
+  imagePickerButton: {
+    borderWidth: 1.5,
+    borderColor: "#00ABF0",
+    borderStyle: "dashed",
+    borderRadius: 8,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+    backgroundColor: "#f0f9ff",
+    marginVertical: 8,
+  },
+  imagePickerText: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#00ABF0",
   },
 });
 

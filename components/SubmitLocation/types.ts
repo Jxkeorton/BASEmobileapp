@@ -14,6 +14,15 @@ export interface PhaseProps {
   selectedUnit: string;
 }
 
+export interface AdditionalInfoPhaseProps extends Omit<
+  PhaseProps,
+  "selectedUnit"
+> {
+  images: Array<{ uri: string }>;
+  onPickImages: () => void;
+  isSubmitting: boolean;
+}
+
 export const getPlaceholder = (
   field: keyof Location | "coordinates",
   defaultPlaceholder: string,

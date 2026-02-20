@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import { router } from "expo-router";
 import React, { createContext, use, useEffect, useMemo, useState } from "react";
 import { Platform } from "react-native";
@@ -111,6 +112,9 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
   }, [user?.id, queryClient]);
 
   const isProUser = useMemo(() => {
+    // Only grant pro access on simulators/emulators in dev mode, not real devices
+    if (__DEV__ && !Constants.isDevice) return true;
+
     if (!customerInfo) return false;
     return (
       typeof customerInfo.entitlements.active[ENTITLEMENT_ID] !== "undefined"
