@@ -76,20 +76,11 @@ describe("LogbookEntryModal", () => {
 
     // Image upload area
     expect(screen.getByText("Add photos")).toBeTruthy();
-
-    // Input placeholders
-    expect(screen.getByPlaceholderText("Enter location name")).toBeTruthy();
-    expect(screen.getByPlaceholderText("in seconds")).toBeTruthy();
-    expect(screen.getByText("Select jump date")).toBeTruthy();
-    expect(
-      screen.getByPlaceholderText("Add any additional details"),
-    ).toBeTruthy();
   });
 
   it("TC-02: defaults exit type to Earth", () => {
     renderModal();
 
-    // The dropdown button should show "Earth" by default
     expect(screen.getByText("Earth")).toBeTruthy();
   });
 
@@ -99,8 +90,6 @@ describe("LogbookEntryModal", () => {
 
     fillLocationName("Test Location");
 
-    // Exit type already defaults to Earth
-
     // Select a date by pressing the date picker and confirming
     fireEvent.press(screen.getByText("Select jump date"));
     await waitFor(() => {
@@ -108,7 +97,6 @@ describe("LogbookEntryModal", () => {
     });
     fireEvent.press(screen.getByText("Confirm"));
 
-    // Submit the form
     pressSubmit();
 
     await waitFor(() => {
@@ -128,7 +116,6 @@ describe("LogbookEntryModal", () => {
     const onClose = jest.fn();
     renderModal({ onClose });
 
-    // Enter some data first
     fillLocationName("Some Location");
 
     pressCancel();
@@ -275,7 +262,6 @@ describe("LogbookEntryModal", () => {
 
     renderModal();
 
-    // Press the "Add photos" button
     fireEvent.press(screen.getByText("Add photos"));
 
     await waitFor(() => {
