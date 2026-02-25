@@ -181,7 +181,17 @@ const LogbookEntryModal = ({
     });
 
     if (result) {
-      setImages(result);
+      // Enforce maximum of 5 images
+      const limitedResult = result.slice(0, 5);
+      setImages(limitedResult);
+
+      if (result.length > 5) {
+        Toast.show({
+          type: "info",
+          text1: "Maximum 5 images allowed",
+          text2: `Only the first 5 of ${result.length} images were kept.`,
+        });
+      }
     } else {
       Toast.show({
         type: "info",
