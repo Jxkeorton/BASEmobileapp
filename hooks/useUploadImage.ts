@@ -69,7 +69,6 @@ export const useUploadImage = (options?: UseUploadImageOptions) => {
         const data: CloudinaryUploadResponse = await response.json();
 
         if (!data?.success || !data.secureUrl) {
-          console.error(`Upload failed for ${filename}:`, JSON.stringify(data));
           throw new Error(data?.error || `Failed to upload ${filename}`);
         }
 
@@ -89,7 +88,6 @@ export const useUploadImage = (options?: UseUploadImageOptions) => {
     },
     onError: (error, variables, context) => {
       options?.onError?.(error as Error);
-      console.error("Image upload error:", error);
       throw error;
     },
   });

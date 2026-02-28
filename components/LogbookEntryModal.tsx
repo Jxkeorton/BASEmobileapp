@@ -18,11 +18,11 @@ import {
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { useImagePicker } from "../hooks/useImagePicker";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useUploadImage } from "../hooks/useUploadImage";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
+import { launchImagePicker } from "../utils/launchImagePicker";
 import {
   logbookJumpSchema,
   type LogbookJumpFormData,
@@ -47,14 +47,13 @@ const LogbookEntryModal = ({
   isLoading,
 }: LogbookEntryModalProps) => {
   const [showExitTypes, setShowExitTypes] = useState(false);
-  const [images, setImages] = useState<Array<{ uri: string }>>([]);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
   const [error, setError] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { mutateAsync: uploadImageMutation, error: uploadError } =
-    useUploadImage();
+  const { mutateAsync: uploadImageMutation } = useUploadImage();
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -98,7 +97,6 @@ const LogbookEntryModal = ({
         });
 
         if (!uploadResult.success || uploadResult.secureUrls.length === 0) {
-          console.log("Image upload failed:", uploadError);
           throw new Error("Failed to upload images");
         }
 
@@ -173,7 +171,7 @@ const LogbookEntryModal = ({
   };
 
   const pickImages = async () => {
-    const result = await useImagePicker({
+    const result = await launchImagePicker({
       imagePickerOptions: {
         allowsMultipleSelection: true,
         selectionLimit: 5,

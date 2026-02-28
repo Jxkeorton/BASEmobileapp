@@ -12,7 +12,7 @@ export const mockUploadImageMutation = jest.fn().mockResolvedValue({
 // useUpdateProfile
 export const mockUpdateProfileMutation = jest.fn().mockResolvedValue({});
 
-// useImagePicker
+// launchImagePicker
 export const mockImagePicker = jest.fn();
 
 // SessionProvider user
@@ -53,6 +53,6 @@ jest.mock("../hooks/useUpdateProfile", () => ({
   }),
 }));
 
-jest.mock("../hooks/useImagePicker", () => ({
-  useImagePicker: (...args: any[]) => mockImagePicker(...args),
+jest.mock("../utils/launchImagePicker", () => ({
+  launchImagePicker: (...args: any[]) => mockImagePicker(...args),
 }));

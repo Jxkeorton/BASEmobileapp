@@ -1,13 +1,13 @@
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
 
-interface UseImagePickerProps {
+interface LaunchImagePickerProps {
   imagePickerOptions?: ImagePicker.ImagePickerOptions;
 }
 
-export const useImagePicker = async ({
+export const launchImagePicker = async ({
   imagePickerOptions,
-}: UseImagePickerProps) => {
+}: LaunchImagePickerProps) => {
   // No permissions request is necessary for launching the image library.
   // Manually request permissions for videos on iOS when `allowsEditing` is set to `false`
   // and `videoExportPreset` is `'Passthrough'` (the default), ideally before launching the picker
