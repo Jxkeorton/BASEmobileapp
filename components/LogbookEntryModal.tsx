@@ -22,6 +22,7 @@ import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useUploadImage } from "../hooks/useUploadImage";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
+import type { paths } from "../types/api";
 import { launchImagePicker } from "../utils/launchImagePicker";
 import {
   logbookJumpSchema,
@@ -37,9 +38,8 @@ interface LogbookEntryModalProps {
   isLoading: boolean;
 }
 
-interface LogbookMutationData extends LogbookJumpFormData {
-  images?: string[];
-}
+type LogbookMutationData =
+  paths["/logbook"]["post"]["requestBody"]["content"]["application/json"];
 
 const LogbookEntryModal = ({
   isModalOpen,
@@ -103,7 +103,7 @@ const LogbookEntryModal = ({
         imageUrls = uploadResult.secureUrls;
       }
 
-      const requestBody: any = {
+      const requestBody: LogbookMutationData = {
         location_name: jumpData.location_name,
         exit_type: jumpData.exit_type ?? "Earth",
         delay_seconds: jumpData.delay_seconds ?? 0,
@@ -161,7 +161,14 @@ const LogbookEntryModal = ({
   });
 
   const handleFormSubmit = handleSubmit(async (data) => {
-    await submitJumpMutation.mutateAsync(data);
+    const cleanedData: LogbookMutationData = {
+      location_name: data.location_name,
+      exit_type: data.exit_type ?? "Earth",
+      delay_seconds: data.delay_seconds ?? NaN,
+      details: data.details ?? "",
+      jump_date: data.jump_date,
+    };
+    await submitJumpMutation.mutateAsync(cleanedData);
   });
 
   const handleCancel = () => {

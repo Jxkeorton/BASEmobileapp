@@ -18,6 +18,7 @@ module.exports = defineConfig([
       "pnpm-lock.yaml",
       "ios",
       "android",
+      "api.ts",
     ],
   },
   expoConfig,
