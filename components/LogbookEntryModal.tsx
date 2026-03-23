@@ -166,7 +166,7 @@ const LogbookEntryModal = ({
       exit_type: data.exit_type ?? "Earth",
       delay_seconds: data.delay_seconds ?? NaN,
       details: data.details ?? "",
-      jump_date: data.jump_date,
+      jump_date: data.jump_date ?? "",
     };
     await submitJumpMutation.mutateAsync(cleanedData);
   });

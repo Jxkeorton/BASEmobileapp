@@ -1,10 +1,5 @@
 import * as yup from "yup";
 
-/**
- * Validation Schemas for Forms
- * Using Yup for runtime type-safe validation with react-hook-form
- */
-
 // ============================================================================
 // Authentication Schemas
 // ============================================================================
@@ -136,7 +131,7 @@ export type EditProfileFormData = {
   username?: string;
   jump_number?: string | number;
 };
-// // ============================================================================
+
 // ============================================================================
 // Location Submission Schemas
 // ============================================================================
@@ -387,7 +382,6 @@ export const unifiedLocationSchema = yup.object({
 export type UnifiedLocationFormData = yup.InferType<
   typeof unifiedLocationSchema
 >;
-
 // ============================================================================
 // Logbook Schemas
 // ============================================================================
