@@ -138,8 +138,6 @@ const ResetPasswordConfirm = () => {
     const getInitialURL = async () => {
       const url = await Linking.getInitialURL();
 
-      console.log("Initial URL:", url);
-
       if (url) {
         const parsedParams = parseUrlParams(url);
         handleIncomingParams(parsedParams);
