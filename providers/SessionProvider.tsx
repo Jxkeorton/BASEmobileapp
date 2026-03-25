@@ -32,6 +32,8 @@ export interface SessionContextType {
   signOut: () => Promise<void>;
   login: (params: LoginParams) => void;
   isAuthenticated: boolean;
+  setIsForcePasswordReset: (value: boolean) => void;
+  isForcePasswordReset: boolean;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -47,11 +49,12 @@ export const useAuth = (): SessionContextType => {
 export const SessionProvider = ({ children }: PropsWithChildren) => {
   const [[isLoadingToken, authToken], setAuthToken] =
     useStorageState("auth_token");
-  const [[isLoadingRefresh, refreshToken], setRefreshToken] =
+  const [[isLoadingRefresh], setRefreshToken] =
     useStorageState("refresh_token");
   const [[isLoadingUser, userData], setUserData] = useStorageState("user_data");
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isForcePasswordReset, setIsForcePasswordReset] = useState(false);
 
   // Parse user data from storage
   const user = useMemo((): SessionUser | null => {
@@ -131,6 +134,8 @@ export const SessionProvider = ({ children }: PropsWithChildren) => {
         signOut,
         login,
         isAuthenticated: !!user && !!authToken,
+        setIsForcePasswordReset,
+        isForcePasswordReset,
       }}
     >
       {children}
