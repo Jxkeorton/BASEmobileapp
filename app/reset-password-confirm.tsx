@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
 import * as Linking from "expo-linking";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   Image,
@@ -24,8 +24,10 @@ import {
 
 const ResetPasswordConfirm = () => {
   const [apiError, setApiError] = useState<any>(null);
-  const [accessToken, setAccessToken] = useState<string>("");
-  const [refreshToken, setRefreshToken] = useState<string>("");
+  const [tokenHash, setTokenHash] = useState<string>("");
+  const [otpType, setOtpType] = useState<string>("recovery");
+  const [linkError, setLinkError] = useState<string | null>(null);
+  const hasRedirectedToReset = useRef(false);
 
   const {
     control,
@@ -42,36 +44,105 @@ const ResetPasswordConfirm = () => {
 
   const params = useLocalSearchParams();
 
+  const showLinkErrorToast = (message: string) => {
+    Toast.show({
+      type: "error",
+      text1: "Reset Link Invalid",
+      text2: message,
+      position: "top",
+    });
+  };
+
+  const isExpiredLinkError = (
+    errorCode?: string,
+    errorDescription?: string,
+  ) => {
+    const normalizedDescription = errorDescription?.toLowerCase() ?? "";
+
+    return (
+      errorCode === "otp_expired" ||
+      normalizedDescription.includes("has expired") ||
+      normalizedDescription.includes("invalid or has expired")
+    );
+  };
+
+  const redirectToResetIfNeeded = (shouldRedirect: boolean) => {
+    if (!shouldRedirect || hasRedirectedToReset.current) return;
+
+    hasRedirectedToReset.current = true;
+    router.replace("/(auth)/Reset");
+  };
+
   useEffect(() => {
-    const parseHashParams = (url: string) => {
-      // Extract hash fragment (after #)
-      const hashIndex = url.indexOf("#");
-      if (hashIndex === -1) return {};
+    const parseUrlParams = (url: string) => {
+      const allParams: Record<string, string> = {};
 
-      const hashFragment = url.substring(hashIndex + 1);
-      const params: Record<string, string> = {};
+      const queryStart = url.indexOf("?");
+      const hashStart = url.indexOf("#");
 
-      hashFragment.split("&").forEach((part) => {
-        const [key, value] = part.split("=");
-        if (key && value) {
-          params[key] = decodeURIComponent(value);
-        }
-      });
+      const queryEnd = hashStart === -1 ? url.length : hashStart;
+      const queryFragment =
+        queryStart !== -1 ? url.substring(queryStart + 1, queryEnd) : "";
+      const hashFragment = hashStart !== -1 ? url.substring(hashStart + 1) : "";
 
-      return params;
+      const readFragment = (fragment: string) => {
+        if (!fragment) return;
+
+        fragment.split("&").forEach((part) => {
+          const [key, value] = part.split("=");
+          if (!key) return;
+
+          const rawValue = value ?? "";
+          const decodedValue =
+            key === "error_description"
+              ? decodeURIComponent(rawValue.replace(/\+/g, " "))
+              : decodeURIComponent(rawValue);
+
+          allParams[key] = decodedValue;
+        });
+      };
+
+      readFragment(queryFragment);
+      readFragment(hashFragment);
+
+      return allParams;
+    };
+
+    const handleIncomingParams = (incomingParams: Record<string, string>) => {
+      const parsedTokenHash = incomingParams.token_hash;
+      const parsedType = incomingParams.type;
+      const errorCode = incomingParams.error_code;
+      const errorDescription = incomingParams.error_description;
+
+      if (parsedTokenHash) setTokenHash(parsedTokenHash);
+      if (parsedType) setOtpType(parsedType);
+
+      if (errorCode || errorDescription) {
+        const shouldRedirectToReset = isExpiredLinkError(
+          errorCode,
+          errorDescription,
+        );
+
+        const message =
+          errorDescription ||
+          (errorCode === "otp_expired"
+            ? "Email link is invalid or has expired"
+            : "Unable to reset password with this link");
+
+        setLinkError(message);
+        showLinkErrorToast(message);
+        redirectToResetIfNeeded(shouldRedirectToReset);
+      }
     };
 
     const getInitialURL = async () => {
       const url = await Linking.getInitialURL();
 
+      console.log("Initial URL:", url);
+
       if (url) {
-        const hashParams = parseHashParams(url);
-
-        const access = hashParams.access_token;
-        const refresh = hashParams.refresh_token;
-
-        if (access) setAccessToken(access);
-        if (refresh) setRefreshToken(refresh);
+        const parsedParams = parseUrlParams(url);
+        handleIncomingParams(parsedParams);
       }
     };
 
@@ -79,37 +150,52 @@ const ResetPasswordConfirm = () => {
 
     // Listen for URL changes when app is already open
     const subscription = Linking.addEventListener("url", ({ url }) => {
-      const hashParams = parseHashParams(url);
-
-      const access = hashParams.access_token;
-      const refresh = hashParams.refresh_token;
-
-      if (access) setAccessToken(access);
-      if (refresh) setRefreshToken(refresh);
+      const parsedParams = parseUrlParams(url);
+      handleIncomingParams(parsedParams);
     });
 
     return () => subscription.remove();
   }, []);
 
-  const access_token: string = (params.access_token as string) || accessToken;
-  const refresh_token: string =
-    (params.refresh_token as string) || refreshToken;
+  const token_hash: string = (params.token_hash as string) || tokenHash;
+  const linkType: string = (params.type as string) || otpType || "recovery";
+  const routeErrorDescription = params.error_description as string | undefined;
+  const routeErrorCode = params.error_code as string | undefined;
   const client = useKyClient();
+
+  useEffect(() => {
+    if (!routeErrorCode && !routeErrorDescription) return;
+
+    const shouldRedirectToReset = isExpiredLinkError(
+      routeErrorCode,
+      routeErrorDescription,
+    );
+
+    const message =
+      routeErrorDescription ||
+      (routeErrorCode === "otp_expired"
+        ? "Email link is invalid or has expired"
+        : "Unable to reset password with this link");
+
+    setLinkError(message);
+    showLinkErrorToast(message);
+    redirectToResetIfNeeded(shouldRedirectToReset);
+  }, [routeErrorCode, routeErrorDescription]);
 
   const resetPasswordMutation = useMutation({
     mutationFn: async ({
-      access_token,
-      refresh_token,
+      token_hash,
+      type,
       new_password,
     }: {
-      access_token: string;
-      refresh_token: string;
+      token_hash: string;
+      type: "recovery";
       new_password: string;
     }) => {
       const result = await client.POST("/reset-password/confirm", {
         body: {
-          access_token,
-          refresh_token,
+          token_hash,
+          type,
           new_password,
         },
       });
@@ -134,13 +220,23 @@ const ResetPasswordConfirm = () => {
   });
 
   const onSubmit = handleSubmit((data) => {
+    const safeTokenHash = Array.isArray(token_hash)
+      ? token_hash[0]
+      : token_hash;
+    const safeLinkType = Array.isArray(linkType) ? linkType[0] : linkType;
+
+    if (linkError || !safeTokenHash || safeLinkType !== "recovery") {
+      const message =
+        linkError ||
+        "Email link is invalid or has expired. Request a new reset link.";
+
+      showLinkErrorToast(message);
+      return;
+    }
+
     resetPasswordMutation.mutate({
-      access_token: Array.isArray(access_token)
-        ? access_token[0]
-        : access_token,
-      refresh_token: Array.isArray(refresh_token)
-        ? refresh_token[0]
-        : refresh_token,
+      token_hash: safeTokenHash,
+      type: "recovery",
       new_password: data.newPassword,
     });
   });
