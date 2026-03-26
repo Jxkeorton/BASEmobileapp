@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -32,6 +32,10 @@ const Register = () => {
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
   const { login } = useAuth();
+  const params = useLocalSearchParams<{ email?: string | string[] }>();
+  const emailParam = Array.isArray(params.email)
+    ? params.email[0] || ""
+    : params.email || "";
 
   const {
     control,
@@ -42,7 +46,7 @@ const Register = () => {
     mode: "onBlur",
     defaultValues: {
       name: "",
-      email: "",
+      email: emailParam,
       password: "",
       termsAccepted: false,
     },
@@ -56,8 +60,9 @@ const Register = () => {
       return result;
     },
     onSuccess: async (response, variables) => {
-      const user = response.data?.data?.user;
-      const session = response.data?.data?.session;
+      const payload = response.data?.data;
+      const user = payload?.user;
+      const session = payload?.session;
 
       if (response.response.status === 200) {
         // Check if email confirmation is required
@@ -74,7 +79,7 @@ const Register = () => {
             session?.access_token &&
             session?.refresh_token
           ) {
-            login({
+            await login({
               user: { id: user.id, email: user.email },
               accessToken: session.access_token,
               refreshToken: session.refresh_token,

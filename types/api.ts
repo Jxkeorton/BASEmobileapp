@@ -662,6 +662,20 @@ export interface paths {
               /** @enum {boolean} */
               success: true;
               message: string;
+              data: {
+                user: {
+                  /** Format: uuid */
+                  id: string;
+                  /** Format: email */
+                  email: string;
+                  force_password_reset: boolean;
+                };
+                session: {
+                  access_token: string;
+                  refresh_token: string;
+                  expires_at: number;
+                };
+              };
             };
           };
         };
@@ -2242,6 +2256,20 @@ export interface paths {
               /** @enum {boolean} */
               success: true;
               message: string;
+              data: {
+                user: {
+                  /** Format: uuid */
+                  id: string;
+                  /** Format: email */
+                  email: string;
+                  force_password_reset: boolean;
+                };
+                session: {
+                  access_token: string;
+                  refresh_token: string;
+                  expires_at: number;
+                };
+              };
             };
           };
         };

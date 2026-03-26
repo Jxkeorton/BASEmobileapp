@@ -28,6 +28,7 @@ export default function Login() {
 
   const {
     control,
+    getValues,
     handleSubmit,
     formState: { isSubmitting },
   } = useForm<LoginFormData>({
@@ -56,8 +57,10 @@ export default function Login() {
       return result.data;
     },
     onSuccess: async (response) => {
-      const user = response.data?.user;
-      const session = response.data?.session;
+      const rawData = response.data as any;
+      const payload = rawData?.data ?? rawData;
+      const user = payload?.user;
+      const session = payload?.session;
 
       if (
         user?.id &&
@@ -65,15 +68,18 @@ export default function Login() {
         session?.access_token &&
         session?.refresh_token
       ) {
-        login({
+        await login({
           user: { id: user.id, email: user.email },
           accessToken: session.access_token,
           refreshToken: session.refresh_token,
         });
+
+        // Navigate to main app
+        router.replace("/(tabs)/map");
+        return;
       }
 
-      // Navigate to main app
-      router.replace("/(tabs)/map");
+      setApiError({ message: "Missing session in sign-in response" });
     },
     onError: async (error: any) => {
       let parsedError = error;
@@ -90,7 +96,7 @@ export default function Login() {
 
       if (forcePasswordReset) {
         setIsForcePasswordReset(true);
-        router.replace("Reset");
+        navigateToReset();
       } else {
         setApiError(parsedError);
       }
@@ -100,6 +106,28 @@ export default function Login() {
   const onSubmit = handleSubmit((data) => {
     signInMutation.mutate(data);
   });
+
+  const getEmailValue = () => getValues("email")?.trim() || "";
+
+  const navigateToRegister = () => {
+    const email = getEmailValue();
+    if (email) {
+      router.replace({ pathname: "Register", params: { email } });
+      return;
+    }
+
+    router.replace("Register");
+  };
+
+  const navigateToReset = () => {
+    const email = getEmailValue();
+    if (email) {
+      router.replace({ pathname: "Reset", params: { email } });
+      return;
+    }
+
+    router.replace("Reset");
+  };
 
   return (
     <>
@@ -149,14 +177,14 @@ export default function Login() {
                 </Button>
                 <Button
                   textColor="#007AFF"
-                  onPress={() => router.replace("Register")}
+                  onPress={navigateToRegister}
                   style={styles.button}
                 >
                   Sign Up here!
                 </Button>
                 <Button
                   textColor="#007AFF"
-                  onPress={() => router.replace("Reset")}
+                  onPress={navigateToReset}
                   style={styles.button}
                 >
                   Forgot Password
