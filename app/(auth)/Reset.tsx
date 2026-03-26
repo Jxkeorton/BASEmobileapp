@@ -8,6 +8,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   StyleSheet,
+  Text,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -15,6 +16,7 @@ import { ActivityIndicator, Button } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../../components/APIErrorHandler";
 import { ControlledPaperEmailInput } from "../../components/form";
+import { useAuth } from "../../providers/SessionProvider";
 import { useKyClient } from "../../services/kyClient";
 import {
   type ResetPasswordFormData,
@@ -24,6 +26,7 @@ import {
 const Reset = () => {
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
+  const { isForcePasswordReset, setIsForcePasswordReset } = useAuth();
 
   const {
     control,
@@ -48,6 +51,7 @@ const Reset = () => {
     onSuccess: async (response) => {
       if (response.response.status === 200) {
         router.replace("/(auth)/Login");
+        setIsForcePasswordReset(false);
         Toast.show({
           type: "success",
           text1: "Reset password email sent",
@@ -68,14 +72,21 @@ const Reset = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
-        <KeyboardAvoidingView behavior="padding">
+        <KeyboardAvoidingView behavior="padding" style={styles.formContainer}>
           <View style={styles.imageContainer}>
             <Image
               source={require("../../assets/bitmap.png")}
               style={styles.image}
             />
           </View>
-
+          {isForcePasswordReset && (
+            <View style={styles.forcePasswordResetContainer}>
+              <Text style={styles.forcePasswordResetText}>
+                Due to the database being upgraded, you need to reset your
+                password.
+              </Text>
+            </View>
+          )}
           <ControlledPaperEmailInput
             control={control}
             name="email"
@@ -121,6 +132,11 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     padding: 20,
   },
+  formContainer: {
+    width: "100%",
+    maxWidth: 430,
+    alignSelf: "center",
+  },
   imageContainer: {
     alignItems: "center",
     justifyContent: "center",
@@ -137,15 +153,33 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
+  forcePasswordResetContainer: {
+    marginBottom: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#FF7A7A",
+    backgroundColor: "#2A1216",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  forcePasswordResetText: {
+    color: "#FFDCDC",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+  },
   sendResetButton: {
     backgroundColor: "#007AFF",
     marginVertical: 10,
+    borderRadius: 8,
+    paddingVertical: 2,
   },
   button: {
     backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: "#007AFF",
     marginVertical: 10,
+    borderRadius: 8,
   },
 });
 

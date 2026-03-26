@@ -65,8 +65,14 @@ export const kyInstance = (timeout: number) =>
       ],
       afterResponse: [
         async (request, _options, response) => {
+          const pathname = new URL(request.url).pathname;
+          const skipRefreshPaths = ["/signin", "/signup", "/refresh"];
+          const shouldSkipRefresh = skipRefreshPaths.some((path) =>
+            pathname.endsWith(path),
+          );
+
           // Handle 401 (unauthorized) - token expired
-          if (response.status === 401) {
+          if (response.status === 401 && !shouldSkipRefresh) {
             const newToken = await refreshAuthToken();
 
             if (newToken) {

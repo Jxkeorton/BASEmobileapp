@@ -23,7 +23,7 @@ import { type LoginFormData, loginSchema } from "../../utils/validationSchemas";
 
 export default function Login() {
   const client = useKyClient();
-  const { login, loading } = useAuth();
+  const { login, loading, setIsForcePasswordReset } = useAuth();
   const [apiError, setApiError] = useState<any>(null);
 
   const {
@@ -45,11 +45,19 @@ export default function Login() {
         body: { email: data.email, password: data.password },
       });
 
-      return result;
+      if (result.error) {
+        throw result.error;
+      }
+
+      if (!result.data) {
+        throw new Error("Missing sign-in response data");
+      }
+
+      return result.data;
     },
     onSuccess: async (response) => {
-      const user = response.data?.data?.user;
-      const session = response.data?.data?.session;
+      const user = response.data?.user;
+      const session = response.data?.session;
 
       if (
         user?.id &&
@@ -68,7 +76,24 @@ export default function Login() {
       router.replace("/(tabs)/map");
     },
     onError: async (error: any) => {
-      setApiError(error);
+      let parsedError = error;
+
+      if (error?.response && typeof error.response.clone === "function") {
+        try {
+          parsedError = await error.response.clone().json();
+        } catch {
+          parsedError = error;
+        }
+      }
+
+      const forcePasswordReset = parsedError?.force_password_reset === true;
+
+      if (forcePasswordReset) {
+        setIsForcePasswordReset(true);
+        router.replace("Reset");
+      } else {
+        setApiError(parsedError);
+      }
     },
   });
 

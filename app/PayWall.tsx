@@ -1,5 +1,12 @@
 import { router } from "expo-router";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
 import { PurchasesPackage } from "react-native-purchases";
@@ -32,22 +39,18 @@ const PayWall = () => {
   };
 
   const userHasAccessToPackage = (pkg: PurchasesPackage) => {
-    if (isProUser) {
-      return true;
-    }
-
+    if (isProUser) return true;
     if (customerInfo?.entitlements?.active) {
       return (
         customerInfo.entitlements.active[pkg.product.identifier] !== undefined
       );
     }
-
     return false;
   };
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
+      <View style={[styles.container, styles.centered]}>
         <ActivityIndicator size="large" color="#007AFF" />
         <Text style={styles.title}>Loading packages...</Text>
       </View>
@@ -56,17 +59,17 @@ const PayWall = () => {
 
   if (isProUser) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
+      <View style={[styles.container, styles.centered]}>
         <Image source={require("../assets/bitmap.png")} style={styles.image} />
         <Text style={styles.title}>You&apos;re a Pro User!</Text>
         <Text style={styles.text}>
           You have access to all premium features.
         </Text>
         <TouchableOpacity
-          style={styles.backToMapButton}
+          style={styles.primaryButton}
           onPress={() => router.push("/(tabs)/map/Map")}
         >
-          <Text style={styles.backToMapButtonText}>Back to Map</Text>
+          <Text style={styles.primaryButtonText}>Back to Map</Text>
         </TouchableOpacity>
       </View>
     );
@@ -77,7 +80,7 @@ const PayWall = () => {
 
   if (!monthlyPackage || !yearlyPackage) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
+      <View style={[styles.container, styles.centered]}>
         <Text style={styles.title}>No packages available</Text>
         <Text style={styles.text}>
           We&apos;re having trouble loading subscription options. Please try
@@ -87,204 +90,293 @@ const PayWall = () => {
           <Text style={styles.restoreButtonText}>Restore Purchases</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.backToMapButton}
+          style={styles.primaryButton}
           onPress={() => router.push("/(tabs)/map/Map")}
         >
-          <Text style={styles.backToMapButtonText}>Back to Map</Text>
+          <Text style={styles.primaryButtonText}>Back to Map</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Image source={require("../assets/bitmap.png")} style={styles.image} />
-      <Text style={styles.title}>Unlock Pro Features</Text>
-      <View style={styles.features}>
-        <Text style={styles.featureItem}>✓ Precise Coordinates</Text>
-        <Text style={styles.featureItem}>✓ Open Locations in Maps</Text>
-        <Text style={styles.featureItem}>✓ Create a Logbook</Text>
-        <Text style={styles.featureItem}>✓ More in depth Location Details</Text>
-      </View>
-      <View style={styles.bottomContainer}>
-        {/* Monthly Package */}
-        <LinearGradient colors={["#007AFF", "#00AFFF"]} style={styles.package}>
-          <Text
-            style={[styles.packageText, { fontSize: 20, textAlign: "center" }]}
-          >
-            {monthlyPackage.product.title}
-          </Text>
-          <Text style={styles.packageText}>
-            {monthlyPackage.product.priceString}
-          </Text>
-          {loading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : userHasAccessToPackage(monthlyPackage) ? (
-            <Text style={styles.accessText}>Already Purchased</Text>
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handlePurchase(monthlyPackage)}
-            >
-              <Text style={styles.buttonText}>Purchase</Text>
-            </TouchableOpacity>
-          )}
-        </LinearGradient>
-
-        {/* Yearly Package */}
-        <LinearGradient colors={["#007AFF", "#00AFFF"]} style={styles.package}>
-          <Text
-            style={[styles.packageText, { fontSize: 20, textAlign: "center" }]}
-          >
-            {yearlyPackage.product.title}
-          </Text>
-          <Text style={styles.packageText}>
-            {yearlyPackage.product.priceString}
-          </Text>
-          {loading ? (
-            <ActivityIndicator color="white" size="small" />
-          ) : userHasAccessToPackage(yearlyPackage) ? (
-            <Text style={styles.accessText}>Already Purchased</Text>
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => handlePurchase(yearlyPackage)}
-            >
-              <Text style={styles.buttonText}>Purchase</Text>
-            </TouchableOpacity>
-          )}
-        </LinearGradient>
-      </View>
-
-      {!loading && (
-        <View style={styles.trialContainer}>
-          <Text style={styles.trialText}>
-            A 7 Day Free trial will be applied if it is your first time
-            subscribing
-          </Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.screen}>
+        {/* Top: image + title + features */}
+        <View style={styles.top}>
+          <View style={styles.headerRow}>
+            <Image
+              source={require("../assets/bitmap.png")}
+              style={styles.image}
+            />
+            <View style={styles.headerText}>
+              <Text style={styles.title}>Pro Features</Text>
+              {[
+                "Precise Coordinates",
+                "Open location pins in maps",
+                "Create a Logbook",
+                "Location Details",
+              ].map((feature) => (
+                <View key={feature} style={styles.featureRow}>
+                  <Text style={styles.featureCheck}>✓</Text>
+                  <Text style={styles.featureItem}>{feature}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
-      )}
 
-      <TouchableOpacity style={styles.restoreButton} onPress={handleRestore}>
-        <Text style={styles.restoreButtonText}>Restore Purchases</Text>
-      </TouchableOpacity>
+        {/* Packages */}
+        <View style={styles.packagesContainer}>
+          {/* Annual */}
+          <View style={styles.annualWrapper}>
+            <LinearGradient
+              colors={["#0055CC", "#007AFF"]}
+              style={StyleSheet.absoluteFill}
+            />
+            <Text style={styles.packageTitle}>
+              {yearlyPackage.product.title}
+            </Text>
+            <Text style={styles.packagePrice}>
+              {yearlyPackage.product.priceString}
+            </Text>
+            <Text style={styles.packagePeriod}>per year</Text>
+            {userHasAccessToPackage(yearlyPackage) ? (
+              <Text style={styles.accessText}>Already Purchased</Text>
+            ) : (
+              <TouchableOpacity
+                style={styles.purchaseButton}
+                onPress={() => handlePurchase(yearlyPackage)}
+              >
+                <Text style={styles.purchaseButtonText}>Get Annual</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
-      <TouchableOpacity
-        style={styles.backToMapButton}
-        onPress={() => router.push("/(tabs)/map/Map")}
-      >
-        <Text style={styles.backToMapButtonText}>Back to Map</Text>
-      </TouchableOpacity>
-    </View>
+          {/* Monthly */}
+          <View style={styles.monthlyPackage}>
+            <Text style={styles.packageTitle}>
+              {monthlyPackage.product.title}
+            </Text>
+            <Text style={styles.packagePrice}>
+              {monthlyPackage.product.priceString}
+            </Text>
+            <Text style={styles.packagePeriod}>per month</Text>
+            {userHasAccessToPackage(monthlyPackage) ? (
+              <Text style={styles.accessText}>Already Purchased</Text>
+            ) : (
+              <TouchableOpacity
+                style={styles.purchaseButtonOutline}
+                onPress={() => handlePurchase(monthlyPackage)}
+              >
+                <Text style={styles.purchaseButtonOutlineText}>
+                  Get Monthly
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        {/* Bottom */}
+        <View style={styles.bottom}>
+          <Text style={styles.trialText}>
+            7-day free trial applied for first-time subscribers.
+          </Text>
+          <TouchableOpacity
+            style={styles.restoreButton}
+            onPress={handleRestore}
+          >
+            <Text style={styles.restoreButtonText}>Restore Purchases</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push("/(tabs)/map/Map")}
+          >
+            <Text style={styles.primaryButtonText}>Back to Map</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "black",
+  },
+  screen: {
+    flex: 1,
+    backgroundColor: "black",
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
+    width: "100%",
     alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "black",
-  },
-  title: {
-    fontSize: 27,
-    marginBottom: 10,
-    marginTop: 20,
-    color: "white",
-    fontWeight: "bold",
-  },
-  text: {
-    fontSize: 16,
-    color: "white",
-    textAlign: "center",
-    marginHorizontal: 40,
-    marginTop: 10,
-  },
-  bottomContainer: {
-    flexDirection: "row",
-  },
-  package: {
-    backgroundColor: "transparent",
-    alignItems: "center",
+    paddingHorizontal: 24,
     justifyContent: "center",
-    padding: 10,
-    borderRadius: 8,
-    width: "48%",
-    height: 150,
-    marginTop: 30,
-    marginHorizontal: 5,
   },
-  packageText: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: "white",
-    fontWeight: "bold",
-    textShadowColor: "black",
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 2,
+  centered: {
+    justifyContent: "center",
   },
-  accessText: {
-    fontSize: 16,
-    color: "lightgray",
-    fontStyle: "italic",
+  // Header
+  top: {
+    width: "100%",
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 80,
+    height: 80,
+    marginRight: 16,
   },
-  features: {
-    alignItems: "flex-start",
-    marginTop: 20,
+  headerText: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 22,
+    color: "white",
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  featureCheck: {
+    fontSize: 13,
+    color: "#007AFF",
+    fontWeight: "bold",
+    width: 18,
   },
   featureItem: {
-    fontSize: 16,
+    fontSize: 13,
     color: "white",
-    marginBottom: 5,
-    fontWeight: "bold",
+    fontWeight: "500",
+    flex: 1,
   },
-  button: {
-    backgroundColor: "black",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
-    width: "80%",
+  // Packages
+  packagesContainer: {
+    width: "100%",
+    marginTop: 20,
   },
-  buttonText: {
+  annualWrapper: {
+    width: "100%",
+    borderRadius: 14,
+    padding: 20,
+    alignItems: "center",
+    overflow: "hidden",
+    marginBottom: 12,
+  },
+  monthlyPackage: {
+    width: "100%",
+    borderRadius: 14,
+    padding: 20,
+    alignItems: "center",
+    backgroundColor: "#3A3A3C",
+    borderWidth: 1,
+    borderColor: "#636366",
+  },
+  packageTitle: {
+    fontSize: 18,
+    color: "white",
+    fontWeight: "700",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  packagePrice: {
+    fontSize: 28,
+    color: "white",
+    fontWeight: "800",
+    marginBottom: 2,
+  },
+  packagePeriod: {
+    fontSize: 13,
+    color: "rgba(255,255,255,0.65)",
+  },
+  accessText: {
+    fontSize: 14,
+    color: "lightgray",
+    fontStyle: "italic",
+    marginTop: 12,
+  },
+  purchaseButton: {
+    backgroundColor: "white",
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 12,
+    width: "100%",
+  },
+  purchaseButtonText: {
+    color: "#007AFF",
+    textAlign: "center",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  purchaseButtonOutline: {
+    borderWidth: 2,
+    borderColor: "white",
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 12,
+    width: "100%",
+  },
+  purchaseButtonOutlineText: {
     color: "white",
     textAlign: "center",
-    fontWeight: "600",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  // Bottom
+  bottom: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  trialText: {
+    color: "#888",
+    fontSize: 12,
+    textAlign: "center",
+    marginBottom: 8,
   },
   restoreButton: {
-    marginTop: 15,
-    padding: 10,
+    padding: 8,
+    marginBottom: 4,
   },
   restoreButtonText: {
     color: "#007AFF",
-    fontSize: 16,
+    fontSize: 14,
     textAlign: "center",
     textDecorationLine: "underline",
   },
-  backToMapButton: {
-    backgroundColor: "black",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 20,
-    width: "80%",
+  primaryButton: {
+    backgroundColor: "#007AFF",
+    paddingVertical: 13,
+    borderRadius: 12,
+    marginTop: 4,
+    width: "100%",
   },
-  backToMapButtonText: {
+  primaryButtonText: {
     color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "700",
     textAlign: "center",
   },
-  trialText: {
-    color: "white",
-    fontSize: 14,
+  text: {
+    fontSize: 16,
+    color: "#aaa",
     textAlign: "center",
-  },
-  trialContainer: {
-    marginTop: 20,
-    marginHorizontal: 20,
+    marginTop: 10,
+    lineHeight: 22,
   },
 });
 
