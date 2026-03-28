@@ -8,7 +8,7 @@
     "build": "eas build --profile development",
     "lint": "eslint .",
     "android": "expo run:android",
-    "ios": "expo run:ios 2>&1 | grep -v 'hapticpatternlibrary\\|CHHapticPattern\\|UIKBFeedbackGenerator\\|TextInputUI'",
+    "ios": "expo run:ios",
     "test": "jest --watchAll",
     "types:generate": "npx supabase gen types typescript --project-id weuykpwegwaopmzakmbh > types/supabase.ts",
     "openapi:generate": "openapi-typescript https://basemapapi-production.up.railway.app/docs/json -o types/api.ts",

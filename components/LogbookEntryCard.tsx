@@ -116,7 +116,7 @@ const LogbookJumpCard = ({ jumpNumber }: LogbookJumpCardProps) => {
       <View style={styles.searchBox}>
         <View style={styles.textInputContainer}>
           <TextInput
-            placeholder="Search Jumps"
+            placeholder="Search your jumps"
             placeholderTextColor="#666"
             autoCapitalize="none"
             style={styles.searchInput}
