@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { useStorageState } from "../hooks/useStorageState";
+import { setStorageItemAsync, useStorageState } from "../hooks/useStorageState";
 import {
   isTokenExpired,
   refreshAuthToken,
@@ -30,7 +30,7 @@ export interface SessionContextType {
   user: SessionUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  login: (params: LoginParams) => void;
+  login: (params: LoginParams) => Promise<void>;
   isAuthenticated: boolean;
   setIsForcePasswordReset: (value: boolean) => void;
   isForcePasswordReset: boolean;
@@ -74,10 +74,19 @@ export const SessionProvider = ({ children }: PropsWithChildren) => {
       user: newUser,
       accessToken,
       refreshToken: newRefreshToken,
-    }: LoginParams): void => {
-      setAuthToken(accessToken);
-      setRefreshToken(newRefreshToken);
-      setUserData(JSON.stringify(newUser));
+    }: LoginParams): Promise<void> => {
+      // Persist auth payload first so immediate post-login requests read a token.
+      const serializedUser = JSON.stringify(newUser);
+
+      return Promise.all([
+        setStorageItemAsync("auth_token", accessToken),
+        setStorageItemAsync("refresh_token", newRefreshToken),
+        setStorageItemAsync("user_data", serializedUser),
+      ]).then(() => {
+        setAuthToken(accessToken);
+        setRefreshToken(newRefreshToken);
+        setUserData(serializedUser);
+      });
     },
     [setAuthToken, setRefreshToken, setUserData],
   );

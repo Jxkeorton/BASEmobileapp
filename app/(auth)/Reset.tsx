@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -27,6 +27,10 @@ const Reset = () => {
   const client = useKyClient();
   const [apiError, setApiError] = useState<any>(null);
   const { isForcePasswordReset, setIsForcePasswordReset } = useAuth();
+  const params = useLocalSearchParams<{ email?: string | string[] }>();
+  const emailParam = Array.isArray(params.email)
+    ? params.email[0] || ""
+    : params.email || "";
 
   const {
     control,
@@ -36,7 +40,7 @@ const Reset = () => {
     resolver: yupResolver(resetPasswordSchema),
     mode: "onBlur",
     defaultValues: {
-      email: "",
+      email: emailParam,
     },
   });
 

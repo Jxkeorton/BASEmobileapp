@@ -16,6 +16,7 @@ import { ActivityIndicator, Button, Text } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import APIErrorHandler from "../components/APIErrorHandler";
 import { ControlledPaperSecureTextInput } from "../components/form";
+import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
 import {
   type ResetPasswordConfirmFormData,
@@ -160,6 +161,7 @@ const ResetPasswordConfirm = () => {
   const routeErrorDescription = params.error_description as string | undefined;
   const routeErrorCode = params.error_code as string | undefined;
   const client = useKyClient();
+  const { login, setIsForcePasswordReset } = useAuth();
 
   useEffect(() => {
     if (!routeErrorCode && !routeErrorDescription) return;
@@ -198,22 +200,82 @@ const ResetPasswordConfirm = () => {
         },
       });
 
+      const resultData = result as any;
+
+      if (resultData.error) {
+        throw resultData.error;
+      }
+
+      if (!resultData.data) {
+        throw new Error("Missing reset-password-confirm response data");
+      }
+
       return result;
     },
     onSuccess: async (response) => {
       if (response.response.status === 200) {
-        Toast.show({
-          type: "success",
-          text1: "Password Reset Successful",
-          text2: "You can now log in with your new password",
-          position: "top",
-        });
+        const rawData = response.data as any;
+        const payload = rawData?.data ?? rawData;
+        const user = payload?.user;
+        const session = payload?.session;
 
-        router.replace("/(auth)/Login");
+        if (
+          user?.id &&
+          user.email &&
+          session?.access_token &&
+          session?.refresh_token
+        ) {
+          try {
+            await login({
+              user: { id: user.id, email: user.email },
+              accessToken: session.access_token,
+              refreshToken: session.refresh_token,
+            });
+
+            setIsForcePasswordReset(false);
+
+            // Verify authenticated access before navigating to avoid silent bad session state.
+            const profileResult = (await client.GET("/profile")) as any;
+            if (profileResult.error) {
+              throw profileResult.error;
+            }
+
+            // Navigate to main app
+            router.replace("/(tabs)/map");
+          } catch (error) {
+            setApiError(error);
+            Toast.show({
+              type: "error",
+              text1: "Session Setup Failed",
+              text2: "Please log in with your new password",
+              position: "top",
+            });
+            router.replace("/(auth)/Login");
+          }
+        } else {
+          Toast.show({
+            type: "success",
+            text1: "Password Reset Successful",
+            text2: "You can now log in with your new password",
+            position: "top",
+          });
+
+          router.replace("/(auth)/Login");
+        }
       }
     },
     onError: async (error: any) => {
-      setApiError(error);
+      let parsedError = error;
+
+      if (error?.response && typeof error.response.clone === "function") {
+        try {
+          parsedError = await error.response.clone().json();
+        } catch {
+          parsedError = error;
+        }
+      }
+
+      setApiError(parsedError);
     },
   });
 
