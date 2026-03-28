@@ -18,11 +18,12 @@ import {
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { useImagePicker } from "../hooks/useImagePicker";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useUploadImage } from "../hooks/useUploadImage";
 import { useAuth } from "../providers/SessionProvider";
 import { useKyClient } from "../services/kyClient";
+import type { paths } from "../types/api";
+import { launchImagePicker } from "../utils/launchImagePicker";
 import {
   logbookJumpSchema,
   type LogbookJumpFormData,
@@ -37,9 +38,8 @@ interface LogbookEntryModalProps {
   isLoading: boolean;
 }
 
-interface LogbookMutationData extends LogbookJumpFormData {
-  images?: string[];
-}
+type LogbookMutationData =
+  paths["/logbook"]["post"]["requestBody"]["content"]["application/json"];
 
 const LogbookEntryModal = ({
   isModalOpen,
@@ -47,14 +47,13 @@ const LogbookEntryModal = ({
   isLoading,
 }: LogbookEntryModalProps) => {
   const [showExitTypes, setShowExitTypes] = useState(false);
-  const [images, setImages] = useState<Array<{ uri: string }>>([]);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
   const [error, setError] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const client = useKyClient();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { mutateAsync: uploadImageMutation, error: uploadError } =
-    useUploadImage();
+  const { mutateAsync: uploadImageMutation } = useUploadImage();
 
   const updateProfileMutation = useUpdateProfile();
 
@@ -98,14 +97,13 @@ const LogbookEntryModal = ({
         });
 
         if (!uploadResult.success || uploadResult.secureUrls.length === 0) {
-          console.log("Image upload failed:", uploadError);
           throw new Error("Failed to upload images");
         }
 
         imageUrls = uploadResult.secureUrls;
       }
 
-      const requestBody: any = {
+      const requestBody: LogbookMutationData = {
         location_name: jumpData.location_name,
         exit_type: jumpData.exit_type ?? "Earth",
         delay_seconds: jumpData.delay_seconds ?? 0,
@@ -163,7 +161,14 @@ const LogbookEntryModal = ({
   });
 
   const handleFormSubmit = handleSubmit(async (data) => {
-    await submitJumpMutation.mutateAsync(data);
+    const cleanedData: LogbookMutationData = {
+      location_name: data.location_name,
+      exit_type: data.exit_type ?? "Earth",
+      delay_seconds: data.delay_seconds ?? NaN,
+      details: data.details ?? "",
+      jump_date: data.jump_date ?? "",
+    };
+    await submitJumpMutation.mutateAsync(cleanedData);
   });
 
   const handleCancel = () => {
@@ -173,7 +178,7 @@ const LogbookEntryModal = ({
   };
 
   const pickImages = async () => {
-    const result = await useImagePicker({
+    const result = await launchImagePicker({
       imagePickerOptions: {
         allowsMultipleSelection: true,
         selectionLimit: 5,
@@ -181,7 +186,17 @@ const LogbookEntryModal = ({
     });
 
     if (result) {
-      setImages(result);
+      // Enforce maximum of 5 images
+      const limitedResult = result.slice(0, 5);
+      setImages(limitedResult);
+
+      if (result.length > 5) {
+        Toast.show({
+          type: "info",
+          text1: "Maximum 5 images allowed",
+          text2: `Only the first 5 of ${result.length} images were kept.`,
+        });
+      }
     } else {
       Toast.show({
         type: "info",
