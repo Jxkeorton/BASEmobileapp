@@ -1,4 +1,13 @@
 {
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "jakeorton99@gmail.com",
+        "ascAppId": "6470670905",
+        "appleTeamId": "5GJUTN24XR"
+      }
+    }
+  },
   "build": {
     "development": {
       "developmentClient": true,
@@ -28,6 +37,7 @@
     }
   },
   "cli": {
-    "promptToConfigurePushNotifications": false
+    "promptToConfigurePushNotifications": false,
+    "appVersionSource": "remote"
   }
 }
