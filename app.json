@@ -2,7 +2,7 @@
   "expo": {
     "name": "BASE map",
     "slug": "basemobile-app",
-    "version": "1.0.4",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/bitmap.png",
     "userInterfaceStyle": "light",
@@ -33,7 +33,9 @@
     "assetBundlePatterns": ["**/*"],
     "ios": {
       "bundleIdentifier": "com.jxkeorton.basemobileapp",
-      "runtimeVersion": "1.0.4",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      },
       "jsEngine": "hermes",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false

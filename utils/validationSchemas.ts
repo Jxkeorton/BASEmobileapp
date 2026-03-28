@@ -1,10 +1,5 @@
 import * as yup from "yup";
 
-/**
- * Validation Schemas for Forms
- * Using Yup for runtime type-safe validation with react-hook-form
- */
-
 // ============================================================================
 // Authentication Schemas
 // ============================================================================
@@ -136,7 +131,7 @@ export type EditProfileFormData = {
   username?: string;
   jump_number?: string | number;
 };
-// // ============================================================================
+
 // ============================================================================
 // Location Submission Schemas
 // ============================================================================
@@ -387,7 +382,6 @@ export const unifiedLocationSchema = yup.object({
 export type UnifiedLocationFormData = yup.InferType<
   typeof unifiedLocationSchema
 >;
-
 // ============================================================================
 // Logbook Schemas
 // ============================================================================
@@ -401,7 +395,7 @@ export const logbookJumpSchema = yup.object({
   location_name: yup
     .string()
     .required("Location name is required")
-    .max(200, "Location name must be less than 200 characters")
+    .max(60, "Location name must be less than 60 characters")
     .trim(),
   exit_type: yup
     .string()
@@ -419,6 +413,7 @@ export const logbookJumpSchema = yup.object({
         : value;
     })
     .min(0, "Delay cannot be negative")
+    .integer("Delay must be a whole number")
     .notRequired(),
   details: yup
     .string()
@@ -426,12 +421,12 @@ export const logbookJumpSchema = yup.object({
     .notRequired(),
   jump_date: yup
     .string()
+    .required("Date is required")
     .test(
       "valid-date-format",
       "Date must be in format YYYY-MM-DD",
       (value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value),
-    )
-    .notRequired(),
+    ),
 });
 
 export type LogbookJumpFormData = yup.InferType<typeof logbookJumpSchema>;
