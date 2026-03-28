@@ -21,7 +21,7 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
-import { useImagePicker } from "../../../hooks/useImagePicker";
+import { imagePicker } from "../../../hooks/imagePicker";
 import {
   UpdateProfileData,
   useUpdateProfile,
@@ -157,7 +157,7 @@ const EditProfile = () => {
   });
 
   const pickImage = async () => {
-    const result = await useImagePicker({});
+    const result = await imagePicker({});
 
     if (result) {
       setImage(result[0]?.uri || "");

@@ -17,7 +17,7 @@ import {
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import { Location } from "../app/(tabs)/map/Map";
-import { useImagePicker } from "../hooks/useImagePicker";
+import { imagePicker } from "../hooks/imagePicker";
 import { useUploadImage } from "../hooks/useUploadImage";
 import { useKyClient } from "../services/kyClient";
 import { paths } from "../types/api";
@@ -58,7 +58,7 @@ const SubmitLocationModal = ({
 }: SubmitLocationModalProps) => {
   const [error, setError] = useState<any>(null);
   const [currentPhase, setCurrentPhase] = useState<SubmissionPhase>(1);
-  const [images, setImages] = useState<Array<{ uri: string }>>([]);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
   const queryClient = useQueryClient();
   const client = useKyClient();
   const { mutateAsync: uploadImageMutation, error: uploadError } =
@@ -288,7 +288,7 @@ const SubmitLocationModal = ({
   };
 
   const pickImages = async () => {
-    const result = await useImagePicker({
+    const result = await imagePicker({
       imagePickerOptions: {
         allowsMultipleSelection: true,
         selectionLimit: 5,

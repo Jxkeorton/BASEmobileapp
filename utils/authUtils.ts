@@ -42,7 +42,7 @@ export const signOut = async (): Promise<void> => {
         },
       });
     }
-  } catch (error) {
+  } catch {
     // Silently continue with local cleanup
   } finally {
     // Always clear secure storage regardless of API call result
@@ -95,7 +95,7 @@ export const refreshAuthToken = async (): Promise<string | null> => {
     }
 
     return null;
-  } catch (error) {
+  } catch {
     // Clear stored tokens on refresh failure
     await setStorageItemAsync("auth_token", null);
     await setStorageItemAsync("refresh_token", null);
@@ -120,7 +120,7 @@ export const isTokenExpired = (token: string): boolean => {
 
     // Return true if expired or expiring within 5 minutes
     return expirationTime - currentTime < fiveMinutes;
-  } catch (error) {
+  } catch {
     return true; // Treat invalid tokens as expired
   }
 };

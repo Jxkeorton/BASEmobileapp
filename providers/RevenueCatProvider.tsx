@@ -76,7 +76,7 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
           try {
             const { customerInfo: loginInfo } = await Purchases.logIn(user.id);
             setCustomerInfo(loginInfo);
-          } catch (err) {
+          } catch {
             const info = await Purchases.getCustomerInfo();
             setCustomerInfo(info);
           }
@@ -86,7 +86,7 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
             setOfferings(offerings.current);
           }
         }
-      } catch (error) {
+      } catch {
         Toast.show({
           type: "error",
           text1: "Subscription Error",

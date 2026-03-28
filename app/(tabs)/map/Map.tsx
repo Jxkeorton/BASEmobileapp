@@ -38,7 +38,7 @@ type LocationsFilters = paths["/locations"]["get"]["parameters"]["query"];
 
 // Type for ShapeSource onPress event
 type OnPressEvent = {
-  features: Array<GeoJSON.Feature>;
+  features: GeoJSON.Feature[];
   coordinates: {
     latitude: number;
     longitude: number;
@@ -122,23 +122,26 @@ export default function Map() {
         });
     },
   });
-  const locations = locationsResponse?.success ? locationsResponse.data : [];
-
-  const filterEventsByRockDrop = (location: Location) => {
-    if (unknownRockdrop) {
-      const hasUnknownHeight =
-        !location.total_height_ft ||
-        location.total_height_ft === 0 ||
-        (location.rock_drop_ft &&
-          (!location.rock_drop_ft || location.rock_drop_ft === 0));
-      return !hasUnknownHeight;
-    }
-
-    return true;
-  };
+  const locations = useMemo(
+    () => (locationsResponse?.success ? locationsResponse.data : []),
+    [locationsResponse],
+  );
 
   // Convert locations to GeoJSON FeatureCollection for clustering
   const geoJsonSource = useMemo(() => {
+    const filterEventsByRockDrop = (location: Location) => {
+      if (unknownRockdrop) {
+        const hasUnknownHeight =
+          !location.total_height_ft ||
+          location.total_height_ft === 0 ||
+          (location.rock_drop_ft &&
+            (!location.rock_drop_ft || location.rock_drop_ft === 0));
+        return !hasUnknownHeight;
+      }
+
+      return true;
+    };
+
     const filteredLocations = locations?.filter(filterEventsByRockDrop) || [];
     return {
       type: "FeatureCollection" as const,

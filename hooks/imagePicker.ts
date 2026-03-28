@@ -5,7 +5,7 @@ interface UseImagePickerProps {
   imagePickerOptions?: ImagePicker.ImagePickerOptions;
 }
 
-export const useImagePicker = async ({
+export const imagePicker = async ({
   imagePickerOptions,
 }: UseImagePickerProps) => {
   // No permissions request is necessary for launching the image library.

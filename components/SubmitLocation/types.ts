@@ -18,7 +18,7 @@ export interface AdditionalInfoPhaseProps extends Omit<
   PhaseProps,
   "selectedUnit"
 > {
-  images: Array<{ uri: string }>;
+  images: { uri: string }[];
   onPickImages: () => void;
   isSubmitting: boolean;
 }

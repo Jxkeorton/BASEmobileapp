@@ -18,7 +18,7 @@ import {
 } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import Toast from "react-native-toast-message";
-import { useImagePicker } from "../hooks/useImagePicker";
+import { imagePicker } from "../hooks/imagePicker";
 import { useUpdateProfile } from "../hooks/useUpdateProfile";
 import { useUploadImage } from "../hooks/useUploadImage";
 import { useAuth } from "../providers/SessionProvider";
@@ -47,7 +47,7 @@ const LogbookEntryModal = ({
   isLoading,
 }: LogbookEntryModalProps) => {
   const [showExitTypes, setShowExitTypes] = useState(false);
-  const [images, setImages] = useState<Array<{ uri: string }>>([]);
+  const [images, setImages] = useState<{ uri: string }[]>([]);
   const [error, setError] = useState<any>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const client = useKyClient();
@@ -173,7 +173,7 @@ const LogbookEntryModal = ({
   };
 
   const pickImages = async () => {
-    const result = await useImagePicker({
+    const result = await imagePicker({
       imagePickerOptions: {
         allowsMultipleSelection: true,
         selectionLimit: 5,
