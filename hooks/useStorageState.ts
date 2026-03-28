@@ -18,14 +18,10 @@ function useAsyncState<T>(
 
 export async function setStorageItemAsync(key: string, value: string | null) {
   if (Platform.OS === "web") {
-    try {
-      if (value === null) {
-        localStorage.removeItem(key);
-      } else {
-        localStorage.setItem(key, value);
-      }
-    } catch (e) {
-      console.error("Local storage is unavailable:", e);
+    if (value === null) {
+      localStorage.removeItem(key);
+    } else {
+      localStorage.setItem(key, value);
     }
   } else {
     if (value == null) {
@@ -43,12 +39,8 @@ export function useStorageState(key: string): UseStateHook<string> {
   // Get
   useEffect(() => {
     if (Platform.OS === "web") {
-      try {
-        if (typeof localStorage !== "undefined") {
-          setState(localStorage.getItem(key));
-        }
-      } catch (e) {
-        console.error("Local storage is unavailable:", e);
+      if (typeof localStorage !== "undefined") {
+        setState(localStorage.getItem(key));
       }
     } else {
       SecureStore.getItemAsync(key).then((value: string | null) => {
