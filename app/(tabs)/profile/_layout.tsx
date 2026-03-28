@@ -15,18 +15,6 @@ const SettingsButton = React.memo(() => (
   </TouchableOpacity>
 ));
 
-const CancelButton = React.memo(() => (
-  <TouchableOpacity
-    onPress={() => router.replace("/profile/Profile")}
-    style={{
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-    }}
-  >
-    <FontAwesome name="times" size={22} color="#1a1a1a" />
-  </TouchableOpacity>
-));
-
 export default () => {
   return (
     <Stack

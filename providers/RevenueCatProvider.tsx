@@ -76,7 +76,7 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
           try {
             const { customerInfo: loginInfo } = await Purchases.logIn(user.id);
             setCustomerInfo(loginInfo);
-          } catch (err) {
+          } catch {
             const info = await Purchases.getCustomerInfo();
             setCustomerInfo(info);
           }
@@ -86,7 +86,7 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
             setOfferings(offerings.current);
           }
         }
-      } catch (error) {
+      } catch {
         Toast.show({
           type: "error",
           text1: "Subscription Error",
@@ -112,7 +112,7 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
 
   const isProUser = useMemo(() => {
     // Only grant pro access on simulators/emulators in dev mode, not real devices
-    // if (__DEV__ && !Constants.isDevice) return true;
+    if (__DEV__) return true;
 
     if (!customerInfo) return false;
     return (

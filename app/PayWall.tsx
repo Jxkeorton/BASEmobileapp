@@ -23,19 +23,11 @@ const PayWall = () => {
   } = useRevenueCat();
 
   const handlePurchase = async (pkg: PurchasesPackage) => {
-    try {
-      await purchasePackage(pkg);
-    } catch (error) {
-      // Error is already handled in the provider
-    }
+    await purchasePackage(pkg);
   };
 
   const handleRestore = async () => {
-    try {
-      await restorePurchases();
-    } catch (error) {
-      // Error is already handled in the provider
-    }
+    await restorePurchases();
   };
 
   const userHasAccessToPackage = (pkg: PurchasesPackage) => {

@@ -203,7 +203,7 @@ const EditProfile = () => {
                   <Image
                     source={{ uri: image }}
                     style={styles.image}
-                    contentFit="fill"
+                    contentFit="cover"
                   />
                 </View>
               ) : (
