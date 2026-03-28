@@ -21,7 +21,6 @@ import {
   ControlledPaperEmailInput,
   ControlledPaperTextInput,
 } from "../../../components/form";
-import { useImagePicker } from "../../../hooks/useImagePicker";
 import {
   UpdateProfileData,
   useUpdateProfile,
@@ -29,6 +28,7 @@ import {
 import { useUploadImage } from "../../../hooks/useUploadImage";
 import { useAuth } from "../../../providers/SessionProvider";
 import { useKyClient } from "../../../services/kyClient";
+import { launchImagePicker } from "../../../utils/launchImagePicker";
 import {
   editProfileSchema,
   type EditProfileFormData,
@@ -157,7 +157,7 @@ const EditProfile = () => {
   });
 
   const pickImage = async () => {
-    const result = await useImagePicker({});
+    const result = await launchImagePicker({});
 
     if (result) {
       setImage(result[0]?.uri || "");
