@@ -10,6 +10,7 @@
     },
     "production": {
       "channel": "production",
+      "autoIncrement": true,
       "env": {
         "EXPO_USE_PNPM": "1",
         "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "$EXPO_PUBLIC_REVENUECAT_APPLE_KEY",
