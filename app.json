@@ -32,6 +32,7 @@
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
+      "buildNumber": "1",
       "bundleIdentifier": "com.jxkeorton.basemobileapp",
       "runtimeVersion": {
         "policy": "appVersion"

@@ -28,6 +28,7 @@
     }
   },
   "cli": {
-    "promptToConfigurePushNotifications": false
+    "promptToConfigurePushNotifications": false,
+    "appVersionSource": "remote"
   }
 }
