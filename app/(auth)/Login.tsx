@@ -92,6 +92,16 @@ export default function Login() {
         }
       }
 
+      if (parsedError?.message === "Email not confirmed") {
+        router.replace({
+          pathname: "/(auth)/EmailConfirmation",
+          params: { email: getValues("email")?.trim() || "" },
+        });
+
+        setApiError(parsedError);
+        return;
+      }
+
       const forcePasswordReset = parsedError?.force_password_reset === true;
 
       if (forcePasswordReset) {
