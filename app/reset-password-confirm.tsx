@@ -240,6 +240,13 @@ const ResetPasswordConfirm = () => {
               throw profileResult.error;
             }
 
+            Toast.show({
+              type: "success",
+              text1: "Password Reset Successful",
+              text2: "Your password has been reset and you are now logged in",
+              position: "top",
+            });
+
             // Navigate to main app
             router.replace("/(tabs)/map");
           } catch (error) {

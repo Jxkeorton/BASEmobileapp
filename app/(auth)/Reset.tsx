@@ -54,6 +54,7 @@ const Reset = () => {
     },
     onSuccess: async (response) => {
       if (response.response.status === 200) {
+        router.dismissAll();
         router.replace("/(auth)/Login");
         setIsForcePasswordReset(false);
         Toast.show({
