@@ -186,7 +186,7 @@ const Profile = () => {
             <Text style={styles.sectionLabel}>Quick Actions</Text>
             <View style={styles.actionsGrid}>
               <TouchableRipple
-                onPress={() => router.replace("/(tabs)/profile/EditProfile")}
+                onPress={() => router.navigate("/(tabs)/profile/EditProfile")}
                 style={styles.actionButton}
                 borderless
               >

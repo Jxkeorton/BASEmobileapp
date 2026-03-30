@@ -298,7 +298,7 @@ const EditProfile = () => {
           )}
           <TouchableOpacity
             style={styles.cancelButton}
-            onPress={() => router.replace("/(tabs)/profile/Profile")}
+            onPress={() => router.back()}
             disabled={isSubmitting}
           >
             <Text style={styles.panelButtonTitle}>Cancel</Text>
