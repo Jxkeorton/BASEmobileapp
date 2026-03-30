@@ -1,15 +1,9 @@
 import { router } from "expo-router";
-import {
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { ActivityIndicator } from "react-native-paper";
 import { PurchasesPackage } from "react-native-purchases";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useRevenueCat } from "../providers/RevenueCatProvider";
 
 const PayWall = () => {
@@ -28,6 +22,10 @@ const PayWall = () => {
 
   const handleRestore = async () => {
     await restorePurchases();
+  };
+
+  const redirectToMap = () => {
+    router.replace("/(tabs)/map/Map");
   };
 
   const userHasAccessToPackage = (pkg: PurchasesPackage) => {
@@ -57,10 +55,7 @@ const PayWall = () => {
         <Text style={styles.text}>
           You have access to all premium features.
         </Text>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => router.push("/(tabs)/map/Map")}
-        >
+        <TouchableOpacity style={styles.primaryButton} onPress={redirectToMap}>
           <Text style={styles.primaryButtonText}>Back to Map</Text>
         </TouchableOpacity>
       </View>
@@ -81,10 +76,7 @@ const PayWall = () => {
         <TouchableOpacity style={styles.restoreButton} onPress={handleRestore}>
           <Text style={styles.restoreButtonText}>Restore Purchases</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => router.push("/(tabs)/map/Map")}
-        >
+        <TouchableOpacity style={styles.primaryButton} onPress={redirectToMap}>
           <Text style={styles.primaryButtonText}>Back to Map</Text>
         </TouchableOpacity>
       </View>
@@ -182,7 +174,7 @@ const PayWall = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.primaryButton}
-            onPress={() => router.push("/(tabs)/map/Map")}
+            onPress={redirectToMap}
           >
             <Text style={styles.primaryButtonText}>Back to Map</Text>
           </TouchableOpacity>

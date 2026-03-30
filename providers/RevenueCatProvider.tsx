@@ -112,7 +112,7 @@ export const RevenueCatProvider: React.FC<RevenueCatProviderProps> = ({
 
   const isProUser = useMemo(() => {
     // Only grant pro access on simulators/emulators in dev mode, not real devices
-    if (__DEV__) return true;
+    // if (__DEV__) return true;
 
     if (!customerInfo) return false;
     return (

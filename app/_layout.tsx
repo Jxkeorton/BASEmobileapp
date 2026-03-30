@@ -37,7 +37,7 @@ function RootNavigator() {
       {/* Protected routes - only accessible when authenticated */}
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="PayWall" options={{ presentation: "modal" }} />
+        <Stack.Screen name="PayWall" />
       </Stack.Protected>
 
       {/* Public routes - only accessible when NOT authenticated */}

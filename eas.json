@@ -5,6 +5,10 @@
         "appleId": "jakeorton99@gmail.com",
         "ascAppId": "6470670905",
         "appleTeamId": "5GJUTN24XR"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./service-account.json",
+        "track": "internal"
       }
     }
   },
@@ -19,15 +23,8 @@
     },
     "production": {
       "channel": "production",
+      "environment": "production",
       "autoIncrement": true,
-      "env": {
-        "EXPO_USE_PNPM": "1",
-        "EXPO_PUBLIC_REVENUECAT_APPLE_KEY": "$EXPO_PUBLIC_REVENUECAT_APPLE_KEY",
-        "EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY": "$EXPO_PUBLIC_REVENUECAT_GOOGLE_KEY",
-        "EXPO_PUBLIC_API_BASE_URL": "$EXPO_PUBLIC_API_BASE_URL",
-        "EXPO_PUBLIC_API_KEY": "$EXPO_PUBLIC_API_KEY",
-        "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "$EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN"
-      },
       "android": {
         "buildType": "app-bundle"
       },
