@@ -115,7 +115,7 @@ const Reset = () => {
               </Button>
               <Button
                 textColor="#007AFF"
-                onPress={() => router.replace("/(auth)/Login")}
+                onPress={() => router.back()}
                 style={styles.button}
               >
                 Back to Login

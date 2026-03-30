@@ -150,7 +150,7 @@ const Register = () => {
           color="white"
           labelComponent={
             <TouchableOpacity
-              onPress={() => router.navigate("/AuthTerms")}
+              onPress={() => router.push("/AuthTerms")}
               style={styles.labelContainer}
             >
               <Text style={styles.label}>
@@ -176,7 +176,7 @@ const Register = () => {
             </Button>
 
             <Button
-              onPress={() => router.replace("/(auth)/Login")}
+              onPress={() => router.back()}
               textColor="#007AFF"
               style={styles.button}
             >
@@ -189,7 +189,7 @@ const Register = () => {
           textColor="#007AFF"
           style={styles.privacyPolicyLink}
           onPress={() => {
-            router.navigate("/AuthPrivacyPolicy");
+            router.push("/AuthPrivacyPolicy");
           }}
         >
           Privacy Policy

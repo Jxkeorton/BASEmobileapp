@@ -112,21 +112,21 @@ export default function Login() {
   const navigateToRegister = () => {
     const email = getEmailValue();
     if (email) {
-      router.replace({ pathname: "Register", params: { email } });
+      router.push({ pathname: "Register", params: { email } });
       return;
     }
 
-    router.replace("Register");
+    router.push("Register");
   };
 
   const navigateToReset = () => {
     const email = getEmailValue();
     if (email) {
-      router.replace({ pathname: "Reset", params: { email } });
+      router.push({ pathname: "Reset", params: { email } });
       return;
     }
 
-    router.replace("Reset");
+    router.push("Reset");
   };
 
   return (
@@ -195,7 +195,7 @@ export default function Login() {
               textColor="#007AFF"
               style={styles.privacyPolicyLink}
               onPress={() => {
-                router.navigate("/AuthPrivacyPolicy");
+                router.push("/AuthPrivacyPolicy");
               }}
             >
               Privacy Policy
