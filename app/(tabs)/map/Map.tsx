@@ -9,12 +9,7 @@ import Mapbox, {
 } from "@rnmapbox/maps";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Keyboard,
-  StyleSheet,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import { Keyboard, StyleSheet, View } from "react-native";
 import { ActivityIndicator, PaperProvider, Portal } from "react-native-paper";
 import APIErrorHandler from "../../../components/APIErrorHandler";
 import FiltersModal from "../../../components/FiltersModal";
@@ -202,157 +197,160 @@ export default function Map() {
 
   return (
     <PaperProvider>
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <View style={styles.container}>
-          <Portal>
-            <FiltersModal
-              isModalOpen={isFiltersVisible}
-              onClose={() => setFiltersVisible(false)}
-              onApplyFilter={(min: string, max: string, unknown: boolean) => {
-                setMinRockDrop(min);
-                setMaxRockDrop(max);
-                setUnknownRockDrop(unknown);
-              }}
-              minRockDrop={minRockDrop}
-              maxRockDrop={maxRockDrop}
-            />
-          </Portal>
-
-          <MapView
-            style={styles.map}
-            styleURL={
-              satelliteActive
-                ? "mapbox://styles/mapbox/satellite-streets-v12"
-                : "mapbox://styles/jakeorton99/clopszx4t00k101pb70b0crpc"
-            }
-            logoEnabled={false}
-            compassEnabled={true}
-            compassViewPosition={2}
-            compassViewMargins={{
-              x: 15,
-              y: 25,
+      <View style={styles.container}>
+        <Portal>
+          <FiltersModal
+            isModalOpen={isFiltersVisible}
+            onClose={() => setFiltersVisible(false)}
+            onApplyFilter={(min: string, max: string, unknown: boolean) => {
+              setMinRockDrop(min);
+              setMaxRockDrop(max);
+              setUnknownRockDrop(unknown);
             }}
-            scaleBarPosition={{ bottom: 8, left: 8 }}
-            onPress={() => {
-              if (selectedLocation) {
-                setSelectedLocation(null);
-              }
-            }}
-          >
-            <Camera
-              ref={cameraRef}
-              defaultSettings={{
-                centerCoordinate: [-3.0, 54.5],
-                zoomLevel: 3.5,
-                pitch: 45,
-              }}
-            />
-            <LocationPuck
-              puckBearingEnabled
-              puckBearing="heading"
-              pulsing={{ isEnabled: true }}
-            />
-            <Terrain sourceID="mapbox-dem" style={{ exaggeration: 1.5 }} />
-
-            {/* Clustered markers */}
-            <ShapeSource
-              id="locationsSource"
-              shape={geoJsonSource}
-              cluster={true}
-              clusterRadius={30}
-              clusterMaxZoomLevel={6}
-              onPress={handleMarkerPress}
-            >
-              {/* Cluster circles - all clusters */}
-              <CircleLayer
-                id="clusterCircles"
-                filter={["has", "point_count"]}
-                style={{
-                  circleColor: [
-                    "step",
-                    ["get", "point_count"],
-                    "#3B82F6",
-                    25,
-                    "#3B82F6",
-                    100,
-                    "#182d4e",
-                  ],
-                  circleRadius: [
-                    "interpolate",
-                    ["linear"],
-                    ["get", "point_count"],
-                    2,
-                    18, // 2 points = 18px
-                    10,
-                    22, // 10 points = 22px
-                    50,
-                    28, // 50 points = 28px
-                    100,
-                    34, // 100+ points = 34px
-                  ],
-                  circleStrokeWidth: 3,
-                  circleStrokeColor: "#ffffff",
-                  circleOpacity: 0.9,
-                }}
-              />
-
-              {/* Cluster count labels */}
-              <SymbolLayer
-                id="clusterCount"
-                filter={["has", "point_count"]}
-                style={{
-                  textField: ["get", "point_count_abbreviated"],
-                  textSize: 14,
-                  textColor: "#FFFFFF",
-                  textFont: ["DIN Pro Medium", "Arial Unicode MS Bold"],
-                }}
-              />
-
-              {/* Individual markers only (not clustered at all) */}
-              <CircleLayer
-                id="singlePoint"
-                filter={["!", ["has", "point_count"]]}
-                style={{
-                  circleColor: "#ca2222",
-                  circleRadius: 10,
-                  circleStrokeWidth: 2,
-                  circleStrokeColor: "#ffffff",
-                }}
-              />
-            </ShapeSource>
-
-            {selectedLocation && (
-              <MarkerDetails
-                selectedLocation={selectedLocation}
-                isMetric={isMetric}
-              />
-            )}
-          </MapView>
-
-          {/* Subtle loading indicator for search/filter refetches */}
-          {isFetching && (
-            <View style={styles.refetchIndicator}>
-              <ActivityIndicator size="small" color="#00ABF0" />
-            </View>
-          )}
-
-          {/* Map controls container */}
-          <MapControls
-            satelliteActive={satelliteActive}
-            satelliteViewLoading={satelliteViewLoading}
-            isMetric={isMetric}
-            onSatelliteToggle={handleMapStyleChange}
-            onUnitToggle={toggleUnitSystem}
-            onFilterPress={() => setFiltersVisible(true)}
+            minRockDrop={minRockDrop}
+            maxRockDrop={maxRockDrop}
           />
+        </Portal>
 
-          {/* Submit Location Button */}
-          <SubmitLocationButton />
+        <MapView
+          style={styles.map}
+          styleURL={
+            satelliteActive
+              ? "mapbox://styles/mapbox/satellite-streets-v12"
+              : "mapbox://styles/jakeorton99/clopszx4t00k101pb70b0crpc"
+          }
+          scrollEnabled={true}
+          zoomEnabled={true}
+          rotateEnabled={true}
+          pitchEnabled={true}
+          logoEnabled={false}
+          compassEnabled={true}
+          compassViewPosition={2}
+          compassViewMargins={{
+            x: 15,
+            y: 25,
+          }}
+          scaleBarPosition={{ bottom: 8, left: 8 }}
+          onPress={() => {
+            Keyboard.dismiss();
+            if (selectedLocation) {
+              setSelectedLocation(null);
+            }
+          }}
+        >
+          <Camera
+            ref={cameraRef}
+            defaultSettings={{
+              centerCoordinate: [-3.0, 54.5],
+              zoomLevel: 3.5,
+              pitch: 45,
+            }}
+          />
+          <LocationPuck
+            puckBearingEnabled
+            puckBearing="heading"
+            pulsing={{ isEnabled: true }}
+          />
+          <Terrain sourceID="mapbox-dem" style={{ exaggeration: 1.5 }} />
 
-          <SearchBox value={searchTerm} onChangeText={setSearchTerm} />
-          <APIErrorHandler error={error} />
-        </View>
-      </TouchableWithoutFeedback>
+          {/* Clustered markers */}
+          <ShapeSource
+            id="locationsSource"
+            shape={geoJsonSource}
+            cluster={true}
+            clusterRadius={30}
+            clusterMaxZoomLevel={6}
+            onPress={handleMarkerPress}
+          >
+            {/* Cluster circles - all clusters */}
+            <CircleLayer
+              id="clusterCircles"
+              filter={["has", "point_count"]}
+              style={{
+                circleColor: [
+                  "step",
+                  ["get", "point_count"],
+                  "#3B82F6",
+                  25,
+                  "#3B82F6",
+                  100,
+                  "#182d4e",
+                ],
+                circleRadius: [
+                  "interpolate",
+                  ["linear"],
+                  ["get", "point_count"],
+                  2,
+                  18, // 2 points = 18px
+                  10,
+                  22, // 10 points = 22px
+                  50,
+                  28, // 50 points = 28px
+                  100,
+                  34, // 100+ points = 34px
+                ],
+                circleStrokeWidth: 3,
+                circleStrokeColor: "#ffffff",
+                circleOpacity: 0.9,
+              }}
+            />
+
+            {/* Cluster count labels */}
+            <SymbolLayer
+              id="clusterCount"
+              filter={["has", "point_count"]}
+              style={{
+                textField: ["get", "point_count_abbreviated"],
+                textSize: 14,
+                textColor: "#FFFFFF",
+                textFont: ["DIN Pro Medium", "Arial Unicode MS Bold"],
+              }}
+            />
+
+            {/* Individual markers only (not clustered at all) */}
+            <CircleLayer
+              id="singlePoint"
+              filter={["!", ["has", "point_count"]]}
+              style={{
+                circleColor: "#ca2222",
+                circleRadius: 10,
+                circleStrokeWidth: 2,
+                circleStrokeColor: "#ffffff",
+              }}
+            />
+          </ShapeSource>
+
+          {selectedLocation && (
+            <MarkerDetails
+              selectedLocation={selectedLocation}
+              isMetric={isMetric}
+            />
+          )}
+        </MapView>
+
+        {/* Subtle loading indicator for search/filter refetches */}
+        {isFetching && (
+          <View style={styles.refetchIndicator}>
+            <ActivityIndicator size="small" color="#00ABF0" />
+          </View>
+        )}
+
+        {/* Map controls container */}
+        <MapControls
+          satelliteActive={satelliteActive}
+          satelliteViewLoading={satelliteViewLoading}
+          isMetric={isMetric}
+          onSatelliteToggle={handleMapStyleChange}
+          onUnitToggle={toggleUnitSystem}
+          onFilterPress={() => setFiltersVisible(true)}
+        />
+
+        {/* Submit Location Button */}
+        <SubmitLocationButton />
+
+        <SearchBox value={searchTerm} onChangeText={setSearchTerm} />
+        <APIErrorHandler error={error} />
+      </View>
     </PaperProvider>
   );
 }
